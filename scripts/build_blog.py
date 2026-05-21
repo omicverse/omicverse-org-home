@@ -545,7 +545,7 @@ def article_shell(post, article_html):
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
     <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
       <a href="../packages.html">Packages</a>
-      <a href="../learn.html">Learn</a>
+      <a href="https://omicverse.readthedocs.io/">Learn</a>
       <a href="../people.html">People</a>
       <a aria-current="page" href="../blog.html">Blog</a>
       <a href="../events.html">Events</a>
@@ -569,7 +569,7 @@ def article_shell(post, article_html):
     <span class="footer-links">
       <a href="../index.html">Home</a>
       <a href="../packages.html">Packages</a>
-      <a href="../learn.html">Learn</a>
+      <a href="https://omicverse.readthedocs.io/">Learn</a>
       <a href="../about.html">About</a>
       <a href="../join.html">Join</a>
     </span>
@@ -609,7 +609,7 @@ def blog_index(posts):
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
     <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
       <a href="packages.html">Packages</a>
-      <a href="learn.html">Learn</a>
+      <a href="https://omicverse.readthedocs.io/">Learn</a>
       <a href="people.html">People</a>
       <a aria-current="page" href="blog.html">Blog</a>
       <a href="events.html">Events</a>
@@ -640,7 +640,7 @@ def blog_index(posts):
     <span class="footer-links">
       <a href="index.html">Home</a>
       <a href="packages.html">Packages</a>
-      <a href="learn.html">Learn</a>
+      <a href="https://omicverse.readthedocs.io/">Learn</a>
       <a href="people.html">People</a>
       <a href="events.html">Events</a>
       <a href="about.html">About</a>
