@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Events — OmicVerse</title>
+  <title>Events - OmicVerse</title>
   <link rel="icon" type="image/png" href="assets/omicos-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,68 +33,330 @@
   <main>
     <section class="page-hero page-width">
       <p class="overline">Events</p>
-      <h1>Calls, workshops, releases.</h1>
+      <h1>The OmicVerse refactoring project ecosystem is officially established.</h1>
     </section>
 
     <section class="page-width events-section">
-      <h2>Upcoming</h2>
+      <h2>Event</h2>
       <div class="event-list">
         <div class="event-row">
-          <div class="date">TBA 2026</div>
+          <div class="date">v2.1</div>
           <div class="body">
-            <h3>Quarterly community call</h3>
-            <p>Roadmap update, port-track review, agent-skills demo, open Q&amp;A.</p>
+            <h3>Open Ecosystem Initiative | OmicVerse 2.1 release update</h3>
+            <p>The OmicVerse community is opening its refactoring ecosystem to developers, users, tutorials, and multi-omics workflows.</p>
           </div>
-          <div class="actions"><a href="https://github.com/omicverse/omicverse/discussions" target="_blank" rel="noopener">Discussions →</a></div>
-        </div>
-        <div class="event-row">
-          <div class="date">TBA 2026</div>
-          <div class="body">
-            <h3>Spatial omics workshop</h3>
-            <p>Loading 10x Visium / Stereo-seq with anndata-oom. Niche detection. Parity benchmarking.</p>
-          </div>
-          <div class="actions"><a href="join.html">Express interest →</a></div>
-        </div>
-        <div class="event-row">
-          <div class="date">TBA 2026</div>
-          <div class="body">
-            <h3>Port-a-thon</h3>
-            <p>Two-day hackathon. One R method per team. Parity tests + a one-page methods note.</p>
-          </div>
-          <div class="actions"><a href="join.html">Sign up to host →</a></div>
+          <div class="actions"><a href="https://github.com/omicverse" target="_blank" rel="noopener">Project home →</a></div>
         </div>
       </div>
     </section>
 
-    <section class="page-width events-section">
-      <h2>Past</h2>
-      <div class="event-list">
-        <div class="event-row">
-          <div class="date">v1.x</div>
-          <div class="body">
-            <h3>omicverse 1.x — current line</h3>
-            <p>Stable Python API. Method ports continue to land per release.</p>
-          </div>
-          <div class="actions"><a href="https://github.com/omicverse/omicverse/releases" target="_blank" rel="noopener">Releases →</a></div>
-        </div>
-        <div class="event-row">
-          <div class="date">2024</div>
-          <div class="body">
-            <h3>Framework paper</h3>
-            <p>Peer-reviewed methods description of the unified multi-omics framework.</p>
-          </div>
-          <div class="actions"><a href="about.html#citation">Citation →</a></div>
-        </div>
-        <div class="event-row">
-          <div class="date">earlier</div>
-          <div class="body">
-            <h3>Origin</h3>
-            <p>Project starts as a single Python library aimed at unifying bulk and single-cell APIs.</p>
-          </div>
-          <div class="actions"><a href="about.html">History →</a></div>
-        </div>
-      </div>
-    </section>
+    <article class="article page-width event-detail">
+      <h1>Open Ecosystem Initiative | OmicVerse 2.1 Release Update</h1>
+
+      <blockquote>
+        <p><strong>Editor's note</strong></p>
+        <p>Starting an open source community in China is difficult. Because of complex interests and incentives, it is hard for us to directly copy ecosystems such as scverse or Bioconductor. For a long time, the only OmicVerse developers were myself, Leihu, and Xuehai.</p>
+        <p>In many cases, we would read about an interesting algorithm, then run into installation constraints. So we would remove strict version limits, migrate the package into the external module, and call it directly through OmicVerse. Sometimes we would also improve the package's output visualization, for example by adding progress bars or better colors. If a package was easy to install, we would introduce its algorithm function into existing OmicVerse common interfaces such as <code>ov.single.Anno</code> and <code>ov.single.Traj</code>, so users could easily keep using OmicVerse downstream analysis and visualization functions.</p>
+        <p>The arrival of the AI era has sent us a different signal: it now seems that everyone can become a developer. If you tell AI what you need, you can rewrite an original R package in a different language. Previously, even rewriting DESeq2-style functionality could become a Bioinformatics paper. Therefore, as the main maintainer of <strong>OmicVerse</strong>, I would like to formally invite everyone to join this open ecosystem.</p>
+        <p>At the same time, I have written articles such as "the best single-cell tutorial." As another part of the open source community, we will write analysis tutorials based on the OmicVerse ecosystem, with the goal of lowering the entry barrier for beginners as much as possible.</p>
+        <p>The OmicVerse v2.1 update is also very interesting. It adds py-monocle2, microbiome analysis, metabolomics analysis, and many other features. Details are listed below.</p>
+        <p><strong><em>steorra</em></strong></p>
+      </blockquote>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260418163304420.png" alt="OmicVerse ecosystem illustration" />
+      </figure>
+
+      <p><strong>Project homepage</strong>: <a href="https://github.com/omicverse" target="_blank" rel="noopener">https://github.com/omicverse</a></p>
+
+      <h2>For Developers</h2>
+      <p>Because I am still active in frontline development, I can promise that after an algorithm refactoring is completed, we can discuss how to publish it in a top journal together. Friends who know me well know that I do not compete for first authorship. Related OmicVerse series papers, such as Nature Protocols-style articles, will also include names according to author contributions.</p>
+      <p>As an economic promise, if our open source community receives donations, we will use that money to give back to all developers according to contribution, although I think the probability of receiving donations is extremely low.</p>
+
+      <h2>Contribution Guide</h2>
+      <p>If you are interested, you can add my contact <strong>FernandoZeng</strong>. I will invite you into the developer group and send a GitHub Member invitation.</p>
+      <p>For repositories built by authors, you will have full administrator permissions. In other words, <strong>you can transfer repositories you created back to your personal account at any time</strong>. I think depriving ownership is not a good practice for an open source community.</p>
+      <p>After the repository is built, we can discuss how to connect it into OmicVerse common functions, making it easier for bioinformatics researchers and developers to call and use.</p>
+
+      <h2>Refactoring Guide</h2>
+      <p>If you rewrite an analysis package in Python or Rust, you can create a repository under the organization named like <code>rust-monocle2</code> or <code>py-monocle2</code>. For the README and package format, you can refer to what we have already built:</p>
+      <ul>
+        <li><code>py-monocle2</code>: <a href="https://github.com/omicverse/py-monocle2" target="_blank" rel="noopener">https://github.com/omicverse/py-monocle2</a></li>
+        <li><code>py-DoubletFinder</code>: <a href="https://github.com/omicverse/py-DoubletFinder" target="_blank" rel="noopener">https://github.com/omicverse/py-DoubletFinder</a></li>
+      </ul>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260418164428090.png" alt="OmicVerse refactoring guide" />
+      </figure>
+
+      <h2>For Ecosystem Users</h2>
+      <p>I know not everyone wants to write code, but I believe many people still want to participate in building an open source community or ecosystem. A single spark can start a prairie fire.</p>
+      <p>At the end of this article, I will provide a user group. <strong>If there is an algorithm you want to add to OmicVerse, please do not hesitate to tell us in time</strong>. In the current new version, we added microbiome and metabolomics analysis, and proteomics will come later. At the algorithm level, we added visualization improvements for <code>CellPhoneDB</code>, a Python refactoring of <code>monocle2</code>, GPU refactoring for algorithms such as <code>pca</code>, and more. These were all requests raised by users, and we implemented them one by one in the new version.</p>
+      <p>You can also submit a feature request issue in the OmicVerse repository. Over the past three years, we have added more than 100 features from issues.</p>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260418164220759.png" alt="OmicVerse user ecosystem" />
+      </figure>
+
+      <h2>v2.1 Release Update</h2>
+      <p>If you only look at the version number, many people may think this is just a normal minor release. But if you read the English release notes, you will see that this is actually a major iteration. From <code>v2.0.0</code> to the current development tree, <code>master</code> has accumulated <strong>462 commits</strong>, <strong>429 changed files</strong>, and nearly <strong>100,000 lines of new code</strong>. This does not include two new branches still in the merge window: one for metabolomics and one for 16S / microbiome.</p>
+      <p>In this update, we mainly added and optimized single-cell trajectory inference, spatial omics, preprocessing and I/O, the plotting system, the Agent runtime, and new multi-omics modules.</p>
+      <p>We also added the <code>ov.metabol</code> metabolomics module, added <code>ov.micro</code> and <code>ov.alignment</code> for 16S / microbiome analysis, and completed high-resolution spatial omics workflows for Xenium, Visium HD, and CosMx.</p>
+      <p>This is a major version update. Please update with:</p>
+
+      <pre><code>pip install -U omicverse</code></pre>
+
+      <h2>1. Update Overview</h2>
+
+      <h2>PP Module</h2>
+      <ul>
+        <li>Added <code>pydoubletfinder</code> and <code>scdblfinder</code> backends for doublet detection without requiring an R environment.</li>
+        <li>Automatically detects mitochondrial prefixes, so users no longer need to manually distinguish <code>MT-</code> and <code>mt-</code>.</li>
+        <li>Upgraded Harmony to <code>harmonypy v0.2.0</code>, supporting GPU, CPU NumPy, and Apple Silicon MLX backends.</li>
+        <li>Optimized memory handling for <code>torch_pca</code> and <code>covariance_eigh</code>, reducing OOM caused by dense conversions.</li>
+        <li>Added the Rust OOM backend <code>anndataoom</code> for out-of-memory AnnData reading.</li>
+      </ul>
+
+      <h2>Single Module</h2>
+      <ul>
+        <li>Added <code>ov.single.Monocle</code>, a pure Python refactoring of Monocle 2 without <code>rpy2</code> or an R environment.</li>
+        <li>Further strengthened dynamic trajectory tools, including lineage-aware trend plotting and optimized Palantir / Slingshot visualization.</li>
+      </ul>
+
+      <h2>Space Module</h2>
+      <ul>
+        <li>Added <code>ov.io.read_xenium</code> for complete Xenium <code>outs/</code> directory loading.</li>
+        <li>Supports converting Xenium <code>cell_boundaries</code> to WKT polygons, which can be passed directly to <code>ov.pl.spatialseg</code>.</li>
+        <li>Added <code>ov.io.write_visium_hd_cellseg</code> for exporting back to a SpaceRanger v4-compatible directory structure.</li>
+        <li>Added CosMx FOV-aware plotting with multi-FOV layout and per-FOV overlay.</li>
+        <li>Added the CellSAM backend, and officially renamed <code>stardist()</code> to <code>cellseg()</code>.</li>
+        <li>Added <code>method='cellcharter'</code> to <code>ov.utils.cluster</code>.</li>
+      </ul>
+
+      <h2>Pl Module</h2>
+      <ul>
+        <li>Added a Marsilea-based heatmap plotting API.</li>
+        <li>Added a full set of cell-cell communication plotting APIs.</li>
+        <li>Added <code>ov.pl.create_custom_colormap</code>.</li>
+        <li>Added half-violin boxplots and gradually replaced old plotting interfaces.</li>
+        <li>Optimized legend behavior in subset plotting to avoid unused categories interfering with display.</li>
+      </ul>
+
+      <h2>Utils Module</h2>
+      <ul>
+        <li>Added <code>method='pymclustR'</code> to <code>ov.utils.cluster</code>, completely replacing the previous <code>mclust_R</code>.</li>
+        <li>Added utility functions such as gene ID conversion.</li>
+      </ul>
+
+      <h2>Agent Module</h2>
+      <ul>
+        <li>Fully refactored the <code>ov.Agent</code> / Jarvis / OVAgent runtime.</li>
+        <li>Added Codex OAuth support.</li>
+        <li>Migrated multiple message channels into a unified <code>MessageRuntime</code>.</li>
+        <li>Completed lower-level capabilities such as sandboxing, timeout, stdout guard, retry, and security hardening.</li>
+      </ul>
+
+      <h2>Metabol Module</h2>
+      <ul>
+        <li>Added the <code>ov.metabol</code> module.</li>
+        <li>Supports ID mapping, MSEA, Mummichog, SERRF, DGCA, ASCA / MixedLM, ROC / biomarker panel, and other analysis workflows.</li>
+      </ul>
+
+      <h2>Microbiome Module</h2>
+      <ul>
+        <li>Added <code>ov.micro</code> and <code>ov.alignment</code>.</li>
+        <li>Supports a complete workflow from 16S amplicons to microbiome AnnData analysis.</li>
+      </ul>
+
+      <h2>2. Update Details</h2>
+
+      <h2>2.1 Added <code>ov.single.Monocle</code>, a Pure Python Refactoring of Monocle 2</h2>
+      <p>We added <strong><code>Monocle</code></strong> to <code>ov.single</code>. This is not a thin wrapper around an R interface. Instead, the Monocle 2 trajectory inference workflow has been implemented directly in pure Python. This means you no longer need to install <code>rpy2</code> or maintain a separate R environment.</p>
+      <p>This refactoring includes:</p>
+      <ul>
+        <li>DDRTree</li>
+        <li>MST</li>
+        <li>branch-state assignment</li>
+        <li>BEAM differential expression</li>
+      </ul>
+      <p>We did not stop at "it runs." During implementation, we also addressed several performance bottlenecks in the original Monocle 2. For example, the default <code>method='fast'</code> DDRTree is faster, and <code>_project_cells_to_mst</code> no longer uses an O(N²) dense distance matrix. It now uses Delaunay plus sparse MST.</p>
+      <p>In benchmark datasets, the current implementation reaches a pseudotime correlation above <strong>0.99</strong> with R Monocle 2, while improving speed by <strong>30 to 100 times</strong>.</p>
+      <p>Repository: <a href="https://github.com/omicverse/py-monocle2" target="_blank" rel="noopener">https://github.com/omicverse/py-monocle2</a></p>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260419003441795.png" alt="py-monocle2 benchmark" />
+      </figure>
+
+      <h2>2.2 Completed the Xenium Analysis Workflow</h2>
+      <p>In this release, we officially added <code>ov.io.read_xenium</code>.</p>
+      <p>In earlier versions, Xenium was already a very common high-resolution spatial platform, but OmicVerse still lacked a truly complete loading and downstream visualization workflow. This gap is now mostly filled.</p>
+      <p><code>ov.io.read_xenium</code> currently supports:</p>
+      <ul>
+        <li><code>cell_feature_matrix.h5</code></li>
+        <li><code>cells.csv.gz / cells.parquet</code></li>
+        <li><code>experiment.xenium</code></li>
+        <li><code>cell_boundaries.parquet</code></li>
+      </ul>
+      <p>The key point is that we convert <code>cell_boundaries</code> into per-cell <strong>WKT polygons</strong>, which can be connected directly to <code>ov.pl.spatialseg</code> for cell-boundary visualization.</p>
+      <p>This means Xenium in OmicVerse is no longer merely "a readable format." It can finally run through a complete path:</p>
+      <pre><code>read -&gt; preprocess -&gt; spatialseg overlay</code></pre>
+      <p>Tutorial: <a href="https://omicverse.readthedocs.io/en/latest/Tutorials-space/t_xenium_preprocess.html" target="_blank" rel="noopener">Xenium tutorial</a></p>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260419003539139.png" alt="Xenium workflow" />
+      </figure>
+
+      <h2>2.3 Export Visium HD Back to the SpaceRanger v4 Structure</h2>
+      <p>This is a very practical update, although its value may not be obvious at first glance.</p>
+      <p>The new version adds <code>ov.io.write_visium_hd_cellseg</code>, which can export cell-level AnnData back into a <strong>SpaceRanger v4-compatible directory structure</strong>. After completing Cellpose / CellSAM segmentation in OmicVerse, the result no longer stays only inside the analysis object. It can be written back into the 10x ecosystem and continue to connect with Loupe Browser or spaceranger-aware pipelines.</p>
+      <p>This matters because it moves OmicVerse from "able to analyze data" toward "able to write back into the ecosystem."</p>
+      <p>We also rewrote the Cellpose tutorial and added a <strong>Cellpose vs CellSAM</strong> comparison.</p>
+      <p>Tutorials:</p>
+      <ul>
+        <li><a href="https://omicverse.readthedocs.io/en/latest/Tutorials-space/t_visium_hd_preprocess.html" target="_blank" rel="noopener">Visium HD tutorial</a></li>
+        <li><a href="https://omicverse.readthedocs.io/en/latest/Tutorials-space/t_cellpose.html" target="_blank" rel="noopener">Cellpose tutorial</a></li>
+      </ul>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260419003626015.png" alt="Visium HD export workflow" />
+      </figure>
+
+      <h2>2.4 Completed CosMx FOV-aware Plotting</h2>
+      <p>The CosMx workflow also received many additions.</p>
+      <p>The new version adds a set of <strong>FOV-aware plotting</strong> capabilities, including:</p>
+      <ul>
+        <li>multi-FOV layout</li>
+        <li>per-FOV background image overlay</li>
+        <li>rasterisation options for dense slides</li>
+      </ul>
+      <p>If you have worked with CosMx, you know these capabilities are not just "a few more parameters." CosMx data is naturally structured as multiple FOVs, large images, and dense cells. Whether plots are easy to read is itself part of the analysis experience.</p>
+      <p>Tutorial: <a href="https://omicverse.readthedocs.io/en/latest/Tutorials-space/t_nanostring_preprocess.html" target="_blank" rel="noopener">NanoString / CosMx tutorial</a></p>
+
+      <figure>
+        <img src="https://omicverse.readthedocs.io/en/latest/_images/f85e163ff279024a64eec2eb84cb0d09363a447d1975060bda418321e3033845.png" alt="CosMx FOV-aware plotting" />
+      </figure>
+
+      <h2>2.5 Added <code>pydoubletfinder</code> and <code>pyscDblFinder</code> to <code>ov.pp.qc</code>, and Continued Improving Preprocessing</h2>
+      <p>In the preprocessing module, we added <code>pydoubletfinder</code> and <code>py-scDblFinder</code> backends.</p>
+      <p>This means you can now perform doublet detection directly in Python, without configuring a separate R dependency for DoubletFinder.</p>
+      <p>We also made several small improvements that strongly affect daily use:</p>
+      <ul>
+        <li>automatic mitochondrial prefix detection;</li>
+        <li>optimized memory handling for <code>torch_pca</code>;</li>
+        <li>adjusted the default behavior of <code>scale()</code> to reduce repeated sparse / dense switching;</li>
+        <li>improved multi-backend support for Harmony;</li>
+        <li>added the Rust backend <code>anndataoom</code> for out-of-memory AnnData. I will write a separate tutorial about how to use <code>anndataoom</code>.</li>
+      </ul>
+      <p>These may not look like headline features, but in real projects, these lower-level details often determine whether the workflow feels smooth.</p>
+      <p>Tutorial: <a href="https://omicverse.readthedocs.io/en/latest/Tutorials-single/t_preprocess_cpu.html" target="_blank" rel="noopener">CPU / GPU mixed preprocess tutorial</a></p>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260419014424335.png" alt="Preprocessing update" />
+      </figure>
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260419004302572.png" alt="Preprocessing benchmark" />
+      </figure>
+
+      <h2>2.6 Plotting System Unification: New Heatmap and CCC Plotting APIs</h2>
+      <p>In this version, <code>ov.pl</code> continues moving toward a unified interface.</p>
+      <p>Special thanks to Mengxu, the author of scop. With his help, OmicVerse cell-cell communication visualization has been greatly optimized. We will publish a dedicated article later to explain this part of the update:</p>
+      <ul>
+        <li>added a Marsilea-based heatmap plotting API;</li>
+        <li>added a full set of cell-cell communication plotting APIs;</li>
+        <li>added <code>ov.pl.create_custom_colormap</code>;</li>
+        <li>added half-violin boxplots;</li>
+        <li>optimized subset plotting and legend logic;</li>
+        <li>organized lazy loading and optional dependency handling for plotting imports.</li>
+      </ul>
+      <p>In short, these updates are not about "adding a few more plots." They are about making OmicVerse plotting feel like a unified system, rather than a pile of historical functions stacked together.</p>
+      <p>Tutorial: <a href="https://omicverse.readthedocs.io/en/latest/Tutorials-single/t_cellphonedb.html" target="_blank" rel="noopener">CellPhoneDB plotting tutorial</a></p>
+
+      <figure>
+        <img src="https://omicverse.readthedocs.io/en/latest/_images/f68d31af813233e59638d588fd93d81c505427b9968c9685ed8ca80beb81705f.png" alt="Cell-cell communication plotting" />
+      </figure>
+      <figure>
+        <img src="https://omicverse.readthedocs.io/en/latest/_images/0eb776499bba8cc0baf4b70be5d94493bbd91195ec94b2236f73cf9fe9e8566d.png" alt="Cell-cell communication heatmap" />
+      </figure>
+
+      <h2>2.7 Major Improvements to Trajectory Analysis Visualization</h2>
+      <p>We all know that for pseudotime analysis, appropriate visualization can convey much more information. In previous versions, after <code>ov.single.Traj</code> calculated pseudotime, there was only one additional PAGA plot to visualize cell-state transitions.</p>
+      <p>In version 2.1.2, with Mengxu's help, OmicVerse added many visualization modules similar to scop. We welcome everyone to try them in the new version, and we will later publish a more detailed tutorial on how to use them.</p>
+
+      <figure>
+        <img src="https://omicverse.readthedocs.io/en/latest/_images/da27de5321fe5136a3c1bd62402fde2c51f457de8bb30eef08eb979d730756a0.png" alt="Trajectory visualization" />
+      </figure>
+      <figure>
+        <img src="https://omicverse.readthedocs.io/en/latest/_images/2fa5655bb699ea7c5d224864173c81412358662221b7073681dafd2c8058e4a5.png" alt="Trajectory trend visualization" />
+      </figure>
+
+      <h2>2.8 Added <code>pymclustR</code> to <code>ov.utils.cluster</code>, Fully Replacing <code>mclust_R</code></h2>
+      <p>I also like this update a lot.</p>
+      <p>In the new version, <code>ov.utils.cluster</code> adds <code>method='pymclustR'</code>. It is a pure Python reimplementation of <code>mclust</code>, replacing the previous <code>mclust_R</code> that depended on <code>rpy2</code>.</p>
+      <p>In the current version, the original <code>mclust_R</code> has been removed. Calling it will directly prompt users to use <code>pymclustR</code>.</p>
+      <p>This step represents a very clear recent direction for OmicVerse:</p>
+      <p><strong>Wherever R dependencies can be removed, we should remove them as much as possible.</strong></p>
+      <p>As these core algorithms are gradually Pythonized, the installation cost, calling cost, and tutorial barrier of the whole ecosystem will all decrease together.</p>
+      <p>Repository: <a href="https://github.com/omicverse/py-mclustR" target="_blank" rel="noopener">https://github.com/omicverse/py-mclustR</a></p>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260419004018420.png" alt="pymclustR update" />
+      </figure>
+
+      <h2>2.9 Added the <code>ov.metabol</code> Metabolomics Module</h2>
+      <p>This is a very important new boundary in 2.1.x.</p>
+      <p>We added <strong><code>ov.metabol</code></strong>. It is not just an entry point; it already begins to cover a relatively complete metabolomics analysis workflow:</p>
+      <ul>
+        <li>ID mapping</li>
+        <li>lipidomics class summary</li>
+        <li>MSEA</li>
+        <li>Mummichog</li>
+        <li>SERRF</li>
+        <li>DGCA</li>
+        <li>ASCA / MixedLM</li>
+        <li>ROC / biomarker panel</li>
+      </ul>
+      <p>This means OmicVerse's "multi-omics" in 2.1.x is no longer just a concept. It is truly starting to land in metabolomics.</p>
+      <p>Tutorial: <a href="https://omicverse.readthedocs.io/en/latest/tutorials/index_metabol.html" target="_blank" rel="noopener">https://omicverse.readthedocs.io/en/latest/tutorials/index_metabol.html</a></p>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260419004104335.png" alt="Metabolomics module" />
+      </figure>
+
+      <h2>2.10 Added <code>ov.micro</code> and <code>ov.alignment</code>, Supporting a Full 16S / Microbiome Workflow</h2>
+      <p>Another new boundary is microbiome analysis.</p>
+      <p>In this new version, we added <code>ov.micro</code> and <code>ov.alignment</code>, supporting a workflow from:</p>
+      <ul>
+        <li>cutadapt</li>
+        <li>vsearch UNOISE3</li>
+        <li>SINTAX</li>
+        <li>MAFFT</li>
+        <li>FastTree</li>
+      </ul>
+      <p>all the way to:</p>
+      <ul>
+        <li>alpha / beta diversity</li>
+        <li>differential abundance</li>
+        <li>ordination</li>
+        <li>taxonomy-level summary</li>
+      </ul>
+      <p>In other words, this is no longer "supporting a few 16S functions." It is moving toward a complete microbiome workflow.</p>
+      <p>Tutorial: <a href="https://omicverse.readthedocs.io/en/latest/tutorials/index_microbiome.html" target="_blank" rel="noopener">https://omicverse.readthedocs.io/en/latest/tutorials/index_microbiome.html</a></p>
+
+      <figure>
+        <img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260419004128534.png" alt="Microbiome module" />
+      </figure>
+
+      <blockquote>
+        <p><strong>Postscript</strong></p>
+        <p>Overall, this OmicVerse update means we are one step closer to a unified multi-omics ecosystem. For the development of a general bioinformatics Agent, it also means moving toward the next stage.</p>
+        <p>However, there are still many shortcomings and many areas worth improving. That is why the idea of building a community emerged. One person's power is limited after all. If you are interested in joining us, you can add my contact <strong>FernandoZeng</strong> and write this note: Name - Join Developer.</p>
+        <p><strong>If you only want to provide ideas or suggestions for OmicVerse, you can also scan the group QR code below.</strong></p>
+      </blockquote>
+
+      <figure>
+        <img src="https://files.mdnice.com/user/45222/f522c356-3f70-4bbf-a356-a869441c7c0d.PNG" alt="OmicVerse user group QR code" />
+      </figure>
+    </article>
   </main>
 
   <footer class="footer page-width">

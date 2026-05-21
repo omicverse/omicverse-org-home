@@ -604,6 +604,18 @@ section.band {
   text-align: right;
 }
 .event-row .actions a:hover { color: var(--accent); }
+.event-detail {
+  padding-top: 28px;
+}
+.article blockquote {
+  max-width: 760px;
+  margin: 22px 0 28px;
+  padding: 0 0 0 18px;
+  border-left: 2px solid var(--line-strong);
+}
+.article blockquote p {
+  color: var(--ink-soft);
+}
 
 /* ─── About page ───────────────────────────────── */
 .about-section { padding: 56px 0; border-top: 1px solid var(--line); }
