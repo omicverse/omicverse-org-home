@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>What Anthropic Mythos Preview Signals for Agent Security — OmicVerse</title>
+  <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../people.html">People</a>
+      <a aria-current="page" href="../blog.html">Blog</a>
+      <a href="../events.html">Events</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main class="article page-width">
+    <a class="article-back" href="../blog.html">← Back to blog</a>
+    <p class="overline">Agents</p>
+    <h1>What Anthropic Mythos Preview Signals for Agent Security</h1>
+<p>The original WeChat note discussed Anthropic&#x27;s security report on Claude Mythos Preview and Project Glasswing. The relevant takeaway for a scientific computing community is not that every model suddenly becomes an autonomous attacker. It is that capable agents are moving closer to workflows where they can inspect systems, reason about vulnerabilities, assemble tools, and act across a computer environment.</p>
+<p>That matters for omics agents because the same capabilities that make an analysis agent useful also create risk:</p>
+<ul><li>file-system access,</li><li>package installation,</li><li>shell execution,</li><li>notebook execution,</li><li>remote data fetching,</li><li>credential handling,</li><li>report generation.</li></ul>
+<h2>From code generation to operational access</h2>
+<p>Earlier AI coding tools mostly produced snippets. Modern agents can run commands, inspect outputs, retry after failures, and chain multiple tools. In bioinformatics, that is attractive because workflows are messy: data formats differ, dependencies break, and notebooks need iterative execution.</p>
+<p>The security implication is direct: once an agent can operate a real environment, the boundary is no longer just the prompt. The boundary includes filesystem permissions, network access, secrets, sandbox policy, package provenance, and human review checkpoints.</p>
+<h2>What agent-ready omics needs</h2>
+<p>OmicVerse agents should be useful without being opaque. A safe workflow needs:</p>
+<ul><li>explicit input and output contracts,</li><li>provenance for commands, packages, and datasets,</li><li>bounded execution environments,</li><li>guarded access to credentials,</li><li>logs that a human can audit,</li><li>recoverable failure states,</li><li>reproducible reports rather than hidden notebook state.</li></ul>
+<h2>Practical direction</h2>
+<p>The long-term lesson is not to avoid agents. It is to design them like scientific instruments: powerful, constrained, inspectable, and calibrated. For omics, that means the agent layer should sit on top of stable APIs, documented workflows, and clear permission boundaries.</p>
+<h2>Figures</h2>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_tweet_project_glasswing.png" alt="Figure 1" loading="lazy" /><figcaption>Figure 1</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_tweet_josh_intro.png" alt="Figure 2" loading="lazy" /><figcaption>Figure 2</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_firefox_shell_exploit.jpg" alt="Figure 3" loading="lazy" /><figcaption>Figure 3</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_cost_findings.jpg" alt="Figure 4" loading="lazy" /><figcaption>Figure 4</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_tweet_chubby_kevin.png" alt="Figure 5" loading="lazy" /><figcaption>Figure 5</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_benchmark_vs_opus.jpg" alt="Figure 6" loading="lazy" /><figcaption>Figure 6</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_tweet_deedy_benchmarks.png" alt="Figure 7" loading="lazy" /><figcaption>Figure 7</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_officechai_coding_benchmarks.png" alt="Figure 8" loading="lazy" /><figcaption>Figure 8</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_ossfuzz_cybench.jpg" alt="Figure 9" loading="lazy" /><figcaption>Figure 9</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_tweet_summary_panels.png" alt="Figure 10" loading="lazy" /><figcaption>Figure 10</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_tweet_josh_capabilities.png" alt="Figure 11" loading="lazy" /><figcaption>Figure 11</figcaption></figure>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
+    </span>
+    <span class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 140" role="img" aria-label="anndata-oom package illustration">
+  <defs>
+    <pattern id="oom-grid" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#ffffff"/>
+      <circle cx="5" cy="5" r="1.4" fill="#1f7a36" opacity="0.32"/>
+    </pattern>
+  </defs>
+
+  <!-- backdrop dots -->
+  <g fill="#1f7a36" opacity="0.08">
+    <circle cx="14" cy="18" r="1.2"/><circle cx="38" cy="18" r="1.2"/>
+    <circle cx="306" cy="18" r="1.2"/><circle cx="306" cy="42" r="1.2"/>
+    <circle cx="306" cy="66" r="1.2"/>
+  </g>
+
+  <!-- stacked matrix tiles (offset for depth) -->
+  <g transform="translate(40, 30)">
+    <rect x="16" y="16" width="100" height="68" rx="6" fill="#ffffff" stroke="#c2d4c8" opacity="0.5"/>
+    <rect x="8" y="8" width="100" height="68" rx="6" fill="#ffffff" stroke="#c2d4c8" opacity="0.75"/>
+    <rect x="0" y="0" width="100" height="68" rx="6" fill="url(#oom-grid)" stroke="#1f7a36" stroke-width="1"/>
+    <text x="6" y="12" font-family="IBM Plex Mono, monospace" font-size="8" fill="#0d1f17" font-weight="600">X · chunked</text>
+    <text x="6" y="62" font-family="IBM Plex Mono, monospace" font-size="7" fill="#6b7a73">10⁶ × 30k cells</text>
+  </g>
+
+  <!-- arrow + memory hint -->
+  <g transform="translate(170, 56)">
+    <line x1="0" y1="14" x2="42" y2="14" stroke="#1f7a36" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <polygon points="42,11 48,14 42,17" fill="#1f7a36"/>
+    <text x="0" y="6" font-family="IBM Plex Mono, monospace" font-size="7" fill="#6b7a73">stream</text>
+    <text x="0" y="30" font-family="IBM Plex Mono, monospace" font-size="7" fill="#6b7a73">zero-copy</text>
+  </g>
+
+  <!-- right: rust gear card -->
+  <g transform="translate(228, 30)">
+    <rect x="0" y="0" width="76" height="80" rx="10" fill="#0d1f17" stroke="#134d22"/>
+    <text x="38" y="20" font-family="IBM Plex Mono, monospace" font-size="9" font-weight="700" fill="#7cc46a" text-anchor="middle">RUST</text>
+    <!-- gear -->
+    <g transform="translate(38, 50)" fill="none" stroke="#4ea846" stroke-width="1.4">
+      <circle r="14"/>
+      <circle r="5" fill="#4ea846" stroke="none"/>
+      <g stroke-linecap="round">
+        <line x1="0" y1="-18" x2="0" y2="-14"/>
+        <line x1="0" y1="14" x2="0" y2="18"/>
+        <line x1="-18" y1="0" x2="-14" y2="0"/>
+        <line x1="14" y1="0" x2="18" y2="0"/>
+        <line x1="-13" y1="-13" x2="-10" y2="-10"/>
+        <line x1="10" y1="10" x2="13" y2="13"/>
+        <line x1="-13" y1="13" x2="-10" y2="10"/>
+        <line x1="10" y1="-10" x2="13" y2="-13"/>
+      </g>
+    </g>
+    <text x="38" y="76" font-family="IBM Plex Mono, monospace" font-size="7" fill="#9ab59f" text-anchor="middle">runtime</text>
+  </g>
+</svg>

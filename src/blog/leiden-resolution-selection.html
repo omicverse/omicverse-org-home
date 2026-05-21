@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How to Choose Leiden Resolution — OmicVerse</title>
+  <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../people.html">People</a>
+      <a aria-current="page" href="../blog.html">Blog</a>
+      <a href="../events.html">Events</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main class="article page-width">
+    <a class="article-back" href="../blog.html">← Back to blog</a>
+    <p class="overline">Single-cell</p>
+    <h1>How to Choose Leiden Resolution: Comparing <code>leiden</code>, <code>auto_resolution</code>, and <code>champ</code></h1>
+<p>When running single-cell clustering, almost everyone eventually asks the same question: what should the Leiden <code>resolution</code> be?</p>
+<p>If the value is too low, distinct biological populations can be merged. If it is too high, a stable cell population can be fragmented into many small clusters. The numbers themselves, such as <code>0.5</code>, <code>1.0</code>, or <code>1.2</code>, do not have intrinsic biological meaning; they are controls for the granularity of community detection.</p>
+<p>This tutorial asks a practical question: which OmicVerse tools can help choose a Leiden resolution?</p>
+<p>We use <code>ov.datasets.pbmc8k()</code> because it includes curated <code>predicted_celltype</code> labels, making it possible to compare clustering results against a biological reference.</p>
+<table><tr><th>Method</th><th>Function</th><th>Main idea</th></tr><tr><td>Manual Leiden</td><td><code>ov.pp.leiden(adata, resolution=r)</code></td><td>The user chooses the resolution directly</td></tr><tr><td>bootstrap-ARI</td><td><code>ov.single.auto_resolution()</code></td><td>Choose the resolution that is most stable under data perturbation</td></tr><tr><td>CHAMP</td><td><code>ov.single.auto_resolution(method=&#x27;champ&#x27;)</code></td><td>Choose the partition that is most stable across the modularity landscape</td></tr></table>
+<p>The key point is that <code>auto_resolution</code> and <code>champ</code> answer different questions. The bootstrap-ARI workflow asks which resolution is stable under resampling. CHAMP asks which partition is stable as the gamma parameter changes. Neither method replaces biological interpretation; both provide stronger starting points than an arbitrary default.</p>
+<h2>Environment setup</h2>
+<pre><code class="language-python"><span class="tok-keyword">import</span> os<span class="tok-op">,</span> io<span class="tok-op">,</span> contextlib
+
+os<span class="tok-op">.</span>environ<span class="tok-op">.</span>setdefault<span class="tok-op">(</span><span class="tok-string">&quot;OMICVERSE_DISABLE_LLM&quot;</span><span class="tok-op">,</span> <span class="tok-string">&quot;1&quot;</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-keyword">import</span> warnings
+
+warnings<span class="tok-op">.</span>filterwarnings<span class="tok-op">(</span><span class="tok-string">&quot;ignore&quot;</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-keyword">import</span> numpy <span class="tok-keyword">as</span> np
+
+<span class="tok-keyword">import</span> pandas <span class="tok-keyword">as</span> pd
+
+<span class="tok-keyword">import</span> matplotlib<span class="tok-op">.</span>pyplot <span class="tok-keyword">as</span> plt
+
+<span class="tok-keyword">from</span> sklearn<span class="tok-op">.</span>metrics <span class="tok-keyword">import</span> adjusted_rand_score<span class="tok-op">,</span> normalized_mutual_info_score
+
+<span class="tok-keyword">import</span> omicverse <span class="tok-keyword">as</span> ov
+
+ov<span class="tok-op">.</span>style<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<h2>Load and preprocess PBMC8k</h2>
+<pre><code class="language-python">adata <span class="tok-op">=</span> ov<span class="tok-op">.</span>datasets<span class="tok-op">.</span>pbmc8k<span class="tok-op">(</span><span class="tok-op">)</span>
+
+adata<span class="tok-op">.</span>var_names_make_unique<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<p>The dataset includes <code>predicted_celltype</code>, so later results can be scored against the curated cell type annotation.</p>
+<pre><code class="language-python">adata <span class="tok-op">=</span> ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>qc<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    tresh<span class="tok-op">=</span><span class="tok-op">{</span><span class="tok-string">&quot;mito_perc&quot;</span><span class="tok-op">:</span> <span class="tok-number">0.2</span><span class="tok-op">,</span> <span class="tok-string">&quot;nUMIs&quot;</span><span class="tok-op">:</span> <span class="tok-number">500</span><span class="tok-op">,</span> <span class="tok-string">&quot;detected_genes&quot;</span><span class="tok-op">:</span> <span class="tok-number">250</span><span class="tok-op">}</span><span class="tok-op">,</span>
+
+    doublets_method<span class="tok-op">=</span><span class="tok-string">&quot;scrublet&quot;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>preprocess<span class="tok-op">(</span>adata<span class="tok-op">,</span> mode<span class="tok-op">=</span><span class="tok-string">&quot;shiftlog|pearson&quot;</span><span class="tok-op">,</span> n_HVGs<span class="tok-op">=</span><span class="tok-number">2000</span><span class="tok-op">)</span>
+
+adata<span class="tok-op">.</span>raw <span class="tok-op">=</span> adata
+
+adata <span class="tok-op">=</span> adata<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span> adata<span class="tok-op">.</span>var<span class="tok-op">.</span>highly_variable<span class="tok-op">]</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>scale<span class="tok-op">(</span>adata<span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>pca<span class="tok-op">(</span>adata<span class="tok-op">,</span> layer<span class="tok-op">=</span><span class="tok-string">&quot;scaled&quot;</span><span class="tok-op">,</span> n_pcs<span class="tok-op">=</span><span class="tok-number">50</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>neighbors<span class="tok-op">(</span>adata<span class="tok-op">,</span> n_neighbors<span class="tok-op">=</span><span class="tok-number">15</span><span class="tok-op">,</span> use_rep<span class="tok-op">=</span><span class="tok-string">&quot;scaled|original|X_pca&quot;</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>umap<span class="tok-op">(</span>adata<span class="tok-op">)</span></code></pre>
+<p>After QC, the example retains 7,677 cells and 2,000 highly variable genes. All methods use the same neighbor graph, so the comparison is controlled.</p>
+<h2>Baseline: manual Leiden</h2>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>leiden<span class="tok-op">(</span>adata<span class="tok-op">,</span> resolution<span class="tok-op">=</span><span class="tok-number">0.5</span><span class="tok-op">,</span> key_added<span class="tok-op">=</span><span class="tok-string">&quot;leiden_r05&quot;</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>leiden<span class="tok-op">(</span>adata<span class="tok-op">,</span> resolution<span class="tok-op">=</span><span class="tok-number">1.0</span><span class="tok-op">,</span> key_added<span class="tok-op">=</span><span class="tok-string">&quot;leiden_r10&quot;</span><span class="tok-op">)</span></code></pre>
+<p>In this run, <code>resolution=0.5</code> produced 13 clusters and <code>resolution=1.0</code> produced 18 clusters. That behavior is expected: higher resolution usually means more clusters. The problem is that more clusters do not necessarily mean better biology.</p>
+<h2>Bootstrap-ARI with <code>auto_resolution</code></h2>
+<p><code>ov.single.auto_resolution()</code> uses null-adjusted bootstrap-ARI stability by default. It repeatedly subsamples and reclusters at candidate resolutions, then subtracts a null background estimated from permuted data.</p>
+<pre><code class="language-python"><span class="tok-keyword">with</span> contextlib<span class="tok-op">.</span>redirect_stdout<span class="tok-op">(</span>io<span class="tok-op">.</span>StringIO<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    _<span class="tok-op">,</span> autores_best<span class="tok-op">,</span> autores_scores <span class="tok-op">=</span> ov<span class="tok-op">.</span>single<span class="tok-op">.</span>auto_resolution<span class="tok-op">(</span>
+
+        adata<span class="tok-op">,</span>
+
+        resolutions<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-number">0.2</span><span class="tok-op">,</span> <span class="tok-number">0.4</span><span class="tok-op">,</span> <span class="tok-number">0.6</span><span class="tok-op">,</span> <span class="tok-number">0.8</span><span class="tok-op">,</span> <span class="tok-number">1.0</span><span class="tok-op">,</span> <span class="tok-number">1.2</span><span class="tok-op">,</span> <span class="tok-number">1.5</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+        n_subsamples<span class="tok-op">=</span><span class="tok-number">5</span><span class="tok-op">,</span>
+
+        n_null_subsamples<span class="tok-op">=</span><span class="tok-number">3</span><span class="tok-op">,</span>
+
+        random_state<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+        key_added<span class="tok-op">=</span><span class="tok-string">&quot;leiden_auto&quot;</span><span class="tok-op">,</span>
+
+    <span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&quot;auto_resolution chose r = <span class="tok-op">{</span>autores_best<span class="tok-op">}</span>&quot;<span class="tok-op">)</span></code></pre>
+<p>In the PBMC8k example, <code>auto_resolution</code> selected <code>r = 0.4</code>.</p>
+<h2>CHAMP</h2>
+<p>CHAMP follows a different logic. Instead of asking which resolution survives bootstrap perturbation, it looks for stable partitions across the modularity landscape.</p>
+<pre><code class="language-python">_<span class="tok-op">,</span> champ_best_r<span class="tok-op">,</span> champ_df <span class="tok-op">=</span> ov<span class="tok-op">.</span>single<span class="tok-op">.</span>auto_resolution<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    method<span class="tok-op">=</span><span class="tok-string">&quot;champ&quot;</span><span class="tok-op">,</span>
+
+    key_added<span class="tok-op">=</span><span class="tok-string">&quot;leiden_champ&quot;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<p>In the same PBMC8k run, CHAMP returned an equivalent Leiden resolution around <code>r = 0.356</code>, with a stable gamma range near <code>[0.08, 0.21]</code>.</p>
+<h2>What the comparison showed</h2>
+<p>On PBMC8k, the automatic methods performed better than manually choosing <code>resolution=0.5</code> or <code>resolution=1.0</code>. CHAMP had a slightly higher ARI, while bootstrap <code>auto_resolution</code> had a slightly higher NMI.</p>
+<table><tr><th>Method</th><th>Clusters</th><th>ARI</th><th>NMI</th></tr><tr><td>Manual Leiden, r=0.5</td><td>13</td><td>lower</td><td>lower</td></tr><tr><td>Manual Leiden, r=1.0</td><td>18</td><td>lower</td><td>lower</td></tr><tr><td>auto_resolution, r=0.4</td><td>11</td><td>0.822</td><td>0.807</td></tr><tr><td>CHAMP, gamma in [0.08, 0.21]</td><td>8</td><td>0.829</td><td>0.794</td></tr></table>
+<p>The practical reading is simple: automatic resolution selection is useful, but it should be treated as a reproducible starting point. Marker genes, known cell states, sample design, and downstream biological questions still decide whether a clustering is useful.</p>
+<h2>Figures</h2>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260421_compare_resolution_pbmc8k_cell_15_1.png" alt="Figure 1" loading="lazy" /><figcaption>Figure 1</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260421_compare_resolution_pbmc8k_cell_19_2.png" alt="Figure 2" loading="lazy" /><figcaption>Figure 2</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260421_compare_resolution_pbmc8k_cell_28_1.png" alt="Figure 3" loading="lazy" /><figcaption>Figure 3</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260421_compare_resolution_pbmc8k_cell_34_1.png" alt="Figure 4" loading="lazy" /><figcaption>Figure 4</figcaption></figure>
+<figure><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260421_compare_resolution_pbmc8k_cell_35_1.png" alt="Figure 5" loading="lazy" /><figcaption>Figure 5</figcaption></figure>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
+    </span>
+    <span class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

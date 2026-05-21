@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 140" role="img" aria-label="omicverse package illustration">
+  <defs>
+    <linearGradient id="ov-card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f1f7ee"/>
+    </linearGradient>
+  </defs>
+  <!-- backdrop dots -->
+  <g fill="#1f7a36" opacity="0.08">
+    <circle cx="14" cy="18" r="1.2"/><circle cx="38" cy="18" r="1.2"/><circle cx="62" cy="18" r="1.2"/>
+    <circle cx="14" cy="42" r="1.2"/><circle cx="38" cy="42" r="1.2"/>
+    <circle cx="14" cy="66" r="1.2"/>
+    <circle cx="306" cy="18" r="1.2"/><circle cx="306" cy="42" r="1.2"/>
+  </g>
+
+  <!-- left: UMAP scatter -->
+  <g transform="translate(20, 24)">
+    <rect x="0" y="0" width="120" height="96" rx="10" fill="url(#ov-card)" stroke="#e1ebe4"/>
+    <text x="8" y="14" font-family="IBM Plex Mono, monospace" font-size="8" fill="#6b7a73" letter-spacing="0.8">UMAP</text>
+    <g fill="#134d22" opacity="0.85">
+      <circle cx="42" cy="36" r="2.4"/><circle cx="50" cy="32" r="2"/><circle cx="46" cy="42" r="2.4"/>
+      <circle cx="54" cy="40" r="2"/><circle cx="38" cy="44" r="1.8"/>
+    </g>
+    <g fill="#1f7a36" opacity="0.85">
+      <circle cx="68" cy="58" r="2.4"/><circle cx="76" cy="56" r="2"/><circle cx="72" cy="66" r="2.4"/>
+      <circle cx="80" cy="64" r="2"/><circle cx="64" cy="68" r="2"/>
+    </g>
+    <g fill="#4ea846" opacity="0.85">
+      <circle cx="32" cy="74" r="2.4"/><circle cx="40" cy="78" r="2"/><circle cx="36" cy="82" r="2.4"/>
+      <circle cx="46" cy="78" r="1.8"/><circle cx="28" cy="82" r="2"/>
+    </g>
+    <g fill="#d99a32" opacity="0.78">
+      <circle cx="92" cy="40" r="2"/><circle cx="98" cy="46" r="1.8"/><circle cx="100" cy="36" r="2.2"/>
+    </g>
+  </g>
+
+  <!-- arrow -->
+  <g stroke="#1f7a36" stroke-width="1.2" fill="none">
+    <line x1="148" y1="72" x2="178" y2="72" stroke-dasharray="3 3"/>
+    <polygon points="178,69 184,72 178,75" fill="#1f7a36" stroke="none"/>
+  </g>
+
+  <!-- right: code-ish card -->
+  <g transform="translate(190, 24)">
+    <rect x="0" y="0" width="116" height="96" rx="10" fill="#0d1f17" stroke="#134d22"/>
+    <circle cx="10" cy="11" r="2.2" fill="#4ea846"/>
+    <circle cx="18" cy="11" r="2.2" fill="#1c3325"/>
+    <circle cx="26" cy="11" r="2.2" fill="#1c3325"/>
+    <line x1="0" y1="22" x2="116" y2="22" stroke="#1c3325"/>
+    <g font-family="IBM Plex Mono, monospace" font-size="9" fill="#dff5d3">
+      <text x="10" y="40"><tspan fill="#7cc46a">ov</tspan>.tl.<tspan fill="#d99a5b">cluster</tspan>(</text>
+      <text x="22" y="54">adata,</text>
+      <text x="22" y="66">method=<tspan fill="#9bbf7a">"leiden"</tspan></text>
+      <text x="10" y="78">)</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Packages — OmicVerse</title>
+  <link rel="icon" type="image/png" href="assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a aria-current="page" href="packages.html">Packages</a>
+      <a href="learn.html">Learn</a>
+      <a href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a href="join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero page-width">
+      <p class="overline">Packages</p>
+      <h1>Every project in the org.</h1>
+    </section>
+
+    <section class="page-width wide" style="padding-bottom: 40px;">
+      <img src="assets/packages-network.svg" alt="OmicVerse package stack: agent layer, core API, method ports, Rust runtime" style="width:100%; display:block;" />
+    </section>
+
+    <section class="page-width">
+      <div class="filter-group" role="tablist" aria-label="Filter projects">
+        <button class="filter active" type="button" data-filter="all">All</button>
+        <button class="filter" type="button" data-filter="core">Core</button>
+        <button class="filter" type="button" data-filter="python">Python</button>
+        <button class="filter" type="button" data-filter="rust">Rust</button>
+        <button class="filter" type="button" data-filter="agent">Agent</button>
+        <button class="filter" type="button" data-filter="data">Data</button>
+        <button class="filter" type="button" data-filter="tools">Tools</button>
+      </div>
+
+      <div class="t-list cols-3" data-org-repos aria-live="polite">
+        <a data-tags="core" href="https://github.com/omicverse/omicverse" target="_blank" rel="noopener">
+          <span class="t-name skeleton-text" style="display:inline-block; width:120px; height:14px;"></span>
+          <span class="t-desc skeleton-text" style="display:inline-block; width:100%; height:14px;"></span>
+          <span class="t-tag skeleton-text" style="display:inline-block; width:80px; height:12px;"></span>
+        </a>
+        <a data-tags="data" href="https://github.com/omicverse/anndata-oom" target="_blank" rel="noopener">
+          <span class="t-name skeleton-text" style="display:inline-block; width:120px; height:14px;"></span>
+          <span class="t-desc skeleton-text" style="display:inline-block; width:100%; height:14px;"></span>
+          <span class="t-tag skeleton-text" style="display:inline-block; width:80px; height:12px;"></span>
+        </a>
+        <a data-tags="agent" href="https://github.com/omicverse/omicverse-skills" target="_blank" rel="noopener">
+          <span class="t-name skeleton-text" style="display:inline-block; width:120px; height:14px;"></span>
+          <span class="t-desc skeleton-text" style="display:inline-block; width:100%; height:14px;"></span>
+          <span class="t-tag skeleton-text" style="display:inline-block; width:80px; height:12px;"></span>
+        </a>
+      </div>
+
+      <p style="margin-top: 18px; font-size: 13px; color: var(--muted);">
+        List rendered live from <a href="https://api.github.com/orgs/omicverse/repos" target="_blank" rel="noopener" style="color:var(--accent); border-bottom:1px solid var(--line-strong); padding-bottom:1px;">api.github.com/orgs/omicverse/repos</a>. Cached for the session.
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      OmicVerse
+    </span>
+    <span class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="learn.html">Learn</a>
+      <a href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a href="join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>People — OmicVerse</title>
+  <link rel="icon" type="image/png" href="assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="packages.html">Packages</a>
+      <a href="learn.html">Learn</a>
+      <a aria-current="page" href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a href="join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero page-width">
+      <p class="overline">People</p>
+      <h1>Organization members and contributors.</h1>
+    </section>
+
+    <section class="page-width people-section">
+      <h2>Maintainers</h2>
+      <div class="people-list">
+        <div class="row">
+          <div class="avatar"><img src="https://github.com/Starlitnightly.png?size=80" alt="" loading="lazy" /></div>
+          <div>
+            <div class="name">Zehua Zeng</div>
+            <div class="role">Lead maintainer</div>
+          </div>
+          <div class="desc">Created the original omicverse Python library. Coordinates ports, releases, and roadmap.</div>
+          <div class="links"><a href="https://github.com/Starlitnightly" target="_blank" rel="noopener">GitHub →</a></div>
+        </div>
+        <div class="row">
+          <div class="avatar"><img src="https://github.com/mengxu98.png?size=80" alt="" loading="lazy" /></div>
+          <div>
+            <div class="name">Xu Meng</div>
+            <div class="role">Visualization maintainer</div>
+          </div>
+          <div class="desc">Maintains the visualization layer and is the author of scop.</div>
+          <div class="links"><a href="https://github.com/mengxu98" target="_blank" rel="noopener">GitHub →</a></div>
+        </div>
+        <div class="row">
+          <div class="avatar"><img src="https://github.com/HendricksJudy.png?size=80" alt="" loading="lazy" /></div>
+          <div>
+            <div class="name">Xuehai Wang</div>
+            <div class="role">Agent maintainer</div>
+          </div>
+          <div class="desc">Maintains the agent workflow and skill layer for OmicVerse.</div>
+          <div class="links"><a href="https://github.com/HendricksJudy" target="_blank" rel="noopener">GitHub →</a></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page-width people-section">
+      <h2>omicverse · contributors</h2>
+      <p class="section-note">Live from the <a href="https://github.com/omicverse/omicverse" target="_blank" rel="noopener" style="color:var(--accent); border-bottom:1px solid var(--line-strong); padding-bottom:1px;">omicverse/omicverse</a> contributor graph. Hover an avatar to see commit count.</p>
+      <div class="avatar-grid" data-repo="omicverse/omicverse" data-max="80" aria-live="polite">
+        <span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span>
+        <span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span>
+        <span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span>
+        <span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span>
+      </div>
+    </section>
+
+    <section class="page-width people-section">
+      <h2>Other public repository maintainers</h2>
+      <p class="section-note">Live from public repositories under <a href="https://github.com/omicverse" target="_blank" rel="noopener" style="color:var(--accent); border-bottom:1px solid var(--line-strong); padding-bottom:1px;">github.com/omicverse</a>, excluding the main <code>omicverse</code> repository. GitHub's public API does not expose repository permission roles, so this list uses each repository's leading public contributor.</p>
+      <div class="maintainer-list" data-other-repo-maintainers aria-live="polite">
+        <div class="row">
+          <div class="avatar skeleton-text"></div>
+          <div class="pkg"><span class="skeleton-text" style="display:inline-block;width:120px;height:13px;"></span></div>
+          <div class="who"><span class="skeleton-text" style="display:inline-block;width:180px;height:13px;"></span></div>
+          <div class="links"><span class="skeleton-text" style="display:inline-block;width:72px;height:13px;"></span></div>
+        </div>
+        <div class="row">
+          <div class="avatar skeleton-text"></div>
+          <div class="pkg"><span class="skeleton-text" style="display:inline-block;width:100px;height:13px;"></span></div>
+          <div class="who"><span class="skeleton-text" style="display:inline-block;width:160px;height:13px;"></span></div>
+          <div class="links"><span class="skeleton-text" style="display:inline-block;width:72px;height:13px;"></span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      OmicVerse
+    </span>
+    <span class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="packages.html">Packages</a>
+      <a href="learn.html">Learn</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a href="join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

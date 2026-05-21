@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Learn — OmicVerse</title>
+  <link rel="icon" type="image/png" href="assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="packages.html">Packages</a>
+      <a aria-current="page" href="learn.html">Learn</a>
+      <a href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a href="join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero page-width">
+      <p class="overline">Learn</p>
+      <h1>Tutorials and benchmarks.</h1>
+    </section>
+
+    <section class="page-width">
+      <div class="qs-block">
+        <h2>Quickstart</h2>
+        <p>Install OmicVerse, load a public PBMC dataset, run preprocessing and clustering, embed in 2D.</p>
+        <div class="qs-terminal" aria-hidden="true">
+          <pre><code><span class="tk-prompt">$</span> pip install omicverse
+
+<span class="tk-com"># in Python</span>
+<span class="tk-kw">import</span> <span class="tk-pkg">omicverse</span> <span class="tk-kw">as</span> <span class="tk-id">ov</span>
+adata = ov.<span class="tk-fn">read</span>(<span class="tk-str">"pbmc3k.h5ad"</span>)
+ov.pp.<span class="tk-fn">preprocess</span>(adata)
+ov.tl.<span class="tk-fn">cluster</span>(adata, method=<span class="tk-str">"leiden"</span>)
+ov.pl.<span class="tk-fn">embedding</span>(adata, color=<span class="tk-str">"leiden"</span>)</code></pre>
+        </div>
+      </div>
+
+      <div class="t-list cols-3">
+        <a href="https://github.com/omicverse/omicverse/tree/main/docs" target="_blank" rel="noopener">
+          <span class="t-name">Single-cell</span>
+          <span class="t-desc">QC, normalization, HVGs, dimensionality reduction, clustering, annotation.</span>
+          <span class="t-arrow">12 notebooks →</span>
+        </a>
+        <a href="https://github.com/omicverse/omicverse/tree/main/docs" target="_blank" rel="noopener">
+          <span class="t-name">Bulk · multi-omics</span>
+          <span class="t-desc">Differential expression, pathway analysis, multi-modal integration.</span>
+          <span class="t-arrow">8 notebooks →</span>
+        </a>
+        <a href="https://github.com/omicverse/omicverse/tree/main/docs" target="_blank" rel="noopener">
+          <span class="t-name">Spatial</span>
+          <span class="t-desc">10x Visium / Stereo-seq loading, niche detection, cell-cell interaction.</span>
+          <span class="t-arrow">6 notebooks →</span>
+        </a>
+        <a href="https://github.com/omicverse/omicverse/tree/main/benchmarks" target="_blank" rel="noopener">
+          <span class="t-name">Benchmarks</span>
+          <span class="t-desc">Side-by-side parity comparisons of OmicVerse ports against the original R implementations.</span>
+          <span class="t-arrow">Reproducible →</span>
+        </a>
+        <a href="https://github.com/omicverse/omicverse-skills" target="_blank" rel="noopener">
+          <span class="t-name">Agent skills</span>
+          <span class="t-desc">Wire OmicVerse methods into agent workflows: skill manifests, inspection hooks, report templates.</span>
+          <span class="t-arrow">Source →</span>
+        </a>
+        <a href="https://github.com/omicverse/omicverse#cheatsheet" target="_blank" rel="noopener">
+          <span class="t-name">Cheat sheet</span>
+          <span class="t-desc">One-page reference: <code style="font-family:var(--mono); color:var(--accent);">ov.pp / ov.tl / ov.pl</code>.</span>
+          <span class="t-arrow">Reference →</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      OmicVerse
+    </span>
+    <span class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="packages.html">Packages</a>
+      <a href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a href="join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

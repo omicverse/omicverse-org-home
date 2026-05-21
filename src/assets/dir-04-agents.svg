@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" role="img" aria-label="Agent calling methods producing report">
+  <!-- agent node -->
+  <g transform="translate(20, 28)">
+    <circle cx="14" cy="14" r="14" fill="#0d1f17"/>
+    <!-- robot face -->
+    <circle cx="9" cy="12" r="2" fill="#4ea846"/>
+    <circle cx="19" cy="12" r="2" fill="#4ea846"/>
+    <line x1="10" y1="18" x2="18" y2="18" stroke="#4ea846" stroke-width="1.4" stroke-linecap="round"/>
+  </g>
+  <text x="34" y="22" font-family="IBM Plex Mono, monospace" font-size="7" fill="#6b7a73" text-anchor="middle">agent</text>
+
+  <!-- arrow -->
+  <g stroke="#1f7a36" stroke-width="1.2" fill="none">
+    <line x1="58" y1="42" x2="80" y2="42" stroke-dasharray="3 3"/>
+    <polygon points="80,39 86,42 80,45" fill="#1f7a36" stroke="none"/>
+  </g>
+
+  <!-- method node -->
+  <g transform="translate(92, 28)">
+    <rect width="38" height="28" rx="6" fill="#ffffff" stroke="#1f7a36"/>
+    <text x="19" y="18" font-family="IBM Plex Mono, monospace" font-size="9" font-weight="600" fill="#1f7a36" text-anchor="middle">.run()</text>
+  </g>
+
+  <!-- arrow -->
+  <g stroke="#1f7a36" stroke-width="1.2" fill="none">
+    <line x1="134" y1="42" x2="156" y2="42" stroke-dasharray="3 3"/>
+    <polygon points="156,39 162,42 156,45" fill="#1f7a36" stroke="none"/>
+  </g>
+
+  <!-- report -->
+  <g transform="translate(166, 26)">
+    <rect width="24" height="32" rx="3" fill="#ffffff" stroke="#c2d4c8"/>
+    <line x1="4" y1="6" x2="20" y2="6" stroke="#c2d4c8"/>
+    <line x1="4" y1="12" x2="18" y2="12" stroke="#c2d4c8"/>
+    <line x1="4" y1="18" x2="20" y2="18" stroke="#c2d4c8"/>
+    <rect x="4" y="22" width="16" height="6" fill="#e6f3e1"/>
+  </g>
+  <text x="178" y="68" font-family="IBM Plex Mono, monospace" font-size="7" fill="#6b7a73" text-anchor="middle">report</text>
+</svg>

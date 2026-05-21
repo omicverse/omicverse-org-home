@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — OmicVerse</title>
+  <link rel="icon" type="image/png" href="assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="packages.html">Packages</a>
+      <a href="learn.html">Learn</a>
+      <a href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a aria-current="page" href="about.html">About</a>
+      <a href="join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero page-width">
+      <p class="overline">About</p>
+      <h1>A <em>unified</em> Python ecosystem for multi-omics, with Rust and Torch underneath.</h1>
+    </section>
+
+    <section class="page-width">
+      <div class="about-section">
+        <h2>What this org is</h2>
+        <p>OmicVerse is a Python ecosystem for multi-omics analysis built around three principles:</p>
+        <ul class="glance-list">
+          <li><strong style="color:var(--ink); font-weight:600;">One unified API</strong> across bulk, single-cell, spatial, and multi-modal data.</li>
+          <li><strong style="color:var(--ink); font-weight:600;">AnnData-native throughout</strong>, so it plugs into existing scanpy pipelines without rewrites.</li>
+          <li><strong style="color:var(--ink); font-weight:600;">Rust and Torch underneath</strong> — hot loops in Rust, tensor methods on Torch, classical methods on NumPy / SciPy.</li>
+        </ul>
+        <p>The core library, <a href="https://github.com/omicverse/omicverse" target="_blank" rel="noopener">omicverse</a>, exposes the unified surface. Around it, the organization maintains pure-Python and pure-Rust re-implementations of widely-cited methods (CopyKAT, hdWGCNA, inferCNV, Monocle, scDblFinder, DoubletFinder, DADA2, mclust, Milo, scHiCluster, BandNorm, NMF…) so users have a parity-audited alternative that doesn't depend on R or rpy2.</p>
+        <p>An agent layer on top — <a href="https://github.com/omicverse/omicverse-skills" target="_blank" rel="noopener">omicverse-skills</a> and <a href="https://github.com/omicverse/omicclaw" target="_blank" rel="noopener">omicclaw</a> — exposes the same methods as callable skills for agent-driven analysis. The project is open-source, community-led, and aligned with the broader <a href="https://scverse.org/" target="_blank" rel="noopener">scverse</a> ecosystem.</p>
+      </div>
+
+      <div class="about-section">
+        <h2>At a glance</h2>
+        <ul class="glance-list">
+          <li>One unified Python API · AnnData-native</li>
+          <li>Rust hot loops · Torch tensors · GPU support</li>
+          <li>14 method ports · 11 Python, 3 Rust · parity-audited</li>
+          <li>Bit-equivalent to the R reference at published defaults</li>
+          <li>Up to ~200× faster than R on the compute-heavy paths</li>
+          <li>979★ on GitHub · Apache-2.0 · scverse-aligned</li>
+        </ul>
+      </div>
+
+      <div class="about-section">
+        <h2>Governance</h2>
+        <p>OmicVerse follows a lightweight model: maintainers own tracks, contributions are reviewed in the open, breaking changes go through an RFC.</p>
+        <div class="governance-list" style="margin-top: 12px;">
+          <article><span class="num">/01</span><div><h3>Track maintainers</h3><p>Each track (ports, runtime, agents, docs) has a named maintainer who reviews PRs and signs off releases.</p></div></article>
+          <article><span class="num">/02</span><div><h3>Open review</h3><p>All design discussion happens in GitHub Issues and Discussions. Contributing doesn't require maintainer status.</p></div></article>
+          <article><span class="num">/03</span><div><h3>RFC for breaking changes</h3><p>Anything that changes a public API, AnnData contract, or benchmark methodology requires a public RFC.</p></div></article>
+          <article><span class="num">/04</span><div><h3>Code of conduct</h3><p>The project follows the Contributor Covenant. Reports go to the maintainer contact in the org README.</p></div></article>
+          <article><span class="num">/05</span><div><h3>Release cadence</h3><p>Stable releases monthly, patch releases as needed. Each release ships changelog, parity diffs, updated benchmarks.</p></div></article>
+          <article><span class="num">/06</span><div><h3>Funding</h3><p>OmicVerse is independent. Acknowledgments to research groups and funding sources live next to the code they support.</p></div></article>
+        </div>
+      </div>
+
+      <div class="about-section" id="citation">
+        <h2>Citation</h2>
+        <p>If you use OmicVerse in published work, please cite the framework paper. For specific method ports, also cite the original method.</p>
+<pre class="citation-block"><span class="ck">@article</span>{<span class="cv">omicverse</span>,
+  <span class="ck">title</span>   = <span class="cf">"OmicVerse: a unified multi-omics analysis framework"</span>,
+  <span class="ck">author</span>  = <span class="cf">"Zeng, Zehua and others"</span>,
+  <span class="ck">journal</span> = <span class="cf">"Nature Communications"</span>,
+  <span class="ck">year</span>    = <span class="cf">"2024"</span>,
+  <span class="ck">url</span>     = <span class="cf">"https://github.com/omicverse/omicverse"</span>
+}</pre>
+        <p class="citation-note">Replace this entry with the canonical citation from the project README before publishing.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      OmicVerse
+    </span>
+    <span class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="packages.html">Packages</a>
+      <a href="learn.html">Learn</a>
+      <a href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

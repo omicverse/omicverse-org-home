@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analyzing Visium HD Data — OmicVerse</title>
+  <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../people.html">People</a>
+      <a aria-current="page" href="../blog.html">Blog</a>
+      <a href="../events.html">Events</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main class="article page-width">
+    <a class="article-back" href="../blog.html">← Back to blog</a>
+    <p class="overline">Spatial</p>
+    <h1>Analyze Visium HD data</h1>
+<p>Visium HD is 10x Genomics&#x27; high-resolution spatial transcriptomics workflow for measuring gene expression directly on tissue sections. Compared with earlier lower-resolution spot-based layouts, the practical shift in Visium HD is that analysis often begins from much denser spatial units and then moves between multiple views of the same specimen, such as regular bins and segmentation-derived cells. That makes it especially important to understand not just the expression matrix, but also how coordinates, histology images, and segmentation outputs relate to one another.</p>
+<p>This notebook walks through a typical Visium HD workflow in OmicVerse using both the <strong>bin-level output</strong> and the <strong>cell segmentation output</strong> from a 10x Genomics run. The example covers four tasks:</p>
+<ul><li>reading Visium HD data into <code>AnnData</code>,</li><li>visualizing gene expression on the tissue image,</li><li>identifying spatially variable genes in a local region and across the full section,</li><li>building a low-dimensional representation for clustering and spatial interpretation.</li></ul>
+<p>The code below assumes that the Visium HD output folders have already been downloaded and arranged under <code>data/visium_hd/</code>.</p>
+<h2>Environment setup</h2>
+<p>We start by importing OmicVerse and enabling two notebook conveniences:</p>
+<ul><li><code>ov.style(font_path=&#x27;Arial&#x27;)</code> sets a consistent plotting style for the figures generated later in the notebook.</li><li><code>%load_ext autoreload</code> and <code>%autoreload 2</code> are optional, but useful during development because edited Python modules are reloaded automatically without restarting the kernel.</li></ul>
+<pre><code class="language-python"><span class="tok-keyword">import</span> omicverse <span class="tok-keyword">as</span> ov
+
+ov<span class="tok-op">.</span>style<span class="tok-op">(</span>font_path<span class="tok-op">=</span><span class="tok-string">&#x27;Arial&#x27;</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-comment"># Enable auto-reload for development</span>
+
+<span class="tok-op">%</span>load_ext autoreload
+
+<span class="tok-op">%</span>autoreload <span class="tok-number">2</span></code></pre>
+<p><code>ov.settings.cpu_gpu_mixed_init()</code> initializes OmicVerse in mixed CPU/GPU mode. This is useful for workflows where some preprocessing steps remain CPU-bound while heavier numerical steps can benefit from GPU acceleration when available.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>settings<span class="tok-op">.</span>cpu_gpu_mixed_init<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<h2>Load the Visium HD dataset</h2>
+<p>Visium HD provides expression measurements at very fine spatial resolution. In practice, two views of the same dataset are often useful:</p>
+<ul><li>a <strong>bin-level representation</strong>, where counts are stored on a regular grid;</li><li>a <strong>cell-segmentation representation</strong>, where bins are reassigned to segmented cells.</li></ul>
+<p>This notebook demonstrates both. The bin-level object is convenient for inspecting the raw spatial signal and tissue-wide morphology alignment, while the segmentation-level object is more natural for downstream cell-centered analysis, spatial feature discovery, and clustering.</p>
+<p>Before loading the matrices, it is often helpful to inspect the directory layout. The helper below prints the folder tree while skipping the <code>analysis</code> directory, which keeps the output focused on files needed for data import.</p>
+<p>We download the count data and histology image from the public 10x Genomics Visium HD human prostate cancer FFPE example dataset: https://www.10xgenomics.com/datasets/visium-hd-cytassist-gene-expression-libraries-human-prostate-cancer-ffpe.</p>
+<pre><code class="language-python"><span class="tok-keyword">from</span> pathlib <span class="tok-keyword">import</span> <span class="tok-builtin">Path</span>
+
+
+
+ov<span class="tok-op">.</span>utils<span class="tok-op">.</span>print_tree<span class="tok-op">(</span>
+
+    <span class="tok-builtin">Path</span><span class="tok-op">(</span><span class="tok-string">&quot;data/visium_hd/binned_outputs/square_016um&quot;</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    skip_dirs<span class="tok-op">=</span><span class="tok-op">{</span><span class="tok-string">&quot;analysis&quot;</span><span class="tok-op">}</span>
+
+<span class="tok-op">)</span></code></pre>
+<h2>Read the bin-level output</h2>
+<p>The first object is created from the <code>square_016um</code> directory, which stores Visium HD data binned on a regular grid. This view is especially useful when you want to inspect the native high-resolution signal before committing to any cell-centered interpretation.</p>
+<p>A few parameters in <code>ov.io.read_visium_hd()</code> are worth noting:</p>
+<ul><li><code>path</code>: root folder of the selected Visium HD output.</li><li><code>data_type=&#x27;bin&#x27;</code>: tells OmicVerse to interpret the input as a bin-level matrix rather than segmented cells.</li><li><code>cell_matrix_h5_path</code> and <code>count_mtx_dir</code>: point to the filtered count matrix in HDF5 and directory form.</li><li><code>tissue_positions_path</code>: provides spatial coordinates for each bin.</li><li><code>hires_image_path</code>, <code>lowres_image_path</code>, and <code>scalefactors_path</code>: link the molecular data to the tissue image for plotting.</li></ul>
+<pre><code class="language-python">adata_hd <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>read_visium_hd<span class="tok-op">(</span>
+
+    path<span class="tok-op">=</span><span class="tok-string">&quot;data/visium_hd/binned_outputs/square_016um&quot;</span><span class="tok-op">,</span>
+
+    data_type<span class="tok-op">=</span><span class="tok-string">&quot;bin&quot;</span><span class="tok-op">,</span>
+
+    cell_matrix_h5_path<span class="tok-op">=</span><span class="tok-string">&quot;filtered_feature_bc_matrix.h5&quot;</span><span class="tok-op">,</span>
+
+    count_mtx_dir<span class="tok-op">=</span><span class="tok-string">&#x27;filtered_feature_bc_matrix&#x27;</span><span class="tok-op">,</span>
+
+    tissue_positions_path <span class="tok-op">=</span> <span class="tok-string">&quot;spatial/tissue_positions.parquet&quot;</span><span class="tok-op">,</span>
+
+    <span class="tok-comment"># if figure and scalefactor stored in  outs/spatial</span>
+
+    hires_image_path<span class="tok-op">=</span><span class="tok-string">&quot;spatial/tissue_hires_image.png&quot;</span><span class="tok-op">,</span>
+
+    lowres_image_path<span class="tok-op">=</span><span class="tok-string">&quot;spatial/tissue_lowres_image.png&quot;</span><span class="tok-op">,</span>
+
+    scalefactors_path<span class="tok-op">=</span><span class="tok-string">&quot;spatial/scalefactors_json.json&quot;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<p>The returned object is a standard <code>AnnData</code> container. At this stage it is useful to quickly inspect the number of observations, genes, and the contents of <code>obs</code>, <code>var</code>, <code>obsm</code>, and <code>uns</code>.</p>
+<pre><code class="language-python">adata_hd</code></pre>
+<p>The first plot overlays expression on the tissue image.</p>
+<p>Key plotting arguments:</p>
+<ul><li><code>color=[None, &quot;EPCAM&quot;]</code>: show both the histology image alone and the expression of <code>EPCAM</code>.</li><li><code>size</code>: marker size for each spatial unit.</li><li><code>linewidth=0</code>: removes marker outlines for a cleaner dense plot.</li><li><code>cmap=&#x27;Reds&#x27;</code>: uses a sequential colormap appropriate for nonnegative expression values.</li></ul>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>
+
+    adata_hd<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-keyword">None</span><span class="tok-op">,</span><span class="tok-string">&quot;EPCAM&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">3</span><span class="tok-op">,</span> linewidth<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span> frameon<span class="tok-op">=</span><span class="tok-keyword">None</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-015-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Read the cell-segmentation output</h2>
+<p>We now switch to the segmentation-level output, where observations correspond to segmented cells instead of regular bins. This representation is usually more appropriate for cell-level visualization, spatial feature discovery, and clustering.</p>
+<p>Compared with the bin-level import, the main difference is the inclusion of a segmentation file:</p>
+<ul><li><code>data_type=&#x27;cellseg&#x27;</code> activates the cell-segmentation parser.</li><li><code>cell_segmentations_path</code> points to the <code>geojson</code> file containing polygon boundaries for segmented cells.</li></ul>
+<p>Together, the two objects give complementary views of the same tissue: the bin-level matrix helps you verify raw spatial structure, while the segmentation-level matrix is better aligned with cell-level downstream analysis.</p>
+<pre><code class="language-python">adata_seg <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>read_visium_hd<span class="tok-op">(</span>
+
+    path<span class="tok-op">=</span><span class="tok-string">&quot;data/visium_hd/segmented_outputs&quot;</span><span class="tok-op">,</span>
+
+    data_type<span class="tok-op">=</span><span class="tok-string">&quot;cellseg&quot;</span><span class="tok-op">,</span>
+
+    cell_matrix_h5_path<span class="tok-op">=</span><span class="tok-string">&quot;filtered_feature_cell_matrix.h5&quot;</span><span class="tok-op">,</span>
+
+    cell_segmentations_path<span class="tok-op">=</span><span class="tok-string">&quot;graphclust_annotated_cell_segmentations.geojson&quot;</span><span class="tok-op">,</span>
+
+    <span class="tok-comment"># if figure and scalefactor stored in  outs/spatial</span>
+
+    hires_image_path<span class="tok-op">=</span><span class="tok-string">&quot;spatial/tissue_hires_image.png&quot;</span><span class="tok-op">,</span>
+
+    lowres_image_path<span class="tok-op">=</span><span class="tok-string">&quot;spatial/tissue_lowres_image.png&quot;</span><span class="tok-op">,</span>
+
+    scalefactors_path<span class="tok-op">=</span><span class="tok-string">&quot;spatial/scalefactors_json.json&quot;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<p>This plot shows the same marker, <code>EPCAM</code>, on the segmentation-level object. Because each observation now corresponds to a segmented cell, the spatial pattern is easier to interpret in a cell-centered way.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>
+
+    adata_seg<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-keyword">None</span><span class="tok-op">,</span><span class="tok-string">&quot;EPCAM&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">6</span><span class="tok-op">,</span> linewidth<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span> frameon<span class="tok-op">=</span><span class="tok-keyword">None</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-019-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Focus on a local region of interest</h2>
+<p>Full-tissue plots are useful for context, but detailed inspection is often easier in a smaller window. The helper function below subsets the dataset by spatial coordinates.</p>
+<p>Parameter notes:</p>
+<ul><li><code>xlim</code> and <code>ylim</code> define the rectangular region to keep.</li><li><code>adata.obsm[&quot;spatial&quot;]</code> stores the x/y coordinates used for spatial filtering.</li><li><code>obs_names_make_unique()</code> and <code>var_names_make_unique()</code> guard against duplicated identifiers after subsetting.</li></ul>
+<p>This local zoom is not just cosmetic. For dense Visium HD data, a regional view is often the fastest way to judge whether image structure, segmentation geometry, and gene expression agree before moving on to SVG detection or clustering.</p>
+<pre><code class="language-python"><span class="tok-keyword">def</span> subset_data<span class="tok-op">(</span>adata<span class="tok-op">,</span> xlim<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">24500</span><span class="tok-op">,</span> <span class="tok-number">26000</span><span class="tok-op">)</span><span class="tok-op">,</span> ylim<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">5000</span><span class="tok-op">,</span> <span class="tok-number">6000</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    x<span class="tok-op">,</span> y <span class="tok-op">=</span> adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&quot;spatial&quot;</span><span class="tok-op">]</span><span class="tok-op">.</span>T
+
+    bdata <span class="tok-op">=</span> adata<span class="tok-op">[</span><span class="tok-op">(</span>xlim<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span> <span class="tok-op">&lt;=</span> x<span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>x <span class="tok-op">&lt;=</span> xlim<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>ylim<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span> <span class="tok-op">&lt;=</span> y<span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>y <span class="tok-op">&lt;=</span> ylim<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">]</span><span class="tok-op">.</span>copy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    bdata<span class="tok-op">.</span>obs_names_make_unique<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    bdata<span class="tok-op">.</span>var_names_make_unique<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    <span class="tok-keyword">return</span> bdata
+
+bdata <span class="tok-op">=</span> subset_data<span class="tok-op">(</span>adata_seg<span class="tok-op">)</span></code></pre>
+<p>The next few panels compare different ways of rendering the same segmented region. This is mainly a visualization step, but it is useful for deciding how much of the segmentation boundary should be shown in final figures.</p>
+<p>Here the segmentation polygons are rendered without visible borders (<code>edges_width=0</code>). This emphasizes the expression signal itself and is often a good default when the field is crowded.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    bdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;EPCAM&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">6</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#cmap=&#x27;Reds&#x27;,</span>
+
+    <span class="tok-comment">#img_key=False,</span>
+
+    <span class="tok-comment">#alpha=1,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-025-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>Adding a small border (<code>edges_width=0.1</code>) helps separate neighboring cells. This usually improves readability when adjacent segments have similar expression values.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    bdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;EPCAM&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">6</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#cmap=&#x27;Reds&#x27;,</span>
+
+    <span class="tok-comment">#img_key=False,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-027-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p><code>seg_contourpx</code> controls the thickness of the segmentation contour in pixel units. Increasing this value can make boundaries easier to see, especially in presentation figures or when the background image is visually busy.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    bdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;EPCAM&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">6</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#library_id=&#x27;1&#x27;,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    seg_contourpx<span class="tok-op">=</span><span class="tok-number">1.5</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-029-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Identify spatially variable genes in the local region</h2>
+<p>We next run <code>ov.space.svg()</code> on the subsetted region.</p>
+<p>Important parameters:</p>
+<ul><li><code>mode=&#x27;moranI&#x27;</code>: ranks genes by spatial autocorrelation using Moran&#x27;s *I*.</li><li><code>n_svgs=3000</code>: keeps the top 3,000 candidate spatially variable genes.</li><li><code>n_perms=100</code>: uses permutations to estimate statistical significance.</li><li><code>n_jobs=8</code>: parallelizes the computation across CPU workers.</li></ul>
+<pre><code class="language-python">bdata<span class="tok-op">=</span>ov<span class="tok-op">.</span>space<span class="tok-op">.</span>svg<span class="tok-op">(</span>
+
+    bdata<span class="tok-op">,</span>mode<span class="tok-op">=</span><span class="tok-string">&#x27;moranI&#x27;</span><span class="tok-op">,</span>
+
+    n_svgs<span class="tok-op">=</span><span class="tok-number">3000</span><span class="tok-op">,</span>
+
+    n_perms<span class="tok-op">=</span><span class="tok-number">100</span><span class="tok-op">,</span>n_jobs<span class="tok-op">=</span><span class="tok-number">8</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+bdata</code></pre>
+<p>The table below is a quick way to inspect the top-ranked genes. <code>moranI</code> measures the strength of spatial autocorrelation, <code>moranI_pval</code> records the significance estimate, and <code>space_variable_features</code> marks genes retained as spatial features.</p>
+<pre><code class="language-python">bdata<span class="tok-op">.</span>var<span class="tok-op">[</span><span class="tok-op">[</span><span class="tok-string">&#x27;moranI&#x27;</span><span class="tok-op">,</span><span class="tok-string">&#x27;moranI_pval&#x27;</span><span class="tok-op">,</span><span class="tok-string">&#x27;space_variable_features&#x27;</span><span class="tok-op">]</span><span class="tok-op">]</span><span class="tok-op">.</span>sort_values<span class="tok-op">(</span><span class="tok-string">&#x27;moranI&#x27;</span><span class="tok-op">,</span>ascending<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">)</span></code></pre>
+<p><code>NPY</code> is plotted here as an example of a gene with localized spatial structure. Using a segmented rendering makes it easier to see whether the signal follows coherent cell neighborhoods rather than isolated spots.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    bdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;NPY&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">6</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-035-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>Checking the maximum value in <code>X</code> before normalization is a simple sanity check. It gives a rough sense of the raw count scale in the subsetted object.</p>
+<pre><code class="language-python">bdata<span class="tok-op">.</span>X<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<h2>Normalize and log-transform the local subset</h2>
+<p>The standard preprocessing step here is:</p>
+<ul><li><code>ov.pp.normalize_total(bdata)</code>: normalize each observation to a comparable library size;</li><li><code>ov.pp.log1p(bdata)</code>: apply a log(1+x) transform to compress the dynamic range.</li></ul>
+<p>This usually makes spatial expression maps easier to compare across cells.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>bdata<span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>log1p<span class="tok-op">(</span>bdata<span class="tok-op">)</span></code></pre>
+<p>After normalization and log transformation, the value range should be much smaller than in the raw matrix. This confirms that the transformation has been applied.</p>
+<pre><code class="language-python">bdata<span class="tok-op">.</span>X<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<p>Replotting <code>NPY</code> after preprocessing helps assess how normalization changes the visual contrast of the signal.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    bdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;NPY&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">6</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-043-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>The same gene is also shown with <code>ov.pl.spatial()</code>, which renders observations as points instead of filled segmentation polygons.</p>
+<p>Two arguments are especially useful here:</p>
+<ul><li><code>size=1.5</code>: controls the point size for each observation;</li><li><code>vmax=&#x27;p99.2&#x27;</code>: clips the color scale at the 99.2nd percentile, reducing the influence of extreme outliers on the visual dynamic range.</li></ul>
+<pre><code class="language-python">fig<span class="tok-op">,</span> ax <span class="tok-op">=</span> ov<span class="tok-op">.</span>plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span>figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">6</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>
+
+    bdata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&quot;NPY&quot;</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">1.5</span><span class="tok-op">,</span> linewidth<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span> frameon<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span><span class="tok-op">,</span>vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99.2&#x27;</span><span class="tok-op">,</span>
+
+    ax<span class="tok-op">=</span>ax<span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-045-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Compute spatially variable genes on the full segmentation-level dataset</h2>
+<p>After exploring one local region, we repeat SVG detection on the full segmentation object. Here the notebook uses <code>mode=&#x27;pearsonr&#x27;</code>, which applies a different criterion than Moran&#x27;s *I* for detecting spatial structure.</p>
+<pre><code class="language-python">adata<span class="tok-op">=</span>ov<span class="tok-op">.</span>space<span class="tok-op">.</span>svg<span class="tok-op">(</span>
+
+    adata_seg<span class="tok-op">,</span>mode<span class="tok-op">=</span><span class="tok-string">&#x27;pearsonr&#x27;</span><span class="tok-op">,</span>
+
+    n_svgs<span class="tok-op">=</span><span class="tok-number">3000</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+adata</code></pre>
+<p>Again, it is useful to check the value range before preprocessing the full dataset.</p>
+<pre><code class="language-python">adata<span class="tok-op">.</span>X<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<p>The full dataset is normalized and log-transformed in the same way as the local subset so that downstream dimensionality reduction and clustering operate on a comparable scale.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>adata<span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>log1p<span class="tok-op">(</span>adata<span class="tok-op">)</span></code></pre>
+<h2>Restrict the matrix to spatially variable genes</h2>
+<p>Storing <code>adata.raw = adata</code> preserves the full prefiltered object for later reference. The next line subsets the matrix to genes marked in <code>adata.var.space_variable_features</code>, which reduces noise and focuses downstream analysis on spatially informative features.</p>
+<pre><code class="language-python"><span class="tok-op">%</span><span class="tok-op">%</span>time
+
+adata<span class="tok-op">.</span>raw <span class="tok-op">=</span> adata
+
+adata <span class="tok-op">=</span> adata<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span> adata<span class="tok-op">.</span>var<span class="tok-op">.</span>space_variable_features<span class="tok-op">]</span>
+
+adata</code></pre>
+<h2>Build a neighborhood graph and UMAP embedding</h2>
+<p>This cell follows the standard sequence of scaling, PCA, graph construction, and UMAP embedding.</p>
+<p>Parameter notes:</p>
+<ul><li><code>n_pcs=50</code> in PCA keeps the first 50 principal components.</li><li><code>n_neighbors=15</code> defines the size of the local neighborhood used to build the graph.</li><li><code>use_rep=&#x27;scaled|original|X_pca&#x27;</code> specifies which processed representation <code>ov.pp.neighbors()</code> should use under the OmicVerse convention employed in this workflow. In practice, this cell relies on the PCA representation generated immediately above.</li></ul>
+<pre><code class="language-python"><span class="tok-op">%</span><span class="tok-op">%</span>time
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>scale<span class="tok-op">(</span>adata<span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>pca<span class="tok-op">(</span>adata<span class="tok-op">,</span>layer<span class="tok-op">=</span><span class="tok-string">&#x27;scaled&#x27;</span><span class="tok-op">,</span>n_pcs<span class="tok-op">=</span><span class="tok-number">50</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>neighbors<span class="tok-op">(</span>adata<span class="tok-op">,</span> n_neighbors<span class="tok-op">=</span><span class="tok-number">15</span><span class="tok-op">,</span> n_pcs<span class="tok-op">=</span><span class="tok-number">50</span><span class="tok-op">,</span>
+
+               use_rep<span class="tok-op">=</span><span class="tok-string">&#x27;scaled|original|X_pca&#x27;</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>umap<span class="tok-op">(</span>adata<span class="tok-op">)</span></code></pre>
+<p>Leiden clustering partitions the graph into communities. The <code>resolution</code> parameter controls cluster granularity: lower values produce fewer, broader groups, while higher values split the graph more aggressively.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>leiden<span class="tok-op">(</span>adata<span class="tok-op">,</span>resolution<span class="tok-op">=</span><span class="tok-number">0.3</span><span class="tok-op">)</span></code></pre>
+<p>Plotting <code>leiden</code> directly in tissue space is a quick way to judge whether transcriptional clusters align with coherent anatomical or histological domains.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&quot;leiden&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">2</span><span class="tok-op">,</span> linewidth<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span> frameon<span class="tok-op">=</span><span class="tok-keyword">None</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-059-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Zoom in on clusters within the same local region</h2>
+<p>Finally, we subset the clustered object to the same spatial window used earlier. This makes it easier to compare cluster assignments with the original marker expression and segmentation boundaries.</p>
+<pre><code class="language-python"><span class="tok-keyword">def</span> subset_data<span class="tok-op">(</span>adata<span class="tok-op">,</span> xlim<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">24500</span><span class="tok-op">,</span> <span class="tok-number">26000</span><span class="tok-op">)</span><span class="tok-op">,</span> ylim<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">5000</span><span class="tok-op">,</span> <span class="tok-number">6000</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    x<span class="tok-op">,</span> y <span class="tok-op">=</span> adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&quot;spatial&quot;</span><span class="tok-op">]</span><span class="tok-op">.</span>T
+
+    bdata <span class="tok-op">=</span> adata<span class="tok-op">[</span><span class="tok-op">(</span>xlim<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span> <span class="tok-op">&lt;=</span> x<span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>x <span class="tok-op">&lt;=</span> xlim<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>ylim<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span> <span class="tok-op">&lt;=</span> y<span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>y <span class="tok-op">&lt;=</span> ylim<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">]</span><span class="tok-op">.</span>copy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    bdata<span class="tok-op">.</span>obs_names_make_unique<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    bdata<span class="tok-op">.</span>var_names_make_unique<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    <span class="tok-keyword">return</span> bdata
+
+cdata <span class="tok-op">=</span> subset_data<span class="tok-op">(</span>adata<span class="tok-op">)</span></code></pre>
+<p>This view overlays cluster labels on segmentation polygons with partial transparency. It is useful for checking whether cluster transitions follow visible tissue structures.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    cdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;leiden&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">6</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+    palette<span class="tok-op">=</span>ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>sc_color
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-063-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>Increasing <code>seg_contourpx</code> sharpens the polygon outlines, which can make fine boundaries between neighboring clusters easier to inspect.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    cdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;leiden&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">6</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+    palette<span class="tok-op">=</span>ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>sc_color<span class="tok-op">,</span>
+
+    seg_contourpx<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/visium-hd-workflow/cell-065-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Summary</h2>
+<p>In this notebook, we:</p>
+<ul><li>imported Visium HD data at both bin level and segmentation level,</li><li>compared spatial visualization styles,</li><li>identified spatially variable genes locally and globally,</li><li>normalized the data and restricted the analysis to spatial features,</li><li>constructed a low-dimensional embedding and clustered the segmented cells.</li></ul>
+<p>Taken together, these steps provide a practical OmicVerse starting point for Visium HD analysis: begin from image-aware quality checks, move into spatial feature selection, and then build cell-level representations for downstream interpretation.</p>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
+    </span>
+    <span class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

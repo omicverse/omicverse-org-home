@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Join — OmicVerse</title>
+  <link rel="icon" type="image/png" href="assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="packages.html">Packages</a>
+      <a href="learn.html">Learn</a>
+      <a href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a aria-current="page" href="join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero page-width">
+      <p class="overline">Join</p>
+      <h1>Bring a method, benchmark, tutorial, or <em>skill pack</em>.</h1>
+    </section>
+
+    <section class="page-width">
+      <div class="t-list">
+        <article>
+          <span class="t-num">/01</span>
+          <span class="t-title">Nominate a method</span>
+          <span class="t-desc">Identify an R package, workflow, or analysis routine the community needs in Python or Rust.</span>
+          <span class="t-tag">Open issue</span>
+        </article>
+        <article>
+          <span class="t-num">/02</span>
+          <span class="t-title">Port and test</span>
+          <span class="t-desc">Implement, compare to source, document assumptions, ship reproducible benchmarks.</span>
+          <span class="t-tag">Send PR</span>
+        </article>
+        <article>
+          <span class="t-num">/03</span>
+          <span class="t-title">Stable API</span>
+          <span class="t-desc">Align naming, inputs, outputs, AnnData conventions with the rest of the stack.</span>
+          <span class="t-tag">Review</span>
+        </article>
+        <article>
+          <span class="t-num">/04</span>
+          <span class="t-title">Agent-ready</span>
+          <span class="t-desc">Add tutorials, report templates, and skill wrappers for agent execution.</span>
+          <span class="t-tag">Skills repo</span>
+        </article>
+      </div>
+
+      <div class="contributors-line" style="margin-top: 48px;">
+        <span>Smaller contributions count: docs fixes, examples, benchmark data, validation reports.</span>
+        <a href="https://github.com/omicverse/omicverse/issues" target="_blank" rel="noopener">Open an issue →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      OmicVerse
+    </span>
+    <span class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="packages.html">Packages</a>
+      <a href="learn.html">Learn</a>
+      <a href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+    </span>
+  </footer>
+</body>
+</html>

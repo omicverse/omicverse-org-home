@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cell Segmentation for Visium HD with Cellpose — OmicVerse</title>
+  <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../people.html">People</a>
+      <a aria-current="page" href="../blog.html">Blog</a>
+      <a href="../events.html">Events</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main class="article page-width">
+    <a class="article-back" href="../blog.html">← Back to blog</a>
+    <p class="overline">Segmentation</p>
+    <h1>Cell Segmentation (10x HD)</h1>
+<p>Space Ranger v4.0 introduced nucleus and cell segmentation for Visium HD Spatial Gene Expression and Visium HD 3&#x27; Spatial Gene Expression.</p>
+<p>At the same time, the community has produced several useful alternatives for high-resolution cell segmentation, including StarDist and Cellpose. The original bin2cell workflow integrated StarDist; here we keep the same overall bin2cell idea but rewrite the segmentation stage around the Python-based Cellpose backend so the full workflow can stay in a pure Python environment.</p>
+<p>This notebook shows how to combine Visium HD 2 µm bins, H&amp;E images, Cellpose segmentation, and bin-to-cell aggregation in OmicVerse. The goal is straightforward: start from ultra-high-resolution bins, recover cell-shaped objects as reliably as possible, and then export the result for downstream cell-level spatial analysis.</p>
+<p>Cite: Polański, K., Bartolomé-Casado, R., Sarropoulos, I., Xu, C., England, N., Jahnsen, F. L., ... &amp; Yayon, N. (2024). Bin2cell reconstructs cells from high resolution Visium HD data. Bioinformatics, 40(9), btae546.</p>
+<p>Cite: Stringer, C., Wang, T., Michaelos, M., &amp; Pachitariu, M. (2021). Cellpose: a generalist algorithm for cellular segmentation. Nature methods, 18(1), 100-106.</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> omicverse <span class="tok-keyword">as</span> ov
+
+<span class="tok-keyword">import</span> scanpy <span class="tok-keyword">as</span> sc
+
+ov<span class="tok-op">.</span>plot_set<span class="tok-op">(</span>font_path<span class="tok-op">=</span><span class="tok-string">&#x27;Arial&#x27;</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-comment"># Enable auto-reload for development</span>
+
+<span class="tok-op">%</span>load_ext autoreload
+
+<span class="tok-op">%</span>autoreload <span class="tok-number">2</span></code></pre>
+<h2>Load Dataset</h2>
+<p>Visium HD may become one of the most important spatial technologies since droplet-based single-cell sequencing. Because it measures expression on 2 µm bins, the data are much closer to subcellular resolution than traditional spot-based assays. That opens up a practical question: instead of immediately coarsening bins into larger pseudo-spots, can we use imaging and segmentation to reconstruct cell-level objects more faithfully?</p>
+<p>Bin2cell addresses this problem by first correcting technical effects introduced by variable bin dimensions and then assigning bins to cells based on image segmentation. The result is an AnnData object with putative cells that can be passed directly to downstream analysis. In this notebook we use both the morphology image and a gene-expression-derived representation, because each captures different failure modes of segmentation.</p>
+<p>We download the count data and H&amp;E image from https://www.10xgenomics.com/datasets/visium-hd-cytassist-gene-expression-libraries-of-human-crc.</p>
+<pre><code class="language-python"><span class="tok-keyword">from</span> pathlib <span class="tok-keyword">import</span> <span class="tok-builtin">Path</span>
+
+
+
+<span class="tok-keyword">def</span> print_tree<span class="tok-op">(</span>path<span class="tok-op">:</span> <span class="tok-builtin">Path</span><span class="tok-op">,</span> prefix<span class="tok-op">:</span> <span class="tok-builtin">str</span> <span class="tok-op">=</span> <span class="tok-string">&quot;&quot;</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    <span class="tok-builtin">print</span><span class="tok-op">(</span>prefix <span class="tok-op">+</span> path<span class="tok-op">.</span>name <span class="tok-op">+</span> <span class="tok-string">&quot;/&quot;</span><span class="tok-op">)</span>
+
+    <span class="tok-keyword">for</span> child <span class="tok-keyword">in</span> path<span class="tok-op">.</span>iterdir<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+        <span class="tok-keyword">if</span> child<span class="tok-op">.</span>is_dir<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+            print_tree<span class="tok-op">(</span>child<span class="tok-op">,</span> prefix <span class="tok-op">+</span> <span class="tok-string">&quot;    &quot;</span><span class="tok-op">)</span>
+
+        <span class="tok-keyword">else</span><span class="tok-op">:</span>
+
+            <span class="tok-builtin">print</span><span class="tok-op">(</span>prefix <span class="tok-op">+</span> <span class="tok-string">&quot;    &quot;</span> <span class="tok-op">+</span> child<span class="tok-op">.</span>name<span class="tok-op">)</span>
+
+
+
+print_tree<span class="tok-op">(</span><span class="tok-builtin">Path</span><span class="tok-op">(</span><span class="tok-string">&quot;binned_outputs/square_002um/&quot;</span><span class="tok-op">)</span><span class="tok-op">)</span></code></pre>
+<pre><code class="language-python">path <span class="tok-op">=</span> <span class="tok-string">&quot;binned_outputs/square_002um/&quot;</span>
+
+source_image_path <span class="tok-op">=</span> <span class="tok-string">&quot;Visium_HD_Human_Colon_Cancer_tissue_image.btf&quot;</span>
+
+<span class="tok-comment">#os.chdir(&#x27;./&#x27;)</span>
+
+
+
+<span class="tok-comment">#create directory for stardist input/output files</span>
+
+<span class="tok-keyword">import</span> os
+
+os<span class="tok-op">.</span>makedirs<span class="tok-op">(</span><span class="tok-string">&quot;stardist&quot;</span><span class="tok-op">,</span> exist_ok<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">)</span></code></pre>
+<p>Loading the count matrix currently requires a bespoke loader function because 10x moved the spot coordinates into a Parquet file and stores tissue images in a separate <code>spatial/</code> directory. The binned folders typically contain symlinks to those images, which can break after copying the dataset between machines.</p>
+<pre><code class="language-python">adata <span class="tok-op">=</span> ov<span class="tok-op">.</span>space<span class="tok-op">.</span>read_visium_10x<span class="tok-op">(</span>path<span class="tok-op">,</span> source_image_path<span class="tok-op">=</span>source_image_path<span class="tok-op">)</span>
+
+adata<span class="tok-op">.</span>var_names_make_unique<span class="tok-op">(</span><span class="tok-op">)</span>
+
+adata</code></pre>
+<p>Let&#x27;s apply a light filter before segmentation: require genes to appear in at least three bins, and require each bin to contain at least some counts. At the 2 µm stage the matrix is still extremely sparse, so this removes obvious empty observations without changing the biological structure.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>filter_genes<span class="tok-op">(</span>adata<span class="tok-op">,</span> min_cells<span class="tok-op">=</span><span class="tok-number">3</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>filter_cells<span class="tok-op">(</span>adata<span class="tok-op">,</span> min_counts<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">)</span>
+
+adata</code></pre>
+<h2>H&amp;E Cell Segmentation with Cellpose</h2>
+<p>In this workflow, bin2cell performs segmentation on both the H&amp;E image and a gene-expression-derived image. The resolution of those inputs is controlled by the <code>mpp</code> parameter, which stands for microns per pixel. For example, if you visualize the raw array coordinates (<code>.obs[&#x27;array_row&#x27;]</code> and <code>.obs[&#x27;array_col&#x27;]</code>) as an image, each pixel corresponds to 2 µm, so that representation has <code>mpp=2</code>.</p>
+<p>For this colon example, using an <code>mpp</code> around 0.3 to 0.5 works well in local testing. Here we use <code>mpp=0.3</code>, which preserves sharper morphology detail for H&amp;E-guided Cellpose segmentation.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>space<span class="tok-op">.</span>visium_10x_hd_cellpose_he<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    mpp<span class="tok-op">=</span><span class="tok-number">0.3</span><span class="tok-op">,</span>
+
+    he_save_path<span class="tok-op">=</span><span class="tok-string">&quot;stardist/he_colon1.tiff&quot;</span><span class="tok-op">,</span>
+
+    prob_thresh<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+    flow_threshold<span class="tok-op">=</span><span class="tok-number">0.4</span><span class="tok-op">,</span>
+
+    gpu<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">,</span>
+
+    buffer<span class="tok-op">=</span><span class="tok-number">150</span><span class="tok-op">,</span>
+
+    backend<span class="tok-op">=</span><span class="tok-string">&#x27;tifffile&#x27;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<p>The initial H&amp;E segmentation mainly provides nucleus-centered seeds, while a full cell typically extends well beyond the nucleus. <code>ov.space.visium_10x_hd_cellpose_expand()</code> therefore expands each labelled object into nearby bins.</p>
+<p>With <code>max_bin_distance</code>, bins up to a fixed number of steps away from a labelled seed are assigned to the same cell. Alternatively, <code>algorithm=&#x27;volume_ratio&#x27;</code> derives a label-specific expansion distance from the observed seed size using an assumed linear relationship between nuclear and cellular volume, controlled by <code>volume_ratio</code> (default <code>4</code>). If a bin is equally close to multiple nuclei, the tie is broken using similarity in PCA space derived from gene expression profiles.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>space<span class="tok-op">.</span>visium_10x_hd_cellpose_expand<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    labels_key<span class="tok-op">=</span><span class="tok-string">&#x27;labels_he&#x27;</span><span class="tok-op">,</span>
+
+    expanded_labels_key<span class="tok-op">=</span><span class="tok-string">&quot;labels_he_expanded&quot;</span><span class="tok-op">,</span>
+
+    max_bin_distance<span class="tok-op">=</span><span class="tok-number">4</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<h2>GEX Cell Segmentation with Cellpose</h2>
+<p>H&amp;E segmentation is not guaranteed to be perfect. Some regions may show clear expression signal but lack a visible nucleus that can seed a cell; in other regions, nuclei may be oddly shaped and missed by the image model. Segmenting a representation of total counts per bin can rescue some of these missed objects.</p>
+<p>That said, expression-based segmentation works best in relatively sparse tissue and tends to struggle in dense regions where neighboring cells blur together. We therefore use it as a secondary source of object detection and prefer the H&amp;E-based result whenever possible.</p>
+<p>The input image here is a smoothed representation of total counts per bin, using a Gaussian filter with <code>sigma=5</code> pixels. We again use Cellpose to identify cell-like objects rather than nucleus seeds, so no additional label expansion is needed after this step. As with H&amp;E segmentation, lowering <code>prob_thresh</code> makes calls less stringent, while increasing <code>nms_thresh</code> requires stronger overlap before two candidate objects are merged.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>space<span class="tok-op">.</span>visium_10x_hd_cellpose_gex<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    obs_key<span class="tok-op">=</span><span class="tok-string">&quot;n_counts_adjusted&quot;</span><span class="tok-op">,</span>
+
+    log1p<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span>
+
+    mpp<span class="tok-op">=</span><span class="tok-number">0.3</span><span class="tok-op">,</span>
+
+    sigma<span class="tok-op">=</span><span class="tok-number">5</span><span class="tok-op">,</span>
+
+    gex_save_path<span class="tok-op">=</span><span class="tok-string">&quot;stardist/gex_colon1.tiff&quot;</span><span class="tok-op">,</span>
+
+    prob_thresh<span class="tok-op">=</span><span class="tok-number">0.01</span><span class="tok-op">,</span>
+
+    nms_thresh<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span>
+
+    gpu<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">,</span>
+
+    buffer<span class="tok-op">=</span><span class="tok-number">150</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>space<span class="tok-op">.</span>salvage_secondary_labels<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    primary_label<span class="tok-op">=</span><span class="tok-string">&quot;labels_he_expanded&quot;</span><span class="tok-op">,</span>
+
+    secondary_label<span class="tok-op">=</span><span class="tok-string">&quot;labels_gex&quot;</span><span class="tok-op">,</span>
+
+    labels_key<span class="tok-op">=</span><span class="tok-string">&quot;labels_joint&quot;</span>
+
+<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python">adata<span class="tok-op">.</span>write<span class="tok-op">(</span><span class="tok-string">&#x27;visium_hd/adata_cellpose.h5ad&#x27;</span><span class="tok-op">)</span></code></pre>
+<h2>Bin to Cell</h2>
+<p>At this point the bins have been destriped and assigned to provisional cells based on both H&amp;E-guided and GEX-guided segmentation. Now we can aggregate the bin-level counts into cell-level profiles.</p>
+<pre><code class="language-python">cdata <span class="tok-op">=</span> ov<span class="tok-op">.</span>space<span class="tok-op">.</span>bin2cell<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> labels_key<span class="tok-op">=</span><span class="tok-string">&quot;labels_joint&quot;</span><span class="tok-op">,</span>
+
+    spatial_keys<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&quot;spatial&quot;</span><span class="tok-op">,</span> <span class="tok-string">&quot;spatial_cropped_150_buffer&quot;</span><span class="tok-op">]</span><span class="tok-op">)</span>
+
+cdata</code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>embedding<span class="tok-op">(</span>
+
+    cdata<span class="tok-op">,</span>
+
+    basis<span class="tok-op">=</span><span class="tok-string">&#x27;spatial_cropped_150_buffer&#x27;</span><span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;COL1A1&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99.2&#x27;</span><span class="tok-op">,</span>cmap<span class="tok-op">=</span><span class="tok-string">&#x27;RdBu_r&#x27;</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">5</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/cellpose-visium-hd/cell-020-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Visualization</h2>
+<pre><code class="language-python"><span class="tok-comment">#define a mask to easily pull out this region of the object in the future</span>
+
+mask <span class="tok-op">=</span> <span class="tok-op">(</span><span class="tok-op">(</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;array_row&#x27;</span><span class="tok-op">]</span> <span class="tok-op">&gt;=</span> <span class="tok-number">2225</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span>
+
+        <span class="tok-op">(</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;array_row&#x27;</span><span class="tok-op">]</span> <span class="tok-op">&lt;=</span> <span class="tok-number">2275</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span>
+
+        <span class="tok-op">(</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;array_col&#x27;</span><span class="tok-op">]</span> <span class="tok-op">&gt;=</span> <span class="tok-number">1400</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span>
+
+        <span class="tok-op">(</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;array_col&#x27;</span><span class="tok-op">]</span> <span class="tok-op">&lt;=</span> <span class="tok-number">1450</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Subregion: <span class="tok-op">{</span>mask<span class="tok-op">.</span>sum<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> bins&#x27;<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python">bdata <span class="tok-op">=</span> adata<span class="tok-op">[</span>mask<span class="tok-op">]</span>
+
+<span class="tok-comment">#0 means unassigned</span>
+
+bdata <span class="tok-op">=</span> bdata<span class="tok-op">[</span>bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_he&#x27;</span><span class="tok-op">]</span><span class="tok-op">&gt;</span><span class="tok-number">0</span><span class="tok-op">]</span>
+
+bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_he&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_he&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>astype<span class="tok-op">(</span><span class="tok-builtin">str</span><span class="tok-op">)</span>
+
+
+
+sc<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>bdata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-keyword">None</span><span class="tok-op">,</span> <span class="tok-string">&quot;labels_he&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span> img_key<span class="tok-op">=</span><span class="tok-string">&quot;0.3_mpp_150_buffer&quot;</span><span class="tok-op">,</span>
+
+              basis<span class="tok-op">=</span><span class="tok-string">&quot;spatial_cropped_150_buffer&quot;</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/cellpose-visium-hd/cell-023-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<pre><code class="language-python">bdata <span class="tok-op">=</span> adata<span class="tok-op">[</span>mask<span class="tok-op">]</span>
+
+<span class="tok-comment">#0 means unassigned</span>
+
+bdata <span class="tok-op">=</span> bdata<span class="tok-op">[</span>bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_he_expanded&#x27;</span><span class="tok-op">]</span><span class="tok-op">&gt;</span><span class="tok-number">0</span><span class="tok-op">]</span>
+
+bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_he_expanded&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_he_expanded&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>astype<span class="tok-op">(</span><span class="tok-builtin">str</span><span class="tok-op">)</span>
+
+
+
+sc<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>bdata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-keyword">None</span><span class="tok-op">,</span> <span class="tok-string">&quot;labels_he_expanded&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span> img_key<span class="tok-op">=</span><span class="tok-string">&quot;0.3_mpp_150_buffer&quot;</span><span class="tok-op">,</span>
+
+              basis<span class="tok-op">=</span><span class="tok-string">&quot;spatial_cropped_150_buffer&quot;</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/cellpose-visium-hd/cell-024-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<pre><code class="language-python">bdata <span class="tok-op">=</span> adata<span class="tok-op">[</span>mask<span class="tok-op">]</span>
+
+<span class="tok-comment">#0 means unassigned</span>
+
+bdata <span class="tok-op">=</span> bdata<span class="tok-op">[</span>bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_gex&#x27;</span><span class="tok-op">]</span><span class="tok-op">&gt;</span><span class="tok-number">0</span><span class="tok-op">]</span>
+
+bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_gex&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_gex&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>astype<span class="tok-op">(</span><span class="tok-builtin">str</span><span class="tok-op">)</span>
+
+
+
+sc<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>bdata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-keyword">None</span><span class="tok-op">,</span> <span class="tok-string">&quot;labels_gex&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span> img_key<span class="tok-op">=</span><span class="tok-string">&quot;0.3_mpp_150_buffer&quot;</span><span class="tok-op">,</span>
+
+              basis<span class="tok-op">=</span><span class="tok-string">&quot;spatial_cropped_150_buffer&quot;</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/cellpose-visium-hd/cell-025-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<pre><code class="language-python">bdata <span class="tok-op">=</span> adata<span class="tok-op">[</span>mask<span class="tok-op">]</span>
+
+
+
+<span class="tok-comment">#0 means unassigned</span>
+
+bdata <span class="tok-op">=</span> bdata<span class="tok-op">[</span>bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_joint&#x27;</span><span class="tok-op">]</span><span class="tok-op">&gt;</span><span class="tok-number">0</span><span class="tok-op">]</span>
+
+bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_joint&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_joint&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>astype<span class="tok-op">(</span><span class="tok-builtin">str</span><span class="tok-op">)</span>
+
+
+
+sc<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>bdata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-keyword">None</span><span class="tok-op">,</span> <span class="tok-string">&quot;labels_joint_source&quot;</span><span class="tok-op">,</span>
+
+                            <span class="tok-string">&quot;labels_joint&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span> img_key<span class="tok-op">=</span><span class="tok-string">&quot;0.3_mpp_150_buffer&quot;</span><span class="tok-op">,</span>
+
+              basis<span class="tok-op">=</span><span class="tok-string">&quot;spatial_cropped_150_buffer&quot;</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/cellpose-visium-hd/cell-026-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Export to SpaceRanger v4 Format</h2>
+<p><code>ov.space.write_visium_hd_cellseg()</code> exports the cell-level AnnData to a directory structure matching SpaceRanger v4 segmented output. This makes the Cellpose-derived segmentation portable: any tool that already understands SpaceRanger v4 cell-segmentation output can read these results back, including <code>ov.io.read_visium_hd(data_type=&#x27;cellseg&#x27;)</code>.</p>
+<p><strong>Important:</strong> use <code>spatial_keys=[&#x27;spatial&#x27;]</code> and <code>geometry_spatial_key=&#x27;spatial&#x27;</code> in <code>bin2cell()</code> for the export object so that coordinates stay aligned with the hires/lowres images and scalefactors.</p>
+<pre><code class="language-python"><span class="tok-comment"># Re-run bin2cell with fullres spatial coords for SpaceRanger-compatible export</span>
+
+cdata_export <span class="tok-op">=</span> ov<span class="tok-op">.</span>space<span class="tok-op">.</span>bin2cell<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> labels_key<span class="tok-op">=</span><span class="tok-string">&#x27;labels_joint&#x27;</span><span class="tok-op">,</span>
+
+    spatial_keys<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    add_geometry<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">,</span>
+
+    geometry_spatial_key<span class="tok-op">=</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+cdata_export</code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>space<span class="tok-op">.</span>write_visium_hd_cellseg<span class="tok-op">(</span>cdata_export<span class="tok-op">,</span> <span class="tok-string">&#x27;cellpose_spaceranger_output&#x27;</span><span class="tok-op">)</span></code></pre>
+<h3>Verify the exported directory structure</h3>
+<pre><code class="language-python"><span class="tok-keyword">from</span> pathlib <span class="tok-keyword">import</span> <span class="tok-builtin">Path</span>
+
+
+
+<span class="tok-keyword">for</span> f <span class="tok-keyword">in</span> sorted<span class="tok-op">(</span><span class="tok-builtin">Path</span><span class="tok-op">(</span><span class="tok-string">&#x27;cellpose_spaceranger_output&#x27;</span><span class="tok-op">)</span><span class="tok-op">.</span>rglob<span class="tok-op">(</span><span class="tok-string">&#x27;*&#x27;</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    <span class="tok-keyword">if</span> f<span class="tok-op">.</span>is_file<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+        size <span class="tok-op">=</span> f<span class="tok-op">.</span>stat<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>st_size
+
+        <span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;  <span class="tok-op">{</span>f<span class="tok-op">.</span>relative_to<span class="tok-op">(</span><span class="tok-string">&quot;cellpose_spaceranger_output&quot;</span><span class="tok-op">)</span><span class="tok-op">}</span>: <span class="tok-op">{</span>size<span class="tok-op">:</span>,<span class="tok-op">}</span> bytes&#x27;<span class="tok-op">)</span>
+</code></pre>
+<h2>Read Back with <code>ov.io.read_visium_hd</code></h2>
+<p>The exported directory can be read back with the same API used for native SpaceRanger v4 cell-segmentation output.</p>
+<pre><code class="language-python">cdata_read <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>read_visium_hd<span class="tok-op">(</span>
+
+    <span class="tok-string">&#x27;cellpose_spaceranger_output&#x27;</span><span class="tok-op">,</span>
+
+    data_type<span class="tok-op">=</span><span class="tok-string">&#x27;cellseg&#x27;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+cdata_read</code></pre>
+<pre><code class="language-python"><span class="tok-comment"># Note: cells without geometry (e.g. single-bin cells) are excluded</span>
+
+<span class="tok-comment"># from the GeoJSON, so the read-back may have fewer cells.</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Exported: <span class="tok-op">{</span>cdata_export<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span> cells&#x27;<span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Read back: <span class="tok-op">{</span>cdata_read<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span> cells&#x27;<span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Cell IDs match (subset): <span class="tok-op">{</span><span class="tok-builtin">set</span><span class="tok-op">(</span>cdata_read<span class="tok-op">.</span>obs_names<span class="tok-op">)</span><span class="tok-op">.</span>issubset<span class="tok-op">(</span><span class="tok-builtin">set</span><span class="tok-op">(</span>cdata_export<span class="tok-op">.</span>obs_names<span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">}</span>&#x27;<span class="tok-op">)</span></code></pre>
+<h3>Visualize the re-imported data</h3>
+<p>These spatial plots confirm that the exported cell coordinates still align correctly with the H&amp;E background after round-tripping through the SpaceRanger-style directory structure.</p>
+<pre><code class="language-python">sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>cdata_read<span class="tok-op">)</span>
+
+sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>log1p<span class="tok-op">(</span>cdata_read<span class="tok-op">)</span>
+
+
+
+sc<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>
+
+    cdata_read<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;COL1A1&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;EPCAM&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">8</span><span class="tok-op">,</span> linewidth<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span> img_key<span class="tok-op">=</span><span class="tok-string">&#x27;hires&#x27;</span><span class="tok-op">,</span>
+
+    frameon<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span> cmap<span class="tok-op">=</span><span class="tok-string">&#x27;RdBu_r&#x27;</span><span class="tok-op">,</span> vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99&#x27;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/cellpose-visium-hd/cell-036-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Cellpose vs CellSAM Comparison</h2>
+<p><a href="https://www.nature.com/articles/s41592-025-02879-w" target="_blank" rel="noopener">CellSAM</a> (Nature Methods 2025) is a foundation model for cell segmentation. To get a more concrete sense of the trade-off between backends, we compare Cellpose and CellSAM on the same 1024×1024 tissue crop.</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> numpy <span class="tok-keyword">as</span> np
+
+<span class="tok-keyword">import</span> scipy<span class="tok-op">.</span>sparse<span class="tok-op">,</span> tifffile<span class="tok-op">,</span> zarr
+
+<span class="tok-keyword">from</span> skimage<span class="tok-op">.</span>segmentation <span class="tok-keyword">import</span> find_boundaries
+
+<span class="tok-keyword">from</span> omicverse<span class="tok-op">.</span>external<span class="tok-op">.</span>bin2cell <span class="tok-keyword">import</span> cellseg
+
+
+
+<span class="tok-comment"># Read a 1024x1024 crop from the mpp-scaled H&amp;E</span>
+
+<span class="tok-keyword">with</span> tifffile<span class="tok-op">.</span>TiffFile<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/he_colon1.tiff&#x27;</span><span class="tok-op">)</span> <span class="tok-keyword">as</span> tif<span class="tok-op">:</span>
+
+    z <span class="tok-op">=</span> zarr<span class="tok-op">.</span><span class="tok-builtin">open</span><span class="tok-op">(</span>tif<span class="tok-op">.</span>pages<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>aszarr<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">,</span> mode<span class="tok-op">=</span><span class="tok-string">&#x27;r&#x27;</span><span class="tok-op">)</span>
+
+    h<span class="tok-op">,</span> w <span class="tok-op">=</span> z<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-number">2</span><span class="tok-op">]</span>
+
+    crop <span class="tok-op">=</span> np<span class="tok-op">.</span>array<span class="tok-op">(</span>z<span class="tok-op">[</span>h<span class="tok-op">//</span><span class="tok-number">2</span><span class="tok-op">-</span><span class="tok-number">512</span><span class="tok-op">:</span>h<span class="tok-op">//</span><span class="tok-number">2</span><span class="tok-op">+</span><span class="tok-number">512</span><span class="tok-op">,</span> w<span class="tok-op">//</span><span class="tok-number">2</span><span class="tok-op">-</span><span class="tok-number">512</span><span class="tok-op">:</span>w<span class="tok-op">//</span><span class="tok-number">2</span><span class="tok-op">+</span><span class="tok-number">512</span><span class="tok-op">,</span> <span class="tok-op">:</span><span class="tok-number">3</span><span class="tok-op">]</span><span class="tok-op">)</span>
+
+tifffile<span class="tok-op">.</span>imwrite<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_crop.tiff&#x27;</span><span class="tok-op">,</span> crop<span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Crop: <span class="tok-op">{</span>crop<span class="tok-op">.</span>shape<span class="tok-op">}</span>&#x27;<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python"><span class="tok-comment"># Cellpose</span>
+
+cellseg<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_crop.tiff&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;stardist/cmp_cp.npz&#x27;</span><span class="tok-op">,</span>
+
+        backend<span class="tok-op">=</span><span class="tok-string">&#x27;cellpose&#x27;</span><span class="tok-op">,</span> block_size<span class="tok-op">=</span><span class="tok-number">1024</span><span class="tok-op">,</span> gpu<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">,</span> flow_threshold<span class="tok-op">=</span><span class="tok-number">0.4</span><span class="tok-op">)</span>
+
+cp <span class="tok-op">=</span> scipy<span class="tok-op">.</span>sparse<span class="tok-op">.</span>load_npz<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_cp.npz&#x27;</span><span class="tok-op">)</span><span class="tok-op">.</span>toarray<span class="tok-op">(</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Cellpose: <span class="tok-op">{</span>cp<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> cells&#x27;<span class="tok-op">)</span>
+
+
+
+<span class="tok-comment"># CellSAM</span>
+
+cellseg<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_crop.tiff&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;stardist/cmp_cs.npz&#x27;</span><span class="tok-op">,</span>
+
+        backend<span class="tok-op">=</span><span class="tok-string">&#x27;cellsam&#x27;</span><span class="tok-op">,</span> block_size<span class="tok-op">=</span><span class="tok-number">1024</span><span class="tok-op">,</span> gpu<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">)</span>
+
+cs <span class="tok-op">=</span> scipy<span class="tok-op">.</span>sparse<span class="tok-op">.</span>load_npz<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_cs.npz&#x27;</span><span class="tok-op">)</span><span class="tok-op">.</span>toarray<span class="tok-op">(</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;CellSAM: <span class="tok-op">{</span>cs<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> cells&#x27;<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python"><span class="tok-keyword">import</span> matplotlib<span class="tok-op">.</span>pyplot <span class="tok-keyword">as</span> plt
+
+
+
+<span class="tok-keyword">def</span> _overlay<span class="tok-op">(</span>ax<span class="tok-op">,</span> img<span class="tok-op">,</span> labels<span class="tok-op">,</span> title<span class="tok-op">)</span><span class="tok-op">:</span>
+
+    ax<span class="tok-op">.</span>imshow<span class="tok-op">(</span>img<span class="tok-op">)</span>
+
+    bnd <span class="tok-op">=</span> find_boundaries<span class="tok-op">(</span>labels<span class="tok-op">,</span> mode<span class="tok-op">=</span><span class="tok-string">&#x27;outer&#x27;</span><span class="tok-op">)</span>
+
+    rng <span class="tok-op">=</span> np<span class="tok-op">.</span>random<span class="tok-op">.</span>RandomState<span class="tok-op">(</span><span class="tok-number">42</span><span class="tok-op">)</span>
+
+    c <span class="tok-op">=</span> rng<span class="tok-op">.</span>rand<span class="tok-op">(</span>labels<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">+</span><span class="tok-number">1</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">;</span> c<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">3</span><span class="tok-op">]</span><span class="tok-op">=</span><span class="tok-number">0.25</span><span class="tok-op">;</span> c<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span>
+
+    ax<span class="tok-op">.</span>imshow<span class="tok-op">(</span>c<span class="tok-op">[</span>labels<span class="tok-op">]</span><span class="tok-op">)</span>
+
+    b <span class="tok-op">=</span> np<span class="tok-op">.</span>zeros<span class="tok-op">(</span><span class="tok-op">(</span><span class="tok-op">*</span>labels<span class="tok-op">.</span>shape<span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">;</span> b<span class="tok-op">[</span>bnd<span class="tok-op">]</span><span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">,</span><span class="tok-number">0.8</span><span class="tok-op">]</span>
+
+    ax<span class="tok-op">.</span>imshow<span class="tok-op">(</span>b<span class="tok-op">)</span>
+
+    ax<span class="tok-op">.</span>set_title<span class="tok-op">(</span>title<span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span> fontweight<span class="tok-op">=</span><span class="tok-string">&#x27;bold&#x27;</span><span class="tok-op">)</span><span class="tok-op">;</span> ax<span class="tok-op">.</span>axis<span class="tok-op">(</span><span class="tok-string">&#x27;off&#x27;</span><span class="tok-op">)</span>
+
+
+
+fig<span class="tok-op">,</span> axes <span class="tok-op">=</span> plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span><span class="tok-number">1</span><span class="tok-op">,</span> <span class="tok-number">3</span><span class="tok-op">,</span> figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">18</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+axes<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>imshow<span class="tok-op">(</span>crop<span class="tok-op">)</span>
+
+axes<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>set_title<span class="tok-op">(</span><span class="tok-string">&#x27;H&amp;E&#x27;</span><span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span> fontweight<span class="tok-op">=</span><span class="tok-string">&#x27;bold&#x27;</span><span class="tok-op">)</span>
+
+axes<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>axis<span class="tok-op">(</span><span class="tok-string">&#x27;off&#x27;</span><span class="tok-op">)</span>
+
+_overlay<span class="tok-op">(</span>axes<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">,</span> crop<span class="tok-op">,</span> cp<span class="tok-op">,</span> f&#x27;Cellpose (<span class="tok-op">{</span>cp<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> cells)&#x27;<span class="tok-op">)</span>
+
+_overlay<span class="tok-op">(</span>axes<span class="tok-op">[</span><span class="tok-number">2</span><span class="tok-op">]</span><span class="tok-op">,</span> crop<span class="tok-op">,</span> cs<span class="tok-op">,</span> f&#x27;CellSAM (<span class="tok-op">{</span>cs<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> cells)&#x27;<span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>tight_layout<span class="tok-op">(</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>show<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/cellpose-visium-hd/cell-040-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h3>Cell-level spatial comparison</h3>
+<p>Aggregate both segmentation results from the 1024×1024 crop into cell-level expression objects so that the two backends can be compared in the same spatial gene-expression view.</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> numpy <span class="tok-keyword">as</span> np
+
+
+
+<span class="tok-comment"># Build minimal bin-level adata for the crop region</span>
+
+<span class="tok-comment"># The crop covers spatial_cropped rows [cy-512:cy+512, cx-512:cx+512] in mpp space</span>
+
+sp <span class="tok-op">=</span> adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial_cropped_150_buffer&#x27;</span><span class="tok-op">]</span>
+
+sample <span class="tok-op">=</span> <span class="tok-builtin">list</span><span class="tok-op">(</span>adata<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>keys<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span>
+
+mpp_sf <span class="tok-op">=</span> adata<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>sample<span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;scalefactors&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>get<span class="tok-op">(</span>
+
+    <span class="tok-string">&#x27;tissue_0.3_mpp_150_buffer_scalef&#x27;</span><span class="tok-op">,</span> <span class="tok-number">0.91</span><span class="tok-op">)</span>
+
+<span class="tok-keyword">import</span> tifffile
+
+<span class="tok-keyword">with</span> tifffile<span class="tok-op">.</span>TiffFile<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/he_colon1.tiff&#x27;</span><span class="tok-op">)</span> <span class="tok-keyword">as</span> t<span class="tok-op">:</span>
+
+    h<span class="tok-op">,</span> w <span class="tok-op">=</span> t<span class="tok-op">.</span>pages<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-number">2</span><span class="tok-op">]</span>
+
+cy<span class="tok-op">,</span> cx <span class="tok-op">=</span> h<span class="tok-op">//</span><span class="tok-number">2</span><span class="tok-op">,</span> w<span class="tok-op">//</span><span class="tok-number">2</span>
+
+
+
+<span class="tok-comment"># Select bins whose mpp-scaled coords fall within the crop</span>
+
+scaled <span class="tok-op">=</span> sp <span class="tok-op">*</span> mpp_sf
+
+cmask <span class="tok-op">=</span> <span class="tok-op">(</span><span class="tok-op">(</span>scaled<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">]</span> <span class="tok-op">&gt;=</span> cy<span class="tok-op">-</span><span class="tok-number">512</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>scaled<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">]</span> <span class="tok-op">&lt;</span> cy<span class="tok-op">+</span><span class="tok-number">512</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span>
+
+         <span class="tok-op">(</span>scaled<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span> <span class="tok-op">&gt;=</span> cx<span class="tok-op">-</span><span class="tok-number">512</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>scaled<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span> <span class="tok-op">&lt;</span> cx<span class="tok-op">+</span><span class="tok-number">512</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+adata_sub <span class="tok-op">=</span> adata<span class="tok-op">[</span>cmask<span class="tok-op">]</span><span class="tok-op">.</span>copy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Crop bins: <span class="tok-op">{</span>adata_sub<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span>&#x27;<span class="tok-op">)</span>
+
+
+
+<span class="tok-comment"># Cellpose labels are already in adata from the full pipeline</span>
+
+<span class="tok-comment"># bin_to_cell using the existing labels_he_expanded</span>
+
+cdata_cp <span class="tok-op">=</span> ov<span class="tok-op">.</span>space<span class="tok-op">.</span>bin2cell<span class="tok-op">(</span>adata_sub<span class="tok-op">,</span> labels_key<span class="tok-op">=</span><span class="tok-string">&#x27;labels_he_expanded&#x27;</span><span class="tok-op">,</span>
+
+                      spatial_keys<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;spatial_cropped_150_buffer&#x27;</span><span class="tok-op">]</span><span class="tok-op">)</span>
+
+sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>cdata_cp<span class="tok-op">)</span><span class="tok-op">;</span> sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>log1p<span class="tok-op">(</span>cdata_cp<span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Cellpose cells: <span class="tok-op">{</span>cdata_cp<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span>&#x27;<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python"><span class="tok-comment"># CellSAM: insert labels from the crop npz</span>
+
+<span class="tok-keyword">from</span> omicverse<span class="tok-op">.</span>external<span class="tok-op">.</span>bin2cell <span class="tok-keyword">import</span> insert_labels<span class="tok-op">,</span> expand_labels
+
+<span class="tok-keyword">import</span> scipy<span class="tok-op">.</span>sparse
+
+
+
+<span class="tok-comment"># Map bin spatial coords to crop pixel coords</span>
+
+crop_origin <span class="tok-op">=</span> np<span class="tok-op">.</span>array<span class="tok-op">(</span><span class="tok-op">[</span>cx<span class="tok-op">-</span><span class="tok-number">512</span><span class="tok-op">,</span> cy<span class="tok-op">-</span><span class="tok-number">512</span><span class="tok-op">]</span><span class="tok-op">)</span>
+
+crop_px <span class="tok-op">=</span> <span class="tok-op">(</span>adata_sub<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial_cropped_150_buffer&#x27;</span><span class="tok-op">]</span> <span class="tok-op">*</span> mpp_sf <span class="tok-op">-</span> crop_origin<span class="tok-op">)</span><span class="tok-op">.</span>astype<span class="tok-op">(</span><span class="tok-builtin">int</span><span class="tok-op">)</span>
+
+
+
+cs_labels <span class="tok-op">=</span> scipy<span class="tok-op">.</span>sparse<span class="tok-op">.</span>load_npz<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_cs.npz&#x27;</span><span class="tok-op">)</span>
+
+lab_vals <span class="tok-op">=</span> np<span class="tok-op">.</span>zeros<span class="tok-op">(</span><span class="tok-builtin">len</span><span class="tok-op">(</span>adata_sub<span class="tok-op">)</span><span class="tok-op">,</span> dtype<span class="tok-op">=</span><span class="tok-builtin">int</span><span class="tok-op">)</span>
+
+valid <span class="tok-op">=</span> <span class="tok-op">(</span><span class="tok-op">(</span>crop_px<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span> <span class="tok-op">&gt;=</span> <span class="tok-number">0</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>crop_px<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span> <span class="tok-op">&lt;</span> cs_labels<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span>
+
+         <span class="tok-op">(</span>crop_px<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">]</span> <span class="tok-op">&gt;=</span> <span class="tok-number">0</span><span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>crop_px<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">]</span> <span class="tok-op">&lt;</span> cs_labels<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-keyword">if</span> valid<span class="tok-op">.</span>any<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    v <span class="tok-op">=</span> cs_labels<span class="tok-op">[</span>crop_px<span class="tok-op">[</span>valid<span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">,</span> crop_px<span class="tok-op">[</span>valid<span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">]</span>
+
+    <span class="tok-keyword">if</span> scipy<span class="tok-op">.</span>sparse<span class="tok-op">.</span>issparse<span class="tok-op">(</span>v<span class="tok-op">)</span><span class="tok-op">:</span>
+
+        v <span class="tok-op">=</span> np<span class="tok-op">.</span>asarray<span class="tok-op">(</span>v<span class="tok-op">.</span>todense<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">.</span>flatten<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    <span class="tok-keyword">else</span><span class="tok-op">:</span>
+
+        v <span class="tok-op">=</span> np<span class="tok-op">.</span>asarray<span class="tok-op">(</span>v<span class="tok-op">)</span><span class="tok-op">.</span>flatten<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    lab_vals<span class="tok-op">[</span>valid<span class="tok-op">]</span> <span class="tok-op">=</span> v
+
+adata_sub<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;labels_cellsam&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> lab_vals
+
+
+
+expand_labels<span class="tok-op">(</span>adata_sub<span class="tok-op">,</span> labels_key<span class="tok-op">=</span><span class="tok-string">&#x27;labels_cellsam&#x27;</span><span class="tok-op">,</span>
+
+              expanded_labels_key<span class="tok-op">=</span><span class="tok-string">&#x27;labels_cellsam_exp&#x27;</span><span class="tok-op">,</span> max_bin_distance<span class="tok-op">=</span><span class="tok-number">2</span><span class="tok-op">)</span>
+
+
+
+cdata_cs <span class="tok-op">=</span> ov<span class="tok-op">.</span>space<span class="tok-op">.</span>bin2cell<span class="tok-op">(</span>adata_sub<span class="tok-op">,</span> labels_key<span class="tok-op">=</span><span class="tok-string">&#x27;labels_cellsam_exp&#x27;</span><span class="tok-op">,</span>
+
+                      spatial_keys<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;spatial_cropped_150_buffer&#x27;</span><span class="tok-op">]</span><span class="tok-op">)</span>
+
+sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>cdata_cs<span class="tok-op">)</span><span class="tok-op">;</span> sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>log1p<span class="tok-op">(</span>cdata_cs<span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;CellSAM cells: <span class="tok-op">{</span>cdata_cs<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span>&#x27;<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python">fig<span class="tok-op">,</span> axes <span class="tok-op">=</span> plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span><span class="tok-number">1</span><span class="tok-op">,</span> <span class="tok-number">2</span><span class="tok-op">,</span> figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">14</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>cdata_cp<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;COL1A1&#x27;</span><span class="tok-op">,</span> edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+                 edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span> alpha<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span> ax<span class="tok-op">=</span>axes<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">,</span> show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">)</span>
+
+axes<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>set_title<span class="tok-op">(</span>f&#x27;Cellpose (<span class="tok-op">{</span>cdata_cp<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span> cells)&#x27;<span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>cdata_cs<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;COL1A1&#x27;</span><span class="tok-op">,</span> edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+                 edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span> alpha<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span> ax<span class="tok-op">=</span>axes<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">,</span> show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">)</span>
+
+axes<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">.</span>set_title<span class="tok-op">(</span>f&#x27;CellSAM (<span class="tok-op">{</span>cdata_cs<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span> cells)&#x27;<span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>tight_layout<span class="tok-op">(</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>show<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/cellpose-visium-hd/cell-044-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
+    </span>
+    <span class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analyzing Xenium Data — OmicVerse</title>
+  <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../people.html">People</a>
+      <a aria-current="page" href="../blog.html">Blog</a>
+      <a href="../events.html">Events</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main class="article page-width">
+    <a class="article-back" href="../blog.html">← Back to blog</a>
+    <p class="overline">Spatial</p>
+    <h1>Analyze Xenium data</h1>
+<p>The 10x Genomics Xenium In Situ platform is an image-based *in situ* technology that reports counts of a pre-designed gene panel at single-cell resolution. A single Xenium experiment produces a stitched tissue region in microns, per-cell centroids and polygon boundaries, individual transcript locations, and multi-channel morphology images. It is widely used for tumor microenvironment studies, brain atlasing, and validation of dissociated single-cell data.</p>
+<p>This tutorial mirrors the Nanostring CosMx tutorial (<code>t_nanostring_preprocess.ipynb</code>) and is informed by <a href="https://squidpy.readthedocs.io/en/stable/notebooks/tutorials/tutorial_xenium.html" target="_blank" rel="noopener">squidpy&#x27;s Xenium vignette</a>. We use <code>ov.io.read_xenium()</code> and a standard Leiden-based downstream analysis (skipping CAST). Key outputs you will see:</p>
+<ul><li><code>ov.io.read_xenium()</code> parsing the 10x <code>outs/</code> layout into an <code>AnnData</code> with spatial coordinates in microns and <strong>cell polygon boundaries</strong> as WKT strings on <code>obs[&#x27;geometry&#x27;]</code></li><li>basic per-cell QC against control probes / codewords</li><li>the standard OmicVerse preprocessing pipeline (<code>normalize_total</code> → <code>log1p</code> → <code>scale</code> → <code>pca</code>)</li><li>k-NN graph + Leiden clustering</li><li>spatial visualization of the clusters over the tissue layout via both <code>ov.pl.embedding</code> (centroid scatter) and <code>ov.pl.spatialseg</code> (polygon overlay)</li></ul>
+<h2>1. Environment setup</h2>
+<p>Import <code>omicverse</code>, set the plotting style, and enable auto-reload. <code>ov.style(font_path=&#x27;Arial&#x27;)</code> keeps exported figures consistent across platforms.</p>
+<pre><code class="language-python"><span class="tok-keyword">from</span> pathlib <span class="tok-keyword">import</span> <span class="tok-builtin">Path</span>
+
+<span class="tok-keyword">import</span> numpy <span class="tok-keyword">as</span> np
+
+<span class="tok-keyword">import</span> omicverse <span class="tok-keyword">as</span> ov
+
+ov<span class="tok-op">.</span>style<span class="tok-op">(</span>font_path<span class="tok-op">=</span><span class="tok-string">&#x27;Arial&#x27;</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-op">%</span>load_ext autoreload
+
+<span class="tok-op">%</span>autoreload <span class="tok-number">2</span></code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>settings<span class="tok-op">.</span>cpu_gpu_mixed_init<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<h2>2. Download the Xenium dataset</h2>
+<p>We use the public <strong>Xenium FFPE Human Breast Cancer Replicate 1</strong> sample from 10x (≈167k cells, 313 genes, Breast Cancer Tumor Microenvironment panel + 33 custom targets). The full outs bundle is several GB because of the multi-channel morphology OME-TIFFs, but the minimum files for a Leiden analysis with segmentation visualization are only ~40 MB:</p>
+<ul><li><code>cell_feature_matrix.h5</code> — sparse gene × cell counts (≈12 MB)</li><li><code>cells.csv.gz</code> — per-cell metadata including <code>x_centroid</code>, <code>y_centroid</code> in microns (≈8 MB)</li><li><code>cell_boundaries.parquet</code> — per-cell polygon vertices for <code>ov.pl.spatialseg</code> (≈8 MB)</li><li><code>experiment.xenium</code> — run metadata (JSON)</li></ul>
+<p>If you also want the H&amp;E / DAPI background overlay, download <code>morphology_focus.ome.tif</code> (≈624 MB) and call <code>ov.io.read_xenium(..., load_image=True)</code>.</p>
+<pre><code class="language-python"><span class="tok-comment"># !mkdir -p data/xenium_breast_rep1</span>
+
+<span class="tok-comment"># BASE=&#x27;https://cf.10xgenomics.com/samples/xenium/1.0.1/Xenium_FFPE_Human_Breast_Cancer_Rep1&#x27;</span>
+
+<span class="tok-comment"># !wget -O data/xenium_breast_rep1/cell_feature_matrix.h5  $BASE/Xenium_FFPE_Human_Breast_Cancer_Rep1_cell_feature_matrix.h5</span>
+
+<span class="tok-comment"># !wget -O data/xenium_breast_rep1/cells.csv.gz            $BASE/Xenium_FFPE_Human_Breast_Cancer_Rep1_cells.csv.gz</span>
+
+<span class="tok-comment"># !wget -O data/xenium_breast_rep1/cell_boundaries.parquet $BASE/Xenium_FFPE_Human_Breast_Cancer_Rep1_cell_boundaries.parquet</span>
+
+<span class="tok-comment"># !wget -O data/xenium_breast_rep1/experiment.xenium       $BASE/Xenium_FFPE_Human_Breast_Cancer_Rep1_experiment.xenium</span>
+
+<span class="tok-comment"># Optional — ~624 MB, only needed for a morphology background in ov.pl.spatial:</span>
+
+<span class="tok-comment"># !wget -O data/xenium_breast_rep1/morphology_focus.ome.tif $BASE/Xenium_FFPE_Human_Breast_Cancer_Rep1_morphology_focus.ome.tif</span></code></pre>
+<pre><code class="language-python">sample_dir <span class="tok-op">=</span> <span class="tok-builtin">Path</span><span class="tok-op">(</span><span class="tok-string">&#x27;data&#x27;</span><span class="tok-op">)</span> <span class="tok-op">/</span> <span class="tok-string">&#x27;xenium_breast_rep1&#x27;</span>
+
+ov<span class="tok-op">.</span>utils<span class="tok-op">.</span>print_tree<span class="tok-op">(</span>sample_dir<span class="tok-op">)</span></code></pre>
+<h2>3. Read the Xenium dataset</h2>
+<p><code>ov.io.read_xenium()</code> handles the 10x <code>outs/</code> layout:</p>
+<ul><li>reads <code>cell_feature_matrix.h5</code> via the 10x HDF5 parser</li><li><strong>drops non-Gene-Expression features</strong> (control probes / codewords) so downstream PCA and HVG don&#x27;t waste capacity</li><li>merges <code>cells.csv.gz</code> (or <code>cells.parquet</code>) into <code>obs</code></li><li>writes cell centroids in <strong>microns</strong> to <code>obsm[&#x27;spatial&#x27;]</code></li><li>converts <code>cell_boundaries.parquet</code> vertex vectors into per-cell <strong>WKT <code>POLYGON</code> strings</strong> on <code>obs[&#x27;geometry&#x27;]</code> — the format expected by <code>ov.pl.spatialseg</code></li><li>sets <code>uns[&#x27;spatial&#x27;][library_id][&#x27;scalefactors&#x27;]</code> (<code>tissue_hires_scalef = 1 / pixel_size</code>) so micron coordinates map correctly into image-pixel space when a morphology image is loaded</li><li>parses <code>experiment.xenium</code> into <code>uns[&#x27;spatial&#x27;][library_id][&#x27;metadata&#x27;]</code></li></ul>
+<p>Pass <code>load_image=False</code> to skip the (large) morphology OME-TIFF, and <code>load_boundaries=False</code> to skip polygon extraction.</p>
+<pre><code class="language-python">adata <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>read_xenium<span class="tok-op">(</span>sample_dir<span class="tok-op">,</span> load_image<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">)</span>
+
+adata</code></pre>
+<pre><code class="language-python">library_id <span class="tok-op">=</span> next<span class="tok-op">(</span>iter<span class="tok-op">(</span>adata<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+sf <span class="tok-op">=</span> adata<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>library_id<span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;scalefactors&#x27;</span><span class="tok-op">]</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">&#x27;library_id          :&#x27;</span><span class="tok-op">,</span> library_id<span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">&#x27;spatial range (µm)  :&#x27;</span><span class="tok-op">,</span>
+
+      adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>min<span class="tok-op">(</span>axis<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">)</span><span class="tok-op">.</span>tolist<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">,</span> <span class="tok-string">&#x27;-&gt;&#x27;</span><span class="tok-op">,</span>
+
+      adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>max<span class="tok-op">(</span>axis<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">)</span><span class="tok-op">.</span>tolist<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">&#x27;pixel size (µm/px)  :&#x27;</span><span class="tok-op">,</span> <span class="tok-number">1</span> <span class="tok-op">/</span> sf<span class="tok-op">[</span><span class="tok-string">&#x27;tissue_hires_scalef&#x27;</span><span class="tok-op">]</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">&#x27;mean cell diameter :&#x27;</span><span class="tok-op">,</span> round<span class="tok-op">(</span>sf<span class="tok-op">[</span><span class="tok-string">&#x27;spot_diameter_fullres&#x27;</span><span class="tok-op">]</span> <span class="tok-op">/</span> sf<span class="tok-op">[</span><span class="tok-string">&#x27;tissue_hires_scalef&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span> <span class="tok-number">2</span><span class="tok-op">)</span><span class="tok-op">,</span> <span class="tok-string">&#x27;µm&#x27;</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">&#x27;cells with geometry:&#x27;</span><span class="tok-op">,</span> <span class="tok-op">(</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;geometry&#x27;</span><span class="tok-op">]</span> <span class="tok-op">!=</span> <span class="tok-string">&#x27;&#x27;</span><span class="tok-op">)</span><span class="tok-op">.</span>sum<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">)</span></code></pre>
+<h2>4. Inspect spatial QC</h2>
+<p>Two quick checks over the tissue layout: <code>total_counts</code> per cell and <code>cell_area</code> (in square microns). For a tumor microenvironment section you typically see counts concentrated on epithelial / tumor tiles and a roughly bimodal area distribution (small immune vs. large epithelial).</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> matplotlib<span class="tok-op">.</span>pyplot <span class="tok-keyword">as</span> plt
+
+fig<span class="tok-op">,</span> axs <span class="tok-op">=</span> plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span><span class="tok-number">1</span><span class="tok-op">,</span> <span class="tok-number">2</span><span class="tok-op">,</span> figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">12</span><span class="tok-op">,</span> <span class="tok-number">5</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>embedding<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> basis<span class="tok-op">=</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;total_counts&#x27;</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99&#x27;</span><span class="tok-op">,</span> cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span><span class="tok-op">,</span> ax<span class="tok-op">=</span>axs<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">,</span> show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span> title<span class="tok-op">=</span><span class="tok-string">&#x27;total_counts&#x27;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+axs<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>invert_yaxis<span class="tok-op">(</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>embedding<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> basis<span class="tok-op">=</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;cell_area&#x27;</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99&#x27;</span><span class="tok-op">,</span> cmap<span class="tok-op">=</span><span class="tok-string">&#x27;viridis&#x27;</span><span class="tok-op">,</span> ax<span class="tok-op">=</span>axs<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">,</span> show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span> title<span class="tok-op">=</span><span class="tok-string">&#x27;cell_area (µm²)&#x27;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+axs<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">.</span>invert_yaxis<span class="tok-op">(</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>tight_layout<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/xenium-workflow/cell-012-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>5. Cell-level QC</h2>
+<p>Filter out cells with very low transcript counts — these are usually segmentation artifacts or empty nuclei. A threshold of 10 counts is mild; tune based on the <code>total_counts</code> histogram.</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> scipy<span class="tok-op">.</span>sparse <span class="tok-keyword">as</span> sp
+
+counts <span class="tok-op">=</span> np<span class="tok-op">.</span>asarray<span class="tok-op">(</span>adata<span class="tok-op">.</span>X<span class="tok-op">.</span>sum<span class="tok-op">(</span>axis<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">.</span>ravel<span class="tok-op">(</span><span class="tok-op">)</span> <span class="tok-keyword">if</span> sp<span class="tok-op">.</span>issparse<span class="tok-op">(</span>adata<span class="tok-op">.</span>X<span class="tok-op">)</span> <span class="tok-keyword">else</span> adata<span class="tok-op">.</span>X<span class="tok-op">.</span>sum<span class="tok-op">(</span>axis<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;cells pre-QC : <span class="tok-op">{</span>adata<span class="tok-op">.</span>n_obs<span class="tok-op">}</span>&#x27;<span class="tok-op">)</span>
+
+adata <span class="tok-op">=</span> adata<span class="tok-op">[</span>counts <span class="tok-op">&gt;=</span> <span class="tok-number">10</span><span class="tok-op">]</span><span class="tok-op">.</span>copy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;cells post-QC: <span class="tok-op">{</span>adata<span class="tok-op">.</span>n_obs<span class="tok-op">}</span> (&gt;= 10 transcripts/cell)&#x27;<span class="tok-op">)</span></code></pre>
+<h2>6. Normalize, log-transform and scale</h2>
+<p>We use the standard <code>normalize_total</code> + <code>log1p</code> + <code>scale</code> pipeline. Because the panel is small (313 genes), we skip HVG selection and use all genes for PCA.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>adata<span class="tok-op">,</span> target_sum<span class="tok-op">=</span><span class="tok-number">1e4</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>log1p<span class="tok-op">(</span>adata<span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>scale<span class="tok-op">(</span>adata<span class="tok-op">)</span></code></pre>
+<h2>7. PCA + neighbors + Leiden</h2>
+<p>Compute the first 50 principal components of the scaled matrix, build a k-NN graph, and run Leiden. For a 164k-cell Xenium section, <code>resolution=0.5</code> typically gives 10–20 clusters mapping to broad tissue structure. Push higher for finer subtypes, lower for compartments.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>pca<span class="tok-op">(</span>adata<span class="tok-op">,</span> layer<span class="tok-op">=</span><span class="tok-string">&#x27;scaled&#x27;</span><span class="tok-op">,</span> n_pcs<span class="tok-op">=</span><span class="tok-number">50</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>neighbors<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> n_neighbors<span class="tok-op">=</span><span class="tok-number">15</span><span class="tok-op">,</span>
+
+    use_rep<span class="tok-op">=</span><span class="tok-string">&#x27;scaled|original|X_pca&#x27;</span><span class="tok-op">,</span> n_pcs<span class="tok-op">=</span><span class="tok-number">50</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>leiden<span class="tok-op">(</span>adata<span class="tok-op">,</span> resolution<span class="tok-op">=</span><span class="tok-number">0.5</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&quot;leiden: <span class="tok-op">{</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;leiden&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>nunique<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> clusters&quot;<span class="tok-op">)</span></code></pre>
+<h2>8. Visualize Leiden clusters on the tissue</h2>
+<p>Plot the Leiden label and one marker gene over the spatial layout. Xenium centroids are in image-pixel convention (y grows downward); <code>ax.invert_yaxis()</code> lines the plot up with the tissue image you would overlay in step 10.</p>
+<pre><code class="language-python">marker <span class="tok-op">=</span> next<span class="tok-op">(</span><span class="tok-op">(</span>g <span class="tok-keyword">for</span> g <span class="tok-keyword">in</span> <span class="tok-op">[</span><span class="tok-string">&#x27;KRT7&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;EPCAM&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;ERBB2&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;ESR1&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;KRT14&#x27;</span><span class="tok-op">]</span>
+
+               <span class="tok-keyword">if</span> g <span class="tok-keyword">in</span> adata<span class="tok-op">.</span>var_names<span class="tok-op">)</span><span class="tok-op">,</span> adata<span class="tok-op">.</span>var_names<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">)</span>
+
+
+
+fig<span class="tok-op">,</span> axs <span class="tok-op">=</span> plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span><span class="tok-number">1</span><span class="tok-op">,</span> <span class="tok-number">2</span><span class="tok-op">,</span> figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">13</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>embedding<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> basis<span class="tok-op">=</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;leiden&#x27;</span><span class="tok-op">,</span>
+
+    palette<span class="tok-op">=</span>ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>palette_112<span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">8</span><span class="tok-op">,</span> ax<span class="tok-op">=</span>axs<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">,</span> show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span> title<span class="tok-op">=</span><span class="tok-string">&#x27;Leiden clusters&#x27;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+axs<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>invert_yaxis<span class="tok-op">(</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>embedding<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> basis<span class="tok-op">=</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">,</span> color<span class="tok-op">=</span>marker<span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99.2&#x27;</span><span class="tok-op">,</span> cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span><span class="tok-op">,</span> ax<span class="tok-op">=</span>axs<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">,</span> show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span> title<span class="tok-op">=</span>marker<span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+axs<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">.</span>invert_yaxis<span class="tok-op">(</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>tight_layout<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/xenium-workflow/cell-020-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>9. Visualize with cell polygons (<code>ov.pl.spatialseg</code>)</h2>
+<p>Unlike centroid scatter, <code>ov.pl.spatialseg</code> draws each cell as its actual segmented polygon. This is the right view for inspecting cluster boundaries against tissue morphology and for diagnosing oversegmentation.</p>
+<p>On a 160k-cell section rendering every polygon produces a dense figure. To see the segmentation itself we also provide a cropped view (<code>crop_coord=(x0, x1, y0, y1)</code> in microns). Pick a region where tumor and stromal compartments should meet — for this breast sample, coordinates around (2000–3200 µm × 2500–3700 µm) land on a mixed compartment.</p>
+<p>Rendering every cell polygon for the full 160k-cell section can take minutes and produce a dense image where individual cells aren&#x27;t visible. We&#x27;ll keep the full-section view to <code>ov.pl.embedding</code> (centroid scatter) and use <code>ov.pl.spatialseg</code> only on a cropped region, where the polygons are actually readable.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;leiden&#x27;</span><span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span>library_id<span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span> edges_width<span class="tok-op">=</span><span class="tok-number">0.3</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1.0</span><span class="tok-op">,</span> legend_fontsize<span class="tok-op">=</span><span class="tok-number">8</span><span class="tok-op">,</span>
+
+    palette<span class="tok-op">=</span>ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>palette_112<span class="tok-op">,</span>
+
+    crop_coord<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">2000</span><span class="tok-op">,</span> <span class="tok-number">3200</span><span class="tok-op">,</span> <span class="tok-number">2500</span><span class="tok-op">,</span> <span class="tok-number">3700</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/xenium-workflow/cell-023-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>The same view coloured by a tumor-associated marker shows which polygons actually express it — useful for validating that a Leiden cluster and a gene signature agree.</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> numpy <span class="tok-keyword">as</span> np
+
+expr <span class="tok-op">=</span> adata<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span> marker<span class="tok-op">]</span><span class="tok-op">.</span>X<span class="tok-op">.</span>toarray<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>ravel<span class="tok-op">(</span><span class="tok-op">)</span> <span class="tok-keyword">if</span> hasattr<span class="tok-op">(</span>adata<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span> marker<span class="tok-op">]</span><span class="tok-op">.</span>X<span class="tok-op">,</span> <span class="tok-string">&#x27;toarray&#x27;</span><span class="tok-op">)</span> <span class="tok-keyword">else</span> np<span class="tok-op">.</span>asarray<span class="tok-op">(</span>adata<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span> marker<span class="tok-op">]</span><span class="tok-op">.</span>X<span class="tok-op">)</span><span class="tok-op">.</span>ravel<span class="tok-op">(</span><span class="tok-op">)</span>
+
+vmax_marker <span class="tok-op">=</span> <span class="tok-builtin">float</span><span class="tok-op">(</span>np<span class="tok-op">.</span>percentile<span class="tok-op">(</span>expr<span class="tok-op">[</span>expr <span class="tok-op">&gt;</span> <span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">,</span> <span class="tok-number">99</span><span class="tok-op">)</span><span class="tok-op">)</span> <span class="tok-keyword">if</span> <span class="tok-op">(</span>expr <span class="tok-op">&gt;</span> <span class="tok-number">0</span><span class="tok-op">)</span><span class="tok-op">.</span>any<span class="tok-op">(</span><span class="tok-op">)</span> <span class="tok-keyword">else</span> <span class="tok-number">1.0</span>
+
+
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> color<span class="tok-op">=</span>marker<span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span>library_id<span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span> edges_width<span class="tok-op">=</span><span class="tok-number">0.3</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1.0</span><span class="tok-op">,</span> legend_fontsize<span class="tok-op">=</span><span class="tok-number">8</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span><span class="tok-op">,</span> vmax<span class="tok-op">=</span>vmax_marker<span class="tok-op">,</span>
+
+    crop_coord<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">2000</span><span class="tok-op">,</span> <span class="tok-number">3200</span><span class="tok-op">,</span> <span class="tok-number">2500</span><span class="tok-op">,</span> <span class="tok-number">3700</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/xenium-workflow/cell-025-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>10. (Optional) overlay on the morphology image</h2>
+<p>If you downloaded <code>morphology_focus.ome.tif</code> into <code>sample_dir</code>, re-read with <code>load_image=True</code> and use <code>ov.pl.spatial</code> / <code>ov.pl.spatialseg</code> to overlay labels on the morphology background. <code>read_xenium()</code> sets <code>tissue_hires_scalef = 1 / pixel_size</code> so spot coordinates land in image-pixel space.</p>
+<pre><code class="language-python">adata_img <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>read_xenium<span class="tok-op">(</span>sample_dir<span class="tok-op">,</span> load_image<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">)</span>
+
+adata_img<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;leiden&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;leiden&#x27;</span><span class="tok-op">]</span>   <span class="tok-comment"># carry over labels</span>
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    adata_img<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;leiden&#x27;</span><span class="tok-op">,</span> library_id<span class="tok-op">=</span>library_id<span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">0.5</span><span class="tok-op">,</span> alpha<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span>
+
+    palette<span class="tok-op">=</span>ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>palette_112<span class="tok-op">,</span>
+
+    crop_coord<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">2000</span><span class="tok-op">,</span> <span class="tok-number">3200</span><span class="tok-op">,</span> <span class="tok-number">2500</span><span class="tok-op">,</span> <span class="tok-number">3700</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<p>For large Xenium sections (cm-scale), always prefer <code>crop_coord=(x0, x1, y0, y1)</code> in microns to zoom into a region — rendering every polygon for the full tissue can take minutes.</p>
+<h2>11. Save the processed object</h2>
+<p>Persist the analyzed AnnData so you can skip preprocessing next time. The WKT strings in <code>obs[&#x27;geometry&#x27;]</code> round-trip through <code>adata.write()</code> unchanged.</p>
+<pre><code class="language-python">adata<span class="tok-op">.</span>write<span class="tok-op">(</span><span class="tok-string">&#x27;data/xenium_breast_rep1_processed.h5ad&#x27;</span><span class="tok-op">)</span></code></pre>
+<pre><code class="language-python"><span class="tok-comment">#adata=ov.read(&#x27;data/xenium_breast_rep1_processed.h5ad&#x27;)</span></code></pre>
+<h2>12. Cache the loaded AnnData for fast re-reads</h2>
+<p>Parsing <code>cell_feature_matrix.h5</code> + <code>cells.csv.gz</code> + <code>cell_boundaries.parquet</code> (including the per-cell WKT polygon construction) takes a few seconds the first time. Pass <code>cache_file=</code> to <code>read_xenium()</code> to write an h5ad snapshot alongside the outs folder — subsequent calls with the same <code>cache_file</code> skip all the parsing and just read the h5ad back, typically ~30× faster.</p>
+<p>The cache includes everything: counts, obs/var, spatial coords, polygon WKT strings, image payloads, and experiment metadata. Delete the cache file to force a re-read after updating any of the source files.</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> time<span class="tok-op">,</span> os
+
+
+
+cache_path <span class="tok-op">=</span> <span class="tok-string">&#x27;data/xenium_breast_rep1_cache.h5ad&#x27;</span>
+
+<span class="tok-keyword">if</span> os<span class="tok-op">.</span>path<span class="tok-op">.</span>exists<span class="tok-op">(</span>cache_path<span class="tok-op">)</span><span class="tok-op">:</span>
+
+    os<span class="tok-op">.</span>remove<span class="tok-op">(</span>cache_path<span class="tok-op">)</span>  <span class="tok-comment"># start fresh to show the timing difference</span>
+
+
+
+t0 <span class="tok-op">=</span> time<span class="tok-op">.</span>time<span class="tok-op">(</span><span class="tok-op">)</span>
+
+_ <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>read_xenium<span class="tok-op">(</span>sample_dir<span class="tok-op">,</span> load_image<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span> cache_file<span class="tok-op">=</span>cache_path<span class="tok-op">)</span>
+
+t_cold <span class="tok-op">=</span> time<span class="tok-op">.</span>time<span class="tok-op">(</span><span class="tok-op">)</span> <span class="tok-op">-</span> t0
+
+
+
+t0 <span class="tok-op">=</span> time<span class="tok-op">.</span>time<span class="tok-op">(</span><span class="tok-op">)</span>
+
+_ <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>read_xenium<span class="tok-op">(</span>sample_dir<span class="tok-op">,</span> cache_file<span class="tok-op">=</span>cache_path<span class="tok-op">)</span>
+
+t_warm <span class="tok-op">=</span> time<span class="tok-op">.</span>time<span class="tok-op">(</span><span class="tok-op">)</span> <span class="tok-op">-</span> t0
+
+
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;cold (raw parse + cache write): <span class="tok-op">{</span>t_cold<span class="tok-op">:</span>.2f<span class="tok-op">}</span> s&#x27;<span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;warm (cache read)              : <span class="tok-op">{</span>t_warm<span class="tok-op">:</span>.2f<span class="tok-op">}</span> s&#x27;<span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;speedup                        : <span class="tok-op">{</span>t_cold <span class="tok-op">/</span> t_warm<span class="tok-op">:</span>.1f<span class="tok-op">}</span>x&#x27;<span class="tok-op">)</span></code></pre>
+<h2>13. Overlay Leiden clusters on the morphology image</h2>
+<p>When <code>morphology_focus.ome.tif</code> sits next to the <code>cell_feature_matrix.h5</code>, pass <code>load_image=True</code> and <code>ov.pl.spatialseg</code> will render cell polygons on top of the morphology background. The OME-TIFF is a <strong>multi-resolution pyramid</strong> (8 levels from 25K×35K down to 201×276), so we only read one level: <code>image_max_dim=4096</code> picks the highest pyramid level whose largest dimension fits under 4096 px (~1611×2213 for this sample, ~7 MB as uint16, &lt;1 s to load). That is the Xenium analogue of Visium&#x27;s <code>hires.png</code> — no need to touch the 25K×35K full-resolution data.</p>
+<p>The loader rescales <code>tissue_hires_scalef</code> to the chosen pyramid level, so micron coordinates land on the downsampled image without any extra math on your side.</p>
+<pre><code class="language-python"><span class="tok-comment"># One-time call: loads the image, composes the full AnnData, writes the cache</span>
+
+adata_img <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>read_xenium<span class="tok-op">(</span>
+
+    sample_dir<span class="tok-op">,</span>
+
+    load_image<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">,</span>
+
+    image_max_dim<span class="tok-op">=</span><span class="tok-number">4096</span><span class="tok-op">,</span>
+
+    cache_file<span class="tok-op">=</span><span class="tok-string">&#x27;data/xenium_breast_rep1_with_image_cache.h5ad&#x27;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+<span class="tok-comment"># Carry Leiden labels from the already-processed adata so we can visualise</span>
+
+<span class="tok-comment"># clusters without re-running the pipeline on the image-backed copy.</span>
+
+adata_img <span class="tok-op">=</span> adata_img<span class="tok-op">[</span>adata<span class="tok-op">.</span>obs_names<span class="tok-op">]</span><span class="tok-op">.</span>copy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+adata_img<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;leiden&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;leiden&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>values
+
+img <span class="tok-op">=</span> adata_img<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>library_id<span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;images&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;hires&#x27;</span><span class="tok-op">]</span>
+
+sf  <span class="tok-op">=</span> adata_img<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>library_id<span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;scalefactors&#x27;</span><span class="tok-op">]</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">&#x27;image shape     :&#x27;</span><span class="tok-op">,</span> img<span class="tok-op">.</span>shape<span class="tok-op">,</span> <span class="tok-string">&#x27;dtype:&#x27;</span><span class="tok-op">,</span> img<span class="tok-op">.</span>dtype<span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">&#x27;hires_scalef    :&#x27;</span><span class="tok-op">,</span> round<span class="tok-op">(</span>sf<span class="tok-op">[</span><span class="tok-string">&#x27;tissue_hires_scalef&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+      <span class="tok-string">&#x27;(micron -&gt; image-pixel)&#x27;</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">&#x27;fullres diameter:&#x27;</span><span class="tok-op">,</span> round<span class="tok-op">(</span>sf<span class="tok-op">[</span><span class="tok-string">&#x27;spot_diameter_fullres&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span> <span class="tok-number">2</span><span class="tok-op">)</span><span class="tok-op">,</span> <span class="tok-string">&#x27;px&#x27;</span><span class="tok-op">)</span></code></pre>
+<p>Cropped H&amp;E / DAPI overlay — Leiden on the left, KRT7 on the right. <code>crop_coord</code> is in microns (same convention as the other spatialseg calls above); the loader&#x27;s rescaled <code>tissue_hires_scalef</code> handles the mapping into image-pixel space for the imshow call.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    adata_img<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;leiden&#x27;</span><span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span>library_id<span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span> edges_width<span class="tok-op">=</span><span class="tok-number">0.4</span><span class="tok-op">,</span>
+
+    <span class="tok-comment"># alpha=0.45 keeps the DAPI morphology visible through the cluster fills so the</span>
+
+    <span class="tok-comment"># polygon-to-nucleus alignment stays obvious. Raise closer to 1.0 if you only</span>
+
+    <span class="tok-comment"># care about cluster assignment and not the background.</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">0.45</span><span class="tok-op">,</span> alpha_img<span class="tok-op">=</span><span class="tok-number">1.0</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">8</span><span class="tok-op">,</span>
+
+    palette<span class="tok-op">=</span>ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>palette_112<span class="tok-op">,</span>
+
+    crop_coord<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">2000</span><span class="tok-op">,</span> <span class="tok-number">3200</span><span class="tok-op">,</span> <span class="tok-number">2500</span><span class="tok-op">,</span> <span class="tok-number">3700</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/xenium-workflow/cell-035-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    adata_img<span class="tok-op">,</span> color<span class="tok-op">=</span>marker<span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span>library_id<span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span> edges_width<span class="tok-op">=</span><span class="tok-number">0.4</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">0.65</span><span class="tok-op">,</span> alpha_img<span class="tok-op">=</span><span class="tok-number">1.0</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">8</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span><span class="tok-op">,</span> vmax<span class="tok-op">=</span>vmax_marker<span class="tok-op">,</span>
+
+    crop_coord<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">2000</span><span class="tok-op">,</span> <span class="tok-number">3200</span><span class="tok-op">,</span> <span class="tok-number">2500</span><span class="tok-op">,</span> <span class="tok-number">3700</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/xenium-workflow/cell-036-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    adata_img<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;KRT7&#x27;</span><span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span>library_id<span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span> edges_width<span class="tok-op">=</span><span class="tok-number">0.4</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">0.65</span><span class="tok-op">,</span> alpha_img<span class="tok-op">=</span><span class="tok-number">1.0</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">8</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span>ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>create_custom_colormap<span class="tok-op">(</span><span class="tok-string">&#x27;#a51616&#x27;</span><span class="tok-op">)</span><span class="tok-op">,</span> vmax<span class="tok-op">=</span><span class="tok-number">10</span><span class="tok-op">,</span>
+
+    crop_coord<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">2000</span><span class="tok-op">,</span> <span class="tok-number">3200</span><span class="tok-op">,</span> <span class="tok-number">2500</span><span class="tok-op">,</span> <span class="tok-number">3700</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/xenium-workflow/cell-037-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    adata_img<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;KRT7&#x27;</span><span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span>library_id<span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span> edges_width<span class="tok-op">=</span><span class="tok-number">0.4</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">0.65</span><span class="tok-op">,</span> alpha_img<span class="tok-op">=</span><span class="tok-number">1.0</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">8</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span>ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>create_custom_colormap<span class="tok-op">(</span><span class="tok-string">&#x27;#a51616&#x27;</span><span class="tok-op">)</span><span class="tok-op">,</span> vmax<span class="tok-op">=</span><span class="tok-number">10</span><span class="tok-op">,</span>
+
+    seg_contourpx<span class="tok-op">=</span><span class="tok-number">1.5</span><span class="tok-op">,</span>
+
+    crop_coord<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">2000</span><span class="tok-op">,</span> <span class="tok-number">3200</span><span class="tok-op">,</span> <span class="tok-number">2500</span><span class="tok-op">,</span> <span class="tok-number">3700</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/xenium-workflow/cell-038-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h3>Quick alignment check — polygon outlines on DAPI</h3>
+<p>To confirm the morphology image and the cell polygons are correctly registered, render a tight crop with *outlines only* (no fill) over the DAPI background. Every polygon should contain exactly one DAPI-bright nucleus.</p>
+<pre><code class="language-python"><span class="tok-comment"># Render polygons directly — gives full control of facecolor=&#x27;none&#x27; so the fills</span>
+
+<span class="tok-comment"># don&#x27;t mask the DAPI (`ov.pl.spatialseg(alpha=0, ...)` ends up skipping the</span>
+
+<span class="tok-comment"># collection entirely when alpha is zero).</span>
+
+<span class="tok-keyword">import</span> matplotlib<span class="tok-op">.</span>pyplot <span class="tok-keyword">as</span> plt
+
+<span class="tok-keyword">from</span> matplotlib<span class="tok-op">.</span>patches <span class="tok-keyword">import</span> Polygon <span class="tok-keyword">as</span> _MplPoly
+
+<span class="tok-keyword">from</span> matplotlib<span class="tok-op">.</span>collections <span class="tok-keyword">import</span> PatchCollection
+
+<span class="tok-keyword">from</span> shapely <span class="tok-keyword">import</span> wkt <span class="tok-keyword">as</span> _wkt
+
+
+
+x0u<span class="tok-op">,</span> x1u<span class="tok-op">,</span> y0u<span class="tok-op">,</span> y1u <span class="tok-op">=</span> <span class="tok-number">2400</span><span class="tok-op">,</span> <span class="tok-number">2800</span><span class="tok-op">,</span> <span class="tok-number">2900</span><span class="tok-op">,</span> <span class="tok-number">3300</span>  <span class="tok-comment"># tighter crop (microns)</span>
+
+sf <span class="tok-op">=</span> adata_img<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>library_id<span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;scalefactors&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;tissue_hires_scalef&#x27;</span><span class="tok-op">]</span>
+
+xy <span class="tok-op">=</span> adata_img<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span>
+
+mask <span class="tok-op">=</span> <span class="tok-op">(</span>xy<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span> <span class="tok-op">&gt;</span> x0u<span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>xy<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span> <span class="tok-op">&lt;</span> x1u<span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>xy<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">]</span> <span class="tok-op">&gt;</span> y0u<span class="tok-op">)</span> <span class="tok-op">&amp;</span> <span class="tok-op">(</span>xy<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">]</span> <span class="tok-op">&lt;</span> y1u<span class="tok-op">)</span>
+
+
+
+fig<span class="tok-op">,</span> ax <span class="tok-op">=</span> plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span>figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+img <span class="tok-op">=</span> adata_img<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>library_id<span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;images&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;hires&#x27;</span><span class="tok-op">]</span>
+
+ax<span class="tok-op">.</span>imshow<span class="tok-op">(</span>img<span class="tok-op">,</span> origin<span class="tok-op">=</span><span class="tok-string">&#x27;upper&#x27;</span><span class="tok-op">,</span> cmap<span class="tok-op">=</span><span class="tok-string">&#x27;gray&#x27;</span><span class="tok-op">,</span>
+
+          vmax<span class="tok-op">=</span><span class="tok-builtin">float</span><span class="tok-op">(</span>np<span class="tok-op">.</span>percentile<span class="tok-op">(</span>img<span class="tok-op">,</span> <span class="tok-number">99.5</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+patches <span class="tok-op">=</span> <span class="tok-op">[</span><span class="tok-op">]</span>
+
+<span class="tok-keyword">for</span> i <span class="tok-keyword">in</span> np<span class="tok-op">.</span>where<span class="tok-op">(</span>mask<span class="tok-op">)</span><span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">:</span>
+
+    w <span class="tok-op">=</span> adata_img<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;geometry&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>iloc<span class="tok-op">[</span>i<span class="tok-op">]</span>
+
+    <span class="tok-keyword">if</span> <span class="tok-keyword">not</span> w<span class="tok-op">:</span> <span class="tok-keyword">continue</span>
+
+    geom <span class="tok-op">=</span> _wkt<span class="tok-op">.</span>loads<span class="tok-op">(</span>w<span class="tok-op">)</span>
+
+    <span class="tok-keyword">if</span> <span class="tok-keyword">not</span> hasattr<span class="tok-op">(</span>geom<span class="tok-op">,</span> <span class="tok-string">&#x27;exterior&#x27;</span><span class="tok-op">)</span><span class="tok-op">:</span> <span class="tok-keyword">continue</span>
+
+    xs<span class="tok-op">,</span> ys <span class="tok-op">=</span> geom<span class="tok-op">.</span>exterior<span class="tok-op">.</span>xy
+
+    pts <span class="tok-op">=</span> np<span class="tok-op">.</span>column_stack<span class="tok-op">(</span><span class="tok-op">(</span>np<span class="tok-op">.</span>array<span class="tok-op">(</span>xs<span class="tok-op">)</span><span class="tok-op">*</span>sf<span class="tok-op">,</span> np<span class="tok-op">.</span>array<span class="tok-op">(</span>ys<span class="tok-op">)</span><span class="tok-op">*</span>sf<span class="tok-op">)</span><span class="tok-op">)</span>
+
+    patches<span class="tok-op">.</span>append<span class="tok-op">(</span>_MplPoly<span class="tok-op">(</span>pts<span class="tok-op">,</span> closed<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+ax<span class="tok-op">.</span>add_collection<span class="tok-op">(</span>PatchCollection<span class="tok-op">(</span>
+
+    patches<span class="tok-op">,</span> facecolor<span class="tok-op">=</span><span class="tok-string">&#x27;none&#x27;</span><span class="tok-op">,</span> edgecolor<span class="tok-op">=</span><span class="tok-string">&#x27;yellow&#x27;</span><span class="tok-op">,</span> linewidth<span class="tok-op">=</span><span class="tok-number">0.5</span><span class="tok-op">,</span> alpha<span class="tok-op">=</span><span class="tok-number">0.9</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span><span class="tok-op">)</span>
+
+ax<span class="tok-op">.</span>set_xlim<span class="tok-op">(</span>x0u <span class="tok-op">*</span> sf<span class="tok-op">,</span> x1u <span class="tok-op">*</span> sf<span class="tok-op">)</span>
+
+ax<span class="tok-op">.</span>set_ylim<span class="tok-op">(</span>y1u <span class="tok-op">*</span> sf<span class="tok-op">,</span> y0u <span class="tok-op">*</span> sf<span class="tok-op">)</span>   <span class="tok-comment"># inverted y (image convention)</span>
+
+ax<span class="tok-op">.</span>set_title<span class="tok-op">(</span>f&#x27;alignment check — <span class="tok-op">{</span><span class="tok-builtin">len</span><span class="tok-op">(</span>patches<span class="tok-op">)</span><span class="tok-op">}</span> cells (yellow) on DAPI&#x27;<span class="tok-op">)</span>
+
+ax<span class="tok-op">.</span>set_aspect<span class="tok-op">(</span><span class="tok-string">&#x27;equal&#x27;</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>show<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/xenium-workflow/cell-040-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
+    </span>
+    <span class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

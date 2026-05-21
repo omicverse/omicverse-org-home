@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Circular UMAPs with the Python Version of plot1cell — OmicVerse</title>
+  <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../people.html">People</a>
+      <a aria-current="page" href="../blog.html">Blog</a>
+      <a href="../events.html">Events</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main class="article page-width">
+    <a class="article-back" href="../blog.html">← Back to blog</a>
+    <p class="overline">Visualization</p>
+    <h1>Circular UMAP with plot1cell</h1>
+<p>Python port of the R package <a href="https://github.com/HaojiaWu/plot1cell" target="_blank" rel="noopener"><strong>plot1cell</strong></a>&#x27;s <code>plot_circlize</code> (Wu 2021). Clusters become arc sectors on the unit circle (sector length ∝ <code>log10(n_cells)</code>); the UMAP / t-SNE scatter and KDE contour live *inside* the circle; any list of <code>adata.obs</code> columns you pass to <code>tracks=</code> becomes outer concentric rings.</p>
+<p>This notebook walks through <strong>four real scales</strong> — all pulled straight from <a href="https://cellxgene.cziscience.com" target="_blank" rel="noopener">CELLxGENE Discover</a>:</p>
+<table><tr><th>Scale</th><th>Dataset</th><th>Cell types</th><th>Tracks shown</th></tr><tr><td>10k</td><td>Krasnow Lung Cell Atlas (Smart-seq2)</td><td>40</td><td>donor · compartment · sex · age</td></tr><tr><td>50k</td><td>Mature kidney</td><td>29</td><td>compartment · tissue · sex · cell_state</td></tr><tr><td>100k</td><td>Human distal airways (healthy + COPD)</td><td>44</td><td>disease · tissue · assay · sex · ethnicity</td></tr><tr><td>200k</td><td>Lung full cell &amp; nuclei atlas</td><td>23</td><td>smoking · BMI · age · tissue · assay · sex</td></tr></table>
+<p>Note: above ~10 clusters the function&#x27;s <code>label_orient=&#x27;auto&#x27;</code> switches from tangent to radial labels so even 40- to 60-type rings stay readable. With 3-6 tracks you can see plot1cell&#x27;s composition-within-sector behaviour on many variables at once.</p>
+<h2>Setup</h2>
+<p>All four datasets are available as public <code>.h5ad</code> files from the CELLxGENE CDN. We cache each under <code>data/</code> on first run.</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> omicverse <span class="tok-keyword">as</span> ov
+
+ov<span class="tok-op">.</span>style<span class="tok-op">(</span>font_path<span class="tok-op">=</span><span class="tok-string">&#x27;arial&#x27;</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-op">%</span>load_ext autoreload
+
+<span class="tok-op">%</span>autoreload <span class="tok-number">2</span></code></pre>
+<pre><code class="language-python"><span class="tok-keyword">import</span> os
+
+CDN <span class="tok-op">=</span> <span class="tok-string">&#x27;https://datasets.cellxgene.cziscience.com/&#x27;</span>
+
+DATA <span class="tok-op">=</span> <span class="tok-op">{</span>
+
+    <span class="tok-string">&#x27;lung10k&#x27;</span><span class="tok-op">:</span>   <span class="tok-string">&#x27;c88e0403-da93-40f4-99b5-f5fdeb81a82c.h5ad&#x27;</span><span class="tok-op">,</span>  <span class="tok-comment"># Krasnow Smart-seq2</span>
+
+    <span class="tok-string">&#x27;kidney50k&#x27;</span><span class="tok-op">:</span> <span class="tok-string">&#x27;7dafa492-6129-4dff-a794-17bdefde3575.h5ad&#x27;</span><span class="tok-op">,</span>  <span class="tok-comment"># Mature kidney full</span>
+
+    <span class="tok-string">&#x27;airway100k&#x27;</span><span class="tok-op">:</span><span class="tok-string">&#x27;861b6b12-f9c9-4434-8d09-695a5156ce23.h5ad&#x27;</span><span class="tok-op">,</span>  <span class="tok-comment"># distal airways</span>
+
+    <span class="tok-string">&#x27;lung200k&#x27;</span><span class="tok-op">:</span>  <span class="tok-string">&#x27;769fff4f-099a-46e1-917b-06ce1fee858a.h5ad&#x27;</span><span class="tok-op">,</span>  <span class="tok-comment"># all cells and nuclei</span>
+
+<span class="tok-op">}</span>
+
+os<span class="tok-op">.</span>makedirs<span class="tok-op">(</span><span class="tok-string">&#x27;data&#x27;</span><span class="tok-op">,</span> exist_ok<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">)</span>
+
+<span class="tok-keyword">def</span> fetch<span class="tok-op">(</span>key<span class="tok-op">)</span><span class="tok-op">:</span>
+
+    local <span class="tok-op">=</span> f&#x27;<span class="tok-op">{</span>key<span class="tok-op">}</span>.h5ad&#x27;
+
+    <span class="tok-keyword">if</span> <span class="tok-keyword">not</span> os<span class="tok-op">.</span>path<span class="tok-op">.</span>exists<span class="tok-op">(</span>local<span class="tok-op">)</span><span class="tok-op">:</span>
+
+        <span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;downloading <span class="tok-op">{</span>key<span class="tok-op">}</span>...&#x27;<span class="tok-op">)</span>
+
+        ov<span class="tok-op">.</span>datasets<span class="tok-op">.</span>download_data<span class="tok-op">(</span>CDN <span class="tok-op">+</span> DATA<span class="tok-op">[</span>key<span class="tok-op">]</span><span class="tok-op">,</span> local<span class="tok-op">)</span>
+
+    <span class="tok-keyword">return</span> local
+</code></pre>
+<h2>Scale 1 — 10 k cells (Krasnow Lung Cell Atlas, Smart-seq2)</h2>
+<p>9 409 cells × <strong>40 cell types</strong>. This dataset only carries a <strong>t-SNE</strong> (no UMAP) — <code>ov.pl.plot1cell</code> accepts any 2-D embedding via <code>basis=</code>, so we plot against <code>X_tSNE</code> directly. Four tracks: <strong>donor</strong> (3), <strong>compartment</strong> (4 — immune / epithelial / endothelial / stromal), <strong>sex</strong> (2), <strong>age</strong> (3).</p>
+<pre><code class="language-python">a10k <span class="tok-op">=</span> ov<span class="tok-op">.</span>read<span class="tok-op">(</span><span class="tok-string">&#x27;data/&#x27;</span><span class="tok-op">+</span>fetch<span class="tok-op">(</span><span class="tok-string">&#x27;lung10k&#x27;</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-comment"># Shorten the long development_stage strings for the legend</span>
+
+a10k<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;age&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> a10k<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;development_stage&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>astype<span class="tok-op">(</span><span class="tok-builtin">str</span><span class="tok-op">)</span><span class="tok-op">.</span><span class="tok-builtin">str</span><span class="tok-op">.</span>replace<span class="tok-op">(</span><span class="tok-string">&#x27;-year-old stage&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;y&#x27;</span><span class="tok-op">,</span> regex<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">)</span>
+
+a10k</code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>plot1cell<span class="tok-op">(</span>
+
+    a10k<span class="tok-op">,</span> clusters<span class="tok-op">=</span><span class="tok-string">&#x27;cell_type&#x27;</span><span class="tok-op">,</span> basis<span class="tok-op">=</span><span class="tok-string">&#x27;X_tSNE&#x27;</span><span class="tok-op">,</span>
+
+    tracks<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;donor_id&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;compartment&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;sex&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;age&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    point_size<span class="tok-op">=</span><span class="tok-number">6</span><span class="tok-op">,</span> point_alpha<span class="tok-op">=</span><span class="tok-number">0.5</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">9</span><span class="tok-op">,</span> <span class="tok-number">9</span><span class="tok-op">)</span><span class="tok-op">,</span> label_fontsize<span class="tok-op">=</span><span class="tok-number">7</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/plot1cell-python/cell-007-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Scale 2 — 50 k cells (Mature kidney)</h2>
+<p>40 268 cells × <strong>29 cell types</strong> spanning 5 kidney sub-tissues, 12 donors, mixed pediatric / adult / tumour samples. Four tracks: <strong>compartment</strong> (proximal tubule / non-PT / lymphoid / myeloid), <strong>tissue</strong> (cortex / medulla / …), <strong>sex</strong>, and the <code>cell_state</code> (proliferating flag).</p>
+<pre><code class="language-python">a50k <span class="tok-op">=</span> ov<span class="tok-op">.</span>read<span class="tok-op">(</span><span class="tok-string">&#x27;data/&#x27;</span><span class="tok-op">+</span>fetch<span class="tok-op">(</span><span class="tok-string">&#x27;kidney50k&#x27;</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+a50k</code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>plot1cell<span class="tok-op">(</span>
+
+    a50k<span class="tok-op">,</span> clusters<span class="tok-op">=</span><span class="tok-string">&#x27;cell_type&#x27;</span><span class="tok-op">,</span> basis<span class="tok-op">=</span><span class="tok-string">&#x27;X_umap&#x27;</span><span class="tok-op">,</span>
+
+    tracks<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;compartment&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;tissue&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;sex&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;cell_state&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    point_size<span class="tok-op">=</span><span class="tok-number">2</span><span class="tok-op">,</span> point_alpha<span class="tok-op">=</span><span class="tok-number">0.35</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">10</span><span class="tok-op">,</span> <span class="tok-number">10</span><span class="tok-op">)</span><span class="tok-op">,</span> label_fontsize<span class="tok-op">=</span><span class="tok-number">7</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/plot1cell-python/cell-010-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Scale 3 — 100 k cells (distal airways, healthy + COPD)</h2>
+<p>115 788 cells × <strong>44 cell types</strong> across 17 donors and two disease states (<code>normal</code> vs. COPD). Five tracks: <strong>disease</strong>, <strong>tissue</strong> (distal / terminal / proximal airway), <strong>assay</strong>, <strong>sex</strong>, <strong>self_reported_ethnicity</strong>.</p>
+<p>At this scale the scatter is dense — we dial point size + alpha down so the KDE contour still reads through. Labels are all radial so the 44 cell types don&#x27;t collide.</p>
+<pre><code class="language-python">a100k <span class="tok-op">=</span> ov<span class="tok-op">.</span>read<span class="tok-op">(</span><span class="tok-string">&#x27;data/&#x27;</span><span class="tok-op">+</span>fetch<span class="tok-op">(</span><span class="tok-string">&#x27;airway100k&#x27;</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+a100k</code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>plot1cell<span class="tok-op">(</span>
+
+    a100k<span class="tok-op">,</span> clusters<span class="tok-op">=</span><span class="tok-string">&#x27;cell_type&#x27;</span><span class="tok-op">,</span> basis<span class="tok-op">=</span><span class="tok-string">&#x27;X_umap&#x27;</span><span class="tok-op">,</span>
+
+    tracks<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;disease&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;tissue&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;assay&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;sex&#x27;</span><span class="tok-op">,</span>
+
+            <span class="tok-string">&#x27;self_reported_ethnicity&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    point_size<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span> point_alpha<span class="tok-op">=</span><span class="tok-number">0.25</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">11</span><span class="tok-op">,</span> <span class="tok-number">11</span><span class="tok-op">)</span><span class="tok-op">,</span> label_fontsize<span class="tok-op">=</span><span class="tok-number">6</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/plot1cell-python/cell-013-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Scale 4 — 200 k cells (Lung all cells and nuclei)</h2>
+<p>193 108 cells × 60 fine cell types — we use the curator&#x27;s mid-level collapse <code>Celltypes_master_higher_immune</code> (23 types) to keep the ring readable. <strong>Six tracks</strong>: smoking status, BMI range, age range, tissue sub-region, assay, sex.</p>
+<p>The full file is ~2 GB. If RAM is tight, you can subsample: <code>adata = adata[np.random.choice(adata.n_obs, 50_000, replace=False)]</code>. The KDE contour is still smooth at 50k sampled points.</p>
+<pre><code class="language-python">a200k <span class="tok-op">=</span> ov<span class="tok-op">.</span>read<span class="tok-op">(</span><span class="tok-string">&#x27;data/&#x27;</span><span class="tok-op">+</span>fetch<span class="tok-op">(</span><span class="tok-string">&#x27;lung200k&#x27;</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-comment"># Keep fewer genes to reduce memory — plot1cell only needs obsm + obs</span>
+
+a200k <span class="tok-op">=</span> a200k<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span> <span class="tok-op">:</span><span class="tok-number">200</span><span class="tok-op">]</span><span class="tok-op">.</span>copy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+a200k</code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>plot1cell<span class="tok-op">(</span>
+
+    a200k<span class="tok-op">,</span> clusters<span class="tok-op">=</span><span class="tok-string">&#x27;Celltypes_master_higher_immune&#x27;</span><span class="tok-op">,</span>
+
+    basis<span class="tok-op">=</span><span class="tok-string">&#x27;X_umap_Harmony_scDonor_snBatch&#x27;</span><span class="tok-op">,</span>
+
+    tracks<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;Smoking status&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;BMI range&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;Age range&#x27;</span><span class="tok-op">,</span>
+
+            <span class="tok-string">&#x27;tissue&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;assay&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;sex&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    point_size<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span> point_alpha<span class="tok-op">=</span><span class="tok-number">0.2</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">12</span><span class="tok-op">,</span> <span class="tok-number">12</span><span class="tok-op">)</span><span class="tok-op">,</span> label_fontsize<span class="tok-op">=</span><span class="tok-number">8</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/plot1cell-python/cell-016-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Key parameters</h2>
+<table><tr><th>Parameter</th><th>Purpose</th></tr><tr><td><code>clusters</code></td><td>obs column with the cluster label (required).</td></tr><tr><td><code>basis</code></td><td>obsm key, default <code>&#x27;X_umap&#x27;</code>. Any 2-D embedding works (<code>X_tSNE</code>, <code>X_pca</code>, harmony UMAPs, …).</td></tr><tr><td><code>tracks</code></td><td>list of obs columns → one concentric ring each, coloured by the run-length composition within each cluster sector. No hard limit; 6 rings render fine.</td></tr><tr><td><code>coord_scale</code></td><td>how much of the unit circle the scatter fills (0–1, default 0.8).</td></tr><tr><td><code>contour_levels</code></td><td>KDE levels to overlay; <code>None</code> disables.</td></tr><tr><td><code>label_orient</code></td><td><code>&#x27;auto&#x27;</code> (default) \</td><td><code>&#x27;tangent&#x27;</code> \</td><td><code>&#x27;radial&#x27;</code>. Auto uses tangent for ≤10 clusters (classic R look) and radial above that so labels never overlap.</td></tr><tr><td><code>gap_between_deg</code>, <code>gap_start_deg</code></td><td>angular gaps between sectors (2°) and at the start of the circle (12°) — match the R convention.</td></tr><tr><td><code>cluster_palette</code>, <code>track_palette</code></td><td>override the default <code>ov</code> palette. Accepts a colormap name or a list of colors.</td></tr><tr><td><code>bg_color</code></td><td>canvas colour (default the R parchment <code>&#x27;#F9F2E4&#x27;</code>). Use <code>&#x27;white&#x27;</code> for a plain look.</td></tr><tr><td><code>point_size</code>, <code>point_alpha</code></td><td>for dense scatters (&gt; 50k points) drop both to keep the KDE contour visible through the cloud.</td></tr><tr><td><code>return_data=True</code></td><td>also return the per-cell dataframe used internally.</td></tr></table>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
+    </span>
+    <span class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

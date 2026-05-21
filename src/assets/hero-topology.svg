@@ -1,0 +1,225 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 560" role="img" aria-labelledby="hero-topology-title hero-topology-desc">
+  <title id="hero-topology-title">OmicVerse data and method topology</title>
+  <desc id="hero-topology-desc">A diagram showing single-cell data clustering on the left, an AnnData object in the middle, and connected method and agent nodes on the right.</desc>
+
+  <defs>
+    <linearGradient id="bgGlow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e6f3e1" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#fbfdf9" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="anndataFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f1f7ee"/>
+    </linearGradient>
+    <linearGradient id="methodFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1f7a36"/>
+      <stop offset="100%" stop-color="#134d22"/>
+    </linearGradient>
+    <radialGradient id="methodSecondary" cx="0.4" cy="0.4">
+      <stop offset="0%" stop-color="#4ea846"/>
+      <stop offset="100%" stop-color="#1f7a36"/>
+    </radialGradient>
+    <pattern id="matrixGrid" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
+      <rect width="14" height="14" fill="#ffffff"/>
+      <circle cx="7" cy="7" r="2.4" fill="#1f7a36" opacity="0.35"/>
+    </pattern>
+    <pattern id="dotPattern" x="0" y="0" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#1f7a36" opacity="0.16"/>
+    </pattern>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6"/>
+      <feOffset dy="4"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.18"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background dot grid + soft glow -->
+  <rect x="0" y="0" width="600" height="560" fill="url(#dotPattern)"/>
+  <circle cx="300" cy="280" r="280" fill="url(#bgGlow)"/>
+
+  <!-- ───────────────────────── LEFT: UMAP scatter ───────────────────────── -->
+  <g transform="translate(20, 90)">
+    <!-- frame -->
+    <rect x="0" y="0" width="170" height="380" rx="14" fill="#ffffff" stroke="#e1ebe4" stroke-width="1"/>
+    <!-- header -->
+    <text x="14" y="22" font-family="IBM Plex Mono, monospace" font-size="10" fill="#6b7a73" letter-spacing="1.2">UMAP · CELLS</text>
+    <line x1="14" y1="32" x2="156" y2="32" stroke="#e1ebe4" stroke-width="1"/>
+
+    <!-- cluster A (top, deep) -->
+    <g fill="#134d22" opacity="0.85">
+      <circle cx="62" cy="68" r="3.4"/><circle cx="74" cy="62" r="3"/><circle cx="68" cy="78" r="3.6"/>
+      <circle cx="80" cy="74" r="3"/><circle cx="55" cy="80" r="2.8"/><circle cx="86" cy="68" r="2.6"/>
+      <circle cx="72" cy="88" r="3"/><circle cx="60" cy="96" r="3.2"/><circle cx="92" cy="82" r="2.6"/>
+      <circle cx="78" cy="100" r="2.8"/>
+    </g>
+    <!-- cluster B (middle, mid) -->
+    <g fill="#1f7a36" opacity="0.85">
+      <circle cx="100" cy="160" r="3.4"/><circle cx="112" cy="155" r="3"/><circle cx="92" cy="170" r="3.2"/>
+      <circle cx="106" cy="172" r="3.6"/><circle cx="118" cy="172" r="2.8"/><circle cx="98" cy="184" r="3"/>
+      <circle cx="86" cy="178" r="2.6"/><circle cx="115" cy="186" r="2.8"/><circle cx="124" cy="166" r="2.6"/>
+      <circle cx="108" cy="194" r="3"/>
+    </g>
+    <!-- cluster C (bottom, bright) -->
+    <g fill="#4ea846" opacity="0.85">
+      <circle cx="48" cy="248" r="3.4"/><circle cx="62" cy="252" r="3"/><circle cx="58" cy="262" r="3.6"/>
+      <circle cx="44" cy="266" r="2.8"/><circle cx="70" cy="266" r="3"/><circle cx="52" cy="278" r="3.2"/>
+      <circle cx="66" cy="280" r="2.8"/><circle cx="38" cy="282" r="2.6"/><circle cx="76" cy="252" r="2.8"/>
+      <circle cx="60" cy="294" r="3"/>
+    </g>
+    <!-- cluster D (right, lighter) -->
+    <g fill="#7cc46a" opacity="0.8">
+      <circle cx="124" cy="262" r="3"/><circle cx="135" cy="258" r="2.8"/><circle cx="130" cy="272" r="3.2"/>
+      <circle cx="142" cy="270" r="2.6"/><circle cx="120" cy="276" r="2.6"/><circle cx="138" cy="284" r="3"/>
+      <circle cx="128" cy="288" r="2.6"/>
+    </g>
+    <!-- cluster E (top right) -->
+    <g fill="#d99a32" opacity="0.78">
+      <circle cx="128" cy="100" r="2.8"/><circle cx="140" cy="106" r="2.6"/><circle cx="135" cy="118" r="3"/>
+      <circle cx="124" cy="124" r="2.4"/>
+    </g>
+
+    <!-- axes hint -->
+    <line x1="14" y1="350" x2="156" y2="350" stroke="#e1ebe4" stroke-width="1"/>
+    <line x1="14" y1="350" x2="14" y2="40" stroke="#e1ebe4" stroke-width="1" opacity="0.4"/>
+    <text x="14" y="364" font-family="IBM Plex Mono, monospace" font-size="9" fill="#6b7a73" letter-spacing="0.6">X1</text>
+    <text x="148" y="364" font-family="IBM Plex Mono, monospace" font-size="9" fill="#6b7a73" letter-spacing="0.6" text-anchor="end">X2</text>
+  </g>
+
+  <!-- ───────────────────────── MIDDLE: AnnData object ───────────────────────── -->
+  <g transform="translate(220, 90)" filter="url(#softShadow)">
+    <rect x="0" y="0" width="180" height="380" rx="16" fill="url(#anndataFill)" stroke="#c2d4c8" stroke-width="1"/>
+
+    <!-- title bar -->
+    <rect x="0" y="0" width="180" height="42" rx="16" fill="#0d1f17"/>
+    <rect x="0" y="22" width="180" height="20" fill="#0d1f17"/>
+    <circle cx="14" cy="21" r="3" fill="#4ea846"/>
+    <text x="26" y="25" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#ffffff">adata</text>
+    <text x="64" y="25" font-family="IBM Plex Mono, monospace" font-size="10" fill="#7cc46a">AnnData</text>
+    <text x="166" y="25" font-family="IBM Plex Mono, monospace" font-size="9" fill="#9ab59f" text-anchor="end">n=2700</text>
+
+    <!-- X matrix block (large) -->
+    <rect x="14" y="56" width="152" height="116" rx="8" fill="url(#matrixGrid)" stroke="#e1ebe4"/>
+    <text x="22" y="74" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" fill="#0d1f17">X</text>
+    <text x="36" y="74" font-family="IBM Plex Mono, monospace" font-size="9" fill="#6b7a73">expression</text>
+    <text x="158" y="74" font-family="IBM Plex Mono, monospace" font-size="9" fill="#6b7a73" text-anchor="end">2700×3000</text>
+
+    <!-- obs row -->
+    <rect x="14" y="184" width="152" height="40" rx="8" fill="#ffffff" stroke="#e1ebe4"/>
+    <text x="22" y="200" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" fill="#0d1f17">obs</text>
+    <text x="50" y="200" font-family="IBM Plex Mono, monospace" font-size="9" fill="#6b7a73">cell metadata</text>
+    <g transform="translate(22, 208)">
+      <rect x="0" y="0" width="22" height="8" rx="2" fill="#e6f3e1"/>
+      <rect x="26" y="0" width="22" height="8" rx="2" fill="#c9e7be"/>
+      <rect x="52" y="0" width="22" height="8" rx="2" fill="#e6f3e1"/>
+      <rect x="78" y="0" width="32" height="8" rx="2" fill="#c9e7be"/>
+      <rect x="114" y="0" width="20" height="8" rx="2" fill="#e6f3e1"/>
+    </g>
+
+    <!-- var row -->
+    <rect x="14" y="234" width="152" height="40" rx="8" fill="#ffffff" stroke="#e1ebe4"/>
+    <text x="22" y="250" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" fill="#0d1f17">var</text>
+    <text x="50" y="250" font-family="IBM Plex Mono, monospace" font-size="9" fill="#6b7a73">gene metadata</text>
+    <g transform="translate(22, 258)">
+      <rect x="0" y="0" width="18" height="8" rx="2" fill="#e6f3e1"/>
+      <rect x="22" y="0" width="26" height="8" rx="2" fill="#c9e7be"/>
+      <rect x="52" y="0" width="20" height="8" rx="2" fill="#e6f3e1"/>
+      <rect x="76" y="0" width="32" height="8" rx="2" fill="#c9e7be"/>
+      <rect x="112" y="0" width="22" height="8" rx="2" fill="#e6f3e1"/>
+    </g>
+
+    <!-- obsm / layers row -->
+    <rect x="14" y="284" width="72" height="76" rx="8" fill="#ffffff" stroke="#e1ebe4"/>
+    <text x="22" y="300" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" fill="#0d1f17">obsm</text>
+    <text x="22" y="312" font-family="IBM Plex Mono, monospace" font-size="8" fill="#6b7a73">embeddings</text>
+    <g transform="translate(22, 320)">
+      <circle cx="6" cy="14" r="2" fill="#1f7a36"/>
+      <circle cx="14" cy="10" r="2" fill="#4ea846"/>
+      <circle cx="22" cy="18" r="2" fill="#1f7a36"/>
+      <circle cx="32" cy="12" r="2" fill="#4ea846"/>
+      <circle cx="42" cy="20" r="2" fill="#1f7a36"/>
+    </g>
+
+    <rect x="94" y="284" width="72" height="76" rx="8" fill="#ffffff" stroke="#e1ebe4"/>
+    <text x="102" y="300" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" fill="#0d1f17">layers</text>
+    <text x="102" y="312" font-family="IBM Plex Mono, monospace" font-size="8" fill="#6b7a73">raw · norm</text>
+    <g transform="translate(102, 322)">
+      <rect x="0" y="0" width="56" height="6" rx="1" fill="#e6f3e1"/>
+      <rect x="0" y="10" width="56" height="6" rx="1" fill="#c9e7be"/>
+      <rect x="0" y="20" width="56" height="6" rx="1" fill="#e6f3e1"/>
+    </g>
+  </g>
+
+  <!-- ───────────────────────── RIGHT: method/agent nodes ───────────────────────── -->
+  <g transform="translate(420, 90)">
+    <!-- column hint label -->
+    <text x="80" y="22" font-family="IBM Plex Mono, monospace" font-size="10" fill="#6b7a73" letter-spacing="1.2" text-anchor="middle">METHODS · SKILLS</text>
+
+    <!-- node: omicverse (top, large) -->
+    <g transform="translate(80, 90)">
+      <circle r="46" fill="url(#methodFill)"/>
+      <circle r="46" fill="none" stroke="#4ea846" stroke-width="1" opacity="0.5"/>
+      <text y="-2" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">omicverse</text>
+      <text y="14" font-family="IBM Plex Mono, monospace" font-size="9" fill="#c9e7be" text-anchor="middle">core API</text>
+      <!-- orbit -->
+      <ellipse rx="60" ry="24" fill="none" stroke="#4ea846" stroke-width="1" stroke-dasharray="2 4" opacity="0.5" transform="rotate(-22)"/>
+      <circle cx="42" cy="-22" r="2.6" fill="#4ea846"/>
+    </g>
+
+    <!-- node: anndata-oom (middle) -->
+    <g transform="translate(98, 210)">
+      <circle r="36" fill="#ffffff" stroke="#1f7a36" stroke-width="1.5"/>
+      <text y="-4" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#0d1f17" text-anchor="middle">anndata</text>
+      <text y="8" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#0d1f17" text-anchor="middle">-oom</text>
+      <text y="22" font-family="IBM Plex Mono, monospace" font-size="8" fill="#1f7a36" text-anchor="middle">rust</text>
+    </g>
+
+    <!-- node: skills (bottom) -->
+    <g transform="translate(72, 320)">
+      <circle r="40" fill="url(#methodSecondary)"/>
+      <text y="-2" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle">skills</text>
+      <text y="12" font-family="IBM Plex Mono, monospace" font-size="9" fill="#dff5d3" text-anchor="middle">agents</text>
+      <!-- spark -->
+      <path d="M -28 -28 L -22 -34 M -25 -22 L -19 -28" stroke="#dff5d3" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+    </g>
+
+    <!-- inter-node dashed links -->
+    <path d="M 80 136 Q 96 170 98 174" stroke="#1f7a36" stroke-width="1" stroke-dasharray="3 4" fill="none" opacity="0.45"/>
+    <path d="M 98 246 Q 84 280 72 280" stroke="#1f7a36" stroke-width="1" stroke-dasharray="3 4" fill="none" opacity="0.45"/>
+
+    <!-- DNA helix accent -->
+    <g transform="translate(140, 380)" stroke="#4ea846" stroke-width="1.2" fill="none" opacity="0.55">
+      <path d="M 0 0 Q 6 6 0 12 Q -6 18 0 24"/>
+      <path d="M 0 0 Q -6 6 0 12 Q 6 18 0 24"/>
+      <line x1="-3" y1="6" x2="3" y2="6"/>
+      <line x1="-3" y1="18" x2="3" y2="18"/>
+    </g>
+  </g>
+
+  <!-- ───────────────────────── connecting flows ───────────────────────── -->
+  <g stroke="#1f7a36" stroke-width="1.4" fill="none" stroke-linecap="round">
+    <path d="M 192 200 C 210 200 210 220 220 220" stroke-dasharray="4 4" opacity="0.5"/>
+    <path d="M 192 280 C 210 280 210 280 220 280" stroke-dasharray="4 4" opacity="0.6"/>
+    <path d="M 192 360 C 210 360 210 340 220 340" stroke-dasharray="4 4" opacity="0.5"/>
+
+    <path d="M 400 200 C 420 200 440 180 500 180" stroke-dasharray="4 4" opacity="0.55"/>
+    <path d="M 400 280 C 420 280 460 290 510 300" stroke-dasharray="4 4" opacity="0.55"/>
+    <path d="M 400 360 C 420 360 440 380 490 400" stroke-dasharray="4 4" opacity="0.55"/>
+  </g>
+
+  <!-- subtle flow arrows -->
+  <g fill="#1f7a36">
+    <polygon points="218,217 226,220 218,223" opacity="0.7"/>
+    <polygon points="218,277 226,280 218,283" opacity="0.7"/>
+    <polygon points="218,337 226,340 218,343" opacity="0.7"/>
+    <polygon points="500,177 508,180 500,183" opacity="0.7"/>
+    <polygon points="510,297 518,300 510,303" opacity="0.7"/>
+    <polygon points="490,397 498,400 490,403" opacity="0.7"/>
+  </g>
+
+  <!-- floating accent dots -->
+  <circle cx="40" cy="48" r="2.4" fill="#4ea846" opacity="0.6"/>
+  <circle cx="566" cy="56" r="2" fill="#1f7a36" opacity="0.55"/>
+  <circle cx="552" cy="500" r="2.6" fill="#4ea846" opacity="0.5"/>
+  <circle cx="58" cy="510" r="2" fill="#1f7a36" opacity="0.55"/>
+</svg>

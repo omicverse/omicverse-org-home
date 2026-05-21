@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" role="img" aria-label="Standardized AnnData schema">
+  <!-- container -->
+  <g transform="translate(20, 8)">
+    <rect width="160" height="64" rx="8" fill="#ffffff" stroke="#c2d4c8"/>
+    <rect width="160" height="14" rx="8" fill="#0d1f17"/>
+    <rect y="6" width="160" height="8" fill="#0d1f17"/>
+    <text x="8" y="11" font-family="IBM Plex Mono, monospace" font-size="8" fill="#7cc46a" font-weight="600">adata</text>
+    <text x="152" y="11" font-family="IBM Plex Mono, monospace" font-size="7" fill="#9ab59f" text-anchor="end">AnnData</text>
+
+    <!-- X big block -->
+    <g transform="translate(8, 22)">
+      <rect width="62" height="34" rx="4" fill="#e6f3e1" stroke="#c2d4c8"/>
+      <text x="6" y="11" font-family="IBM Plex Mono, monospace" font-size="9" font-weight="700" fill="#0d1f17">X</text>
+      <g fill="#1f7a36" opacity="0.55">
+        <circle cx="14" cy="22" r="1.4"/><circle cx="22" cy="22" r="1.4"/><circle cx="30" cy="22" r="1.4"/><circle cx="38" cy="22" r="1.4"/><circle cx="46" cy="22" r="1.4"/><circle cx="54" cy="22" r="1.4"/>
+        <circle cx="14" cy="28" r="1.4"/><circle cx="22" cy="28" r="1.4"/><circle cx="30" cy="28" r="1.4"/><circle cx="38" cy="28" r="1.4"/><circle cx="46" cy="28" r="1.4"/><circle cx="54" cy="28" r="1.4"/>
+      </g>
+    </g>
+
+    <!-- obs -->
+    <g transform="translate(76, 22)">
+      <rect width="36" height="14" rx="3" fill="#ffffff" stroke="#c2d4c8"/>
+      <text x="4" y="10" font-family="IBM Plex Mono, monospace" font-size="8" fill="#0d1f17">obs</text>
+    </g>
+    <!-- var -->
+    <g transform="translate(76, 42)">
+      <rect width="36" height="14" rx="3" fill="#ffffff" stroke="#c2d4c8"/>
+      <text x="4" y="10" font-family="IBM Plex Mono, monospace" font-size="8" fill="#0d1f17">var</text>
+    </g>
+    <!-- obsm -->
+    <g transform="translate(118, 22)">
+      <rect width="34" height="14" rx="3" fill="#ffffff" stroke="#c2d4c8"/>
+      <text x="4" y="10" font-family="IBM Plex Mono, monospace" font-size="8" fill="#0d1f17">obsm</text>
+    </g>
+    <!-- layers -->
+    <g transform="translate(118, 42)">
+      <rect width="34" height="14" rx="3" fill="#ffffff" stroke="#c2d4c8"/>
+      <text x="4" y="10" font-family="IBM Plex Mono, monospace" font-size="8" fill="#0d1f17">layers</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+{
+  "name": "omicverse-org-home",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static community homepage for omicverse.org.",
+  "scripts": {
+    "build": "rm -rf dist && mkdir -p dist && cp -R src/. dist/ && find dist -name .DS_Store -delete",
+    "serve": "python3 -m http.server 4173 -d dist"
+  }
+}

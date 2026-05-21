@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blog — OmicVerse</title>
+  <link rel="icon" type="image/png" href="assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="packages.html">Packages</a>
+      <a href="learn.html">Learn</a>
+      <a href="people.html">People</a>
+      <a aria-current="page" href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a href="join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero page-width">
+      <p class="overline">Blog</p>
+      <h1>Tutorials and technical notes from OmicVerse.</h1>
+    </section>
+
+    <section class="page-width">
+      <div class="t-list blog-list">
+        <a href="blog/nanostring-cosmx-workflow.html">
+          <span class="t-name">Spatial</span>
+          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Analyzing NanoString CosMx Data</strong> Read CosMx data, validate FOV-level spatial structure, inspect segmentation quality, and prepare inputs for downstream spatial modeling.</span>
+          <span class="t-arrow">Read →</span>
+        </a>
+        <a href="blog/visium-hd-workflow.html">
+          <span class="t-name">Spatial</span>
+          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Analyzing Visium HD Data</strong> Work with Visium HD bin-level output, tissue images, spatially variable genes, low-dimensional representations, and segmentation-derived views.</span>
+          <span class="t-arrow">Read →</span>
+        </a>
+        <a href="blog/xenium-workflow.html">
+          <span class="t-name">Spatial</span>
+          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Analyzing Xenium Data</strong> Load a 10x Xenium outs folder into AnnData, keep cell polygon boundaries, run QC and Leiden clustering, then project clusters back onto tissue space.</span>
+          <span class="t-arrow">Read →</span>
+        </a>
+        <a href="blog/atera-workflow.html">
+          <span class="t-name">Spatial</span>
+          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Reading and Preprocessing Atera Data</strong> Use OmicVerse to read 10x Atera whole-transcriptome spatial data, align expression, centroids, boundaries, nuclei, morphology channels, and annotations.</span>
+          <span class="t-arrow">Read →</span>
+        </a>
+        <a href="blog/cellpose-visium-hd.html">
+          <span class="t-name">Segmentation</span>
+          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Cell Segmentation for Visium HD with Cellpose</strong> Connect Visium HD 2 um bins, H&amp;E images, Cellpose segmentation, and bin-to-cell aggregation in a pure Python workflow.</span>
+          <span class="t-arrow">Read →</span>
+        </a>
+        <a href="blog/plot1cell-python.html">
+          <span class="t-name">Visualization</span>
+          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Circular UMAPs with the Python Version of plot1cell</strong> Use ov.pl.plot1cell to place UMAP or t-SNE cells inside a circular layout and add cluster-aware metadata rings around the embedding.</span>
+          <span class="t-arrow">Read →</span>
+        </a>
+        <a href="blog/leiden-resolution-selection.html">
+          <span class="t-name">Single-cell</span>
+          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">How to Choose Leiden Resolution</strong> Compare manual Leiden, bootstrap stability, and CHAMP on PBMC8k to choose a reproducible starting resolution for single-cell clustering.</span>
+          <span class="t-arrow">Read →</span>
+        </a>
+        <a href="blog/omicverse-2-1-update.html">
+          <span class="t-name">Release</span>
+          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">What Changed in OmicVerse 2.1.x</strong> A compact English release note for the 2.1.x line: pure-Python Monocle, Xenium and Visium HD workflows, plotting updates, agent runtime work, metabolomics, and microbiome support.</span>
+          <span class="t-arrow">Read →</span>
+        </a>
+        <a href="blog/anthropic-mythos-security.html">
+          <span class="t-name">Agents</span>
+          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">What Anthropic Mythos Preview Signals for Agent Security</strong> A security-oriented note on why increasingly capable agents need bounded execution, provenance, credential discipline, and auditable scientific workflows.</span>
+          <span class="t-arrow">Read →</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      OmicVerse
+    </span>
+    <span class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="packages.html">Packages</a>
+      <a href="learn.html">Learn</a>
+      <a href="people.html">People</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a href="join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

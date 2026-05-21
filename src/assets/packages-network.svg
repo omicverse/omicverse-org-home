@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" role="img" aria-labelledby="stack-title stack-desc">
+  <title id="stack-title">OmicVerse package stack</title>
+  <desc id="stack-desc">Four-layer architecture: agent layer on top, unified Python core, method ports in Python and Rust, and a Rust-backed data foundation at the bottom.</desc>
+
+  <defs>
+    <style>
+      .layer-num   { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: #76736b; letter-spacing: 0.04em; }
+      .layer-label { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: #76736b; letter-spacing: 0.06em; text-transform: uppercase; }
+      .group-label { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: #76736b; letter-spacing: 0.06em; text-transform: uppercase; }
+      .pkg         { font-family: "IBM Plex Mono", monospace; font-size: 14px; fill: #161613; font-weight: 500; }
+      .pkg-small   { font-family: "IBM Plex Mono", monospace; font-size: 13px; fill: #161613; font-weight: 500; }
+      .pkg-core    { font-family: "IBM Plex Mono", monospace; font-size: 15px; fill: #1f7a36; font-weight: 600; }
+      .desc        { font-family: "Inter", system-ui, sans-serif; font-size: 12px; fill: #76736b; }
+      .desc-small  { font-family: "Inter", system-ui, sans-serif; font-size: 11px; fill: #76736b; }
+      .row         { fill: #ffffff; stroke: #e5e1d4; stroke-width: 1; }
+      .row-core    { fill: #ffffff; stroke: #1f7a36; stroke-width: 1.5; }
+      .row-rust    { fill: #ffffff; stroke: #d4cfb9; stroke-width: 1; stroke-dasharray: 0; }
+      .connector   { stroke: #d4cfb9; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <!-- ╭──── /01 Agent layer — 2 packages ────╮ -->
+  <text x="22" y="58" class="layer-num">/ 01</text>
+  <g transform="translate(80, 24)">
+    <rect x="0"   y="0" width="426" height="60" rx="3" class="row"/>
+    <text x="14"  y="36" class="pkg">omicverse-skills</text>
+    <text x="14"  y="50" class="desc">reusable agent skills · planning · inspection · reporting</text>
+    <rect x="434" y="0" width="426" height="60" rx="3" class="row"/>
+    <text x="448" y="36" class="pkg">omicclaw</text>
+    <text x="448" y="50" class="desc">agent skill for OmicVerse workflows</text>
+  </g>
+  <text x="920" y="58" class="layer-label" text-anchor="end">Agent layer · 2</text>
+
+  <line x1="510" y1="84" x2="510" y2="100" class="connector"/>
+
+  <!-- ╭──── /02 Core API — 1 package, highlighted ────╮ -->
+  <text x="22" y="138" class="layer-num">/ 02</text>
+  <rect x="80" y="100" width="860" height="60" rx="3" class="row-core"/>
+  <text x="100" y="136" class="pkg-core">omicverse</text>
+  <text x="190" y="136" class="desc">Unified Python API · bulk · single-cell · spatial · multi-omics</text>
+  <text x="920" y="136" class="layer-label" text-anchor="end" fill="#1f7a36">Core API · 979★</text>
+
+  <line x1="510" y1="160" x2="510" y2="186" class="connector"/>
+
+  <!-- ╭──── /03a Method ports · Python — 11 packages ────╮ -->
+  <text x="22" y="208" class="layer-num">/ 03</text>
+  <text x="80" y="200" class="group-label">Method ports · Python</text>
+  <text x="920" y="200" class="layer-label" text-anchor="end">11 packages · pure-python re-implementations</text>
+
+  <g transform="translate(80, 212)">
+    <!-- Row 1 -->
+    <rect x="0"   y="0" width="206" height="50" rx="3" class="row"/>
+    <text x="14"  y="22" class="pkg-small">py-hdWGCNA</text>
+    <text x="14"  y="38" class="desc-small">co-expression nets</text>
+
+    <rect x="218" y="0" width="206" height="50" rx="3" class="row"/>
+    <text x="232" y="22" class="pkg-small">py-inferCNV</text>
+    <text x="232" y="38" class="desc-small">single-cell CNV</text>
+
+    <rect x="436" y="0" width="206" height="50" rx="3" class="row"/>
+    <text x="450" y="22" class="pkg-small">py-CopyKAT</text>
+    <text x="450" y="38" class="desc-small">aneuploid classifier</text>
+
+    <rect x="654" y="0" width="206" height="50" rx="3" class="row"/>
+    <text x="668" y="22" class="pkg-small">py-scmetabolism</text>
+    <text x="668" y="38" class="desc-small">metabolism scoring</text>
+
+    <!-- Row 2 -->
+    <rect x="0"   y="58" width="206" height="50" rx="3" class="row"/>
+    <text x="14"  y="80" class="pkg-small">py-monocle2</text>
+    <text x="14"  y="96" class="desc-small">trajectory inference</text>
+
+    <rect x="218" y="58" width="206" height="50" rx="3" class="row"/>
+    <text x="232" y="80" class="pkg-small">py-cca</text>
+    <text x="232" y="96" class="desc-small">Seurat CCA integration</text>
+
+    <rect x="436" y="58" width="206" height="50" rx="3" class="row"/>
+    <text x="450" y="80" class="pkg-small">py-DoubletFinder</text>
+    <text x="450" y="96" class="desc-small">doublet detection</text>
+
+    <rect x="654" y="58" width="206" height="50" rx="3" class="row"/>
+    <text x="668" y="80" class="pkg-small">py-scDblFinder</text>
+    <text x="668" y="96" class="desc-small">doublet detection</text>
+
+    <!-- Row 3 — 3 packages + nominate slot -->
+    <rect x="0"   y="116" width="206" height="50" rx="3" class="row"/>
+    <text x="14"  y="138" class="pkg-small">py-miloR</text>
+    <text x="14"  y="154" class="desc-small">differential abundance</text>
+
+    <rect x="218" y="116" width="206" height="50" rx="3" class="row"/>
+    <text x="232" y="138" class="pkg-small">py-mclustR</text>
+    <text x="232" y="154" class="desc-small">Gaussian mixture clustering</text>
+
+    <rect x="436" y="116" width="206" height="50" rx="3" class="row"/>
+    <text x="450" y="138" class="pkg-small">py-dada2</text>
+    <text x="450" y="154" class="desc-small">amplicon ASV inference</text>
+
+    <rect x="654" y="116" width="206" height="50" rx="3" class="row" style="fill:#fbfaf6; stroke:#d4cfb9; stroke-dasharray: 4 4;"/>
+    <text x="668" y="138" class="pkg-small" fill="#76736b">+ nominate one</text>
+    <text x="668" y="154" class="desc-small">propose an R method to port</text>
+  </g>
+
+  <!-- ╭──── /03b Method ports · Rust — 3 packages ────╮ -->
+  <text x="80" y="404" class="group-label">Method ports · Rust</text>
+  <text x="920" y="404" class="layer-label" text-anchor="end">3 packages · 10–200× faster, bit-identical</text>
+
+  <g transform="translate(80, 416)">
+    <rect x="0"   y="0" width="280" height="50" rx="3" class="row"/>
+    <text x="14"  y="22" class="pkg-small">rust-NMF</text>
+    <text x="14"  y="38" class="desc-small">non-negative matrix factorization · ~76× R Lee</text>
+
+    <rect x="290" y="0" width="280" height="50" rx="3" class="row"/>
+    <text x="304" y="22" class="pkg-small">rust-scHiCluster</text>
+    <text x="304" y="38" class="desc-small">single-cell Hi-C imputation · ~10× R</text>
+
+    <rect x="580" y="0" width="280" height="50" rx="3" class="row"/>
+    <text x="594" y="22" class="pkg-small">rust-bandnorm</text>
+    <text x="594" y="38" class="desc-small">single-cell Hi-C normalization · ~24× R</text>
+  </g>
+
+  <line x1="510" y1="466" x2="510" y2="490" class="connector"/>
+
+  <!-- ╭──── /04 Data foundation — 1 package ────╮ -->
+  <text x="22" y="524" class="layer-num">/ 04</text>
+  <rect x="80" y="490" width="860" height="60" rx="3" class="row"/>
+  <text x="100" y="522" class="pkg">anndata-oom</text>
+  <text x="200" y="522" class="desc">drop-in AnnData replacement · matrix stays on disk · whole pipelines without loading</text>
+  <text x="920" y="522" class="layer-label" text-anchor="end">Data foundation · Rust</text>
+</svg>

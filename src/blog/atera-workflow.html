@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reading and Preprocessing Atera Data — OmicVerse</title>
+  <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../people.html">People</a>
+      <a aria-current="page" href="../blog.html">Blog</a>
+      <a href="../events.html">Events</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main class="article page-width">
+    <a class="article-back" href="../blog.html">← Back to blog</a>
+    <p class="overline">Spatial</p>
+    <h1>Analyze 10x Atera (WTA Preview) FFPE breast cancer data</h1>
+<p>Atera is 10x Genomics&#x27; next-generation, in-situ, whole-transcriptome assay built on top of the Xenium platform. Compared with Xenium&#x27;s gene-panel chemistry, Atera v1 expands coverage to ~18,000 human gene targets while keeping the cell-segmentation, polygon, and OME-TIFF morphology imaging that Xenium tutorials are written against.</p>
+<p>An Atera <code>outs/</code> bundle ships <strong>a Xenium-format core plus three additions</strong>:</p>
+<table><tr><th>File / folder</th><th>Origin</th><th>Notes</th></tr><tr><td><code>cell_feature_matrix.h5</code></td><td>shared</td><td>gene × cell sparse counts (10x HDF5)</td></tr><tr><td><code>cells.parquet</code></td><td>shared</td><td>per-cell metadata + centroids (microns)</td></tr><tr><td><code>cell_boundaries.parquet</code></td><td>shared</td><td>per-cell polygon vertices</td></tr><tr><td><code>experiment.xenium</code></td><td>shared</td><td>pipeline metadata (JSON)</td></tr><tr><td><strong><code>nucleus_boundaries.parquet</code></strong></td><td>Atera-only</td><td>per-cell nucleus polygon vertices</td></tr><tr><td><strong><code>morphology_focus/ch####_&lt;tag&gt;.ome.tif</code></strong></td><td>Atera-only</td><td>named multi-stain images (DAPI, ATP1A1+CD45+E-Cad, 18S, αSMA+Vim)</td></tr><tr><td><code>*_cell_groups.csv</code></td><td>optional</td><td>vendor-shipped cell-type classifier (cell_id → group → display color)</td></tr><tr><td><code>*_he_image.ome.tif</code> + <code>*_he_alignment.csv</code></td><td>optional</td><td>registered H&amp;E whole-slide image and 3×3 affine</td></tr></table>
+<p>OmicVerse&#x27;s <code>ov.io.spatial.read_atera</code> mirrors <code>read_xenium</code> plus loaders for the four Atera-only items. This notebook walks through:</p>
+<ul><li>loading an Atera FFPE breast-cancer bundle into a single <code>AnnData</code>,</li><li>inspecting the four morphology stain channels,</li><li>plotting the vendor-supplied cell-type segmentation in spatial coords,</li><li>zooming into a small region with <code>ov.pl.spatialseg</code> to render cell polygons,</li><li>running standard preprocessing (filter, normalize, HVG, PCA),</li><li>plotting per-gene spatial expression for canonical breast-cancer markers.</li></ul>
+<h2>Environment setup</h2>
+<pre><code class="language-python"><span class="tok-keyword">import</span> omicverse <span class="tok-keyword">as</span> ov
+
+ov<span class="tok-op">.</span>style<span class="tok-op">(</span>font_path<span class="tok-op">=</span><span class="tok-string">&#x27;Arial&#x27;</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-op">%</span>load_ext autoreload
+
+<span class="tok-op">%</span>autoreload <span class="tok-number">2</span></code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>settings<span class="tok-op">.</span>cpu_gpu_mixed_init<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<h2>Inspect the Atera bundle</h2>
+<p>Atera ships its primary outputs as a single <code>outs.zip</code>. For tutorials we extract the small files (matrices, parquet, JSON) plus the four morphology focus channels — the giant <code>morphology.ome.tif</code> (~15 GB, full multi-z stack) and <code>transcripts.parquet</code> (~10 GB) are not needed for cell-level downstream analysis.</p>
+<p>Companion files (cell_groups CSV, H&amp;E image + alignment CSV) sit *next to* <code>outs/</code> in the public 10x dataset page rather than inside it.</p>
+<pre><code class="language-python"><span class="tok-keyword">from</span> pathlib <span class="tok-keyword">import</span> <span class="tok-builtin">Path</span>
+
+
+
+ATERA <span class="tok-op">=</span> <span class="tok-builtin">Path</span><span class="tok-op">(</span><span class="tok-string">&quot;data/atera_breast_cancer&quot;</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-comment"># Show top-level files + the morphology_focus channel TIFFs (skip GB-scale OME-TIFFs).</span>
+
+<span class="tok-keyword">for</span> p <span class="tok-keyword">in</span> sorted<span class="tok-op">(</span>ATERA<span class="tok-op">.</span>iterdir<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    <span class="tok-keyword">if</span> p<span class="tok-op">.</span>is_dir<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+        <span class="tok-builtin">print</span><span class="tok-op">(</span>f&quot;  <span class="tok-op">{</span>p<span class="tok-op">.</span>name<span class="tok-op">}</span>/&quot;<span class="tok-op">)</span>
+
+        <span class="tok-keyword">for</span> k <span class="tok-keyword">in</span> sorted<span class="tok-op">(</span>p<span class="tok-op">.</span>iterdir<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+            <span class="tok-builtin">print</span><span class="tok-op">(</span>f&quot;      <span class="tok-op">{</span>k<span class="tok-op">.</span>name<span class="tok-op">}</span>  (<span class="tok-op">{</span>k<span class="tok-op">.</span>stat<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>st_size <span class="tok-op">/</span> <span class="tok-number">1024</span><span class="tok-op">**</span><span class="tok-number">2</span><span class="tok-op">:</span>,.1f<span class="tok-op">}</span> MB)&quot;<span class="tok-op">)</span>
+
+    <span class="tok-keyword">else</span><span class="tok-op">:</span>
+
+        size_mb <span class="tok-op">=</span> p<span class="tok-op">.</span>stat<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>st_size <span class="tok-op">/</span> <span class="tok-number">1024</span><span class="tok-op">**</span><span class="tok-number">2</span>
+
+        <span class="tok-comment"># Skip the multi-GB H&amp;E OME-TIFF and outs.zip from the printout.</span>
+
+        <span class="tok-keyword">if</span> size_mb <span class="tok-op">&lt;</span> <span class="tok-number">500</span><span class="tok-op">:</span>
+
+            <span class="tok-builtin">print</span><span class="tok-op">(</span>f&quot;  <span class="tok-op">{</span>p<span class="tok-op">.</span>name<span class="tok-op">}</span>  (<span class="tok-op">{</span>size_mb<span class="tok-op">:</span>,.1f<span class="tok-op">}</span> MB)&quot;<span class="tok-op">)</span>
+
+        <span class="tok-keyword">else</span><span class="tok-op">:</span>
+
+            <span class="tok-builtin">print</span><span class="tok-op">(</span>f&quot;  <span class="tok-op">{</span>p<span class="tok-op">.</span>name<span class="tok-op">}</span>  (<span class="tok-op">{</span>size_mb <span class="tok-op">/</span> <span class="tok-number">1024</span><span class="tok-op">:</span>,.1f<span class="tok-op">}</span> GB)  # large, not loaded directly&quot;<span class="tok-op">)</span>
+</code></pre>
+<h2>Load the dataset with <code>read_atera</code></h2>
+<p><code>read_atera</code> returns an <code>AnnData</code> with:</p>
+<ul><li><strong><code>X</code></strong>: cells × genes sparse counts (control probes / codewords are dropped automatically; only <code>Gene Expression</code> features are kept).</li><li><strong><code>obsm[&#x27;spatial&#x27;]</code></strong>: cell centroids in microns.</li><li><strong><code>obs</code></strong>: cells.parquet metadata, plus <code>geometry</code> (cell polygon WKT), <code>nucleus_geometry</code> (nucleus polygon WKT), and — when <code>cell_groups_csv</code> is passed — <code>cell_group</code> and <code>cell_group_color</code> columns from the vendor&#x27;s classifier.</li><li><strong><code>uns[&#x27;spatial&#x27;][library_id]</code></strong>: <code>images[&#x27;hires&#x27;]</code> (the chosen morphology channel), scalefactors that map microns → image pixels, and the full <code>experiment.xenium</code> metadata dict.</li></ul>
+<p>We start by selecting the <code>dapi</code> channel for the morphology image. Atera multi-channel selection accepts either a semantic tag (<code>&#x27;dapi&#x27;</code>, <code>&#x27;boundary&#x27;</code>, <code>&#x27;rna&#x27;</code>, <code>&#x27;stroma&#x27;</code>), a substring (<code>&#x27;cd45&#x27;</code>, <code>&#x27;18s&#x27;</code>), or an integer-as-string index (<code>&#x27;0&#x27;</code>–<code>&#x27;3&#x27;</code>).</p>
+<pre><code class="language-python">adata <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>spatial<span class="tok-op">.</span>read_atera<span class="tok-op">(</span>
+
+    ATERA<span class="tok-op">,</span>
+
+    image_key<span class="tok-op">=</span><span class="tok-string">&#x27;dapi&#x27;</span><span class="tok-op">,</span>
+
+    image_max_dim<span class="tok-op">=</span><span class="tok-number">2048</span><span class="tok-op">,</span>
+
+    cell_groups_csv<span class="tok-op">=</span>ATERA <span class="tok-op">/</span> <span class="tok-string">&#x27;WTA_Preview_FFPE_Breast_Cancer_cell_groups.csv&#x27;</span><span class="tok-op">,</span>
+
+    cache_file<span class="tok-op">=</span>ATERA <span class="tok-op">/</span> <span class="tok-string">&#x27;atera_dapi.h5ad&#x27;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+adata</code></pre>
+<p>The <code>experiment.xenium</code> metadata is preserved verbatim under <code>uns[&#x27;spatial&#x27;][&#x27;&lt;library&gt;&#x27;][&#x27;metadata&#x27;]</code>. The <code>pixel_size</code> field (in microns) defines how spatial centroids are converted into image-pixel coordinates downstream.</p>
+<pre><code class="language-python">library_id <span class="tok-op">=</span> <span class="tok-builtin">list</span><span class="tok-op">(</span>adata<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>keys<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span>
+
+meta <span class="tok-op">=</span> adata<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>library_id<span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;metadata&#x27;</span><span class="tok-op">]</span>
+
+<span class="tok-keyword">for</span> k <span class="tok-keyword">in</span> <span class="tok-op">[</span><span class="tok-string">&#x27;run_name&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;region_name&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;preservation_method&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;panel_name&#x27;</span><span class="tok-op">,</span>
+
+          <span class="tok-string">&#x27;panel_num_targets_predesigned&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;chemistry_version&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;pixel_size&#x27;</span><span class="tok-op">,</span>
+
+          <span class="tok-string">&#x27;num_cells&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;transcripts_per_cell&#x27;</span><span class="tok-op">]</span><span class="tok-op">:</span>
+
+    <span class="tok-builtin">print</span><span class="tok-op">(</span>f&quot;  <span class="tok-op">{</span>k<span class="tok-op">:</span>30s<span class="tok-op">}</span> <span class="tok-op">{</span>meta<span class="tok-op">.</span>get<span class="tok-op">(</span>k<span class="tok-op">)</span><span class="tok-op">}</span>&quot;<span class="tok-op">)</span>
+</code></pre>
+<h2>Quick QC: per-cell distributions</h2>
+<p>Atera&#x27;s <code>cells.parquet</code> already carries per-cell <code>transcript_counts</code>, <code>cell_area</code>, and <code>nucleus_count</code>. A first sanity check is to verify the distributions look reasonable: a mean of ~2,000 transcripts/cell with cell areas in the tens of µm² is typical for Atera v1.</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> matplotlib<span class="tok-op">.</span>pyplot <span class="tok-keyword">as</span> plt
+
+<span class="tok-keyword">import</span> numpy <span class="tok-keyword">as</span> np
+
+<span class="tok-keyword">import</span> pandas <span class="tok-keyword">as</span> pd
+
+
+
+fig<span class="tok-op">,</span> axes <span class="tok-op">=</span> plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span><span class="tok-number">1</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">,</span> figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">15</span><span class="tok-op">,</span> <span class="tok-number">3.2</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-keyword">for</span> ax<span class="tok-op">,</span> <span class="tok-op">(</span>col<span class="tok-op">,</span> log<span class="tok-op">)</span> <span class="tok-keyword">in</span> <span class="tok-builtin">zip</span><span class="tok-op">(</span>axes<span class="tok-op">,</span> <span class="tok-op">[</span>
+
+    <span class="tok-op">(</span><span class="tok-string">&#x27;transcript_counts&#x27;</span><span class="tok-op">,</span> <span class="tok-keyword">True</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    <span class="tok-op">(</span><span class="tok-string">&#x27;cell_area&#x27;</span><span class="tok-op">,</span>        <span class="tok-keyword">False</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    <span class="tok-op">(</span><span class="tok-string">&#x27;nucleus_area&#x27;</span><span class="tok-op">,</span>     <span class="tok-keyword">False</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    <span class="tok-op">(</span><span class="tok-string">&#x27;nucleus_count&#x27;</span><span class="tok-op">,</span>    <span class="tok-keyword">False</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+<span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    vals <span class="tok-op">=</span> adata<span class="tok-op">.</span>obs<span class="tok-op">[</span>col<span class="tok-op">]</span><span class="tok-op">.</span>astype<span class="tok-op">(</span><span class="tok-builtin">float</span><span class="tok-op">)</span><span class="tok-op">.</span>to_numpy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    <span class="tok-keyword">if</span> log<span class="tok-op">:</span>
+
+        vals <span class="tok-op">=</span> np<span class="tok-op">.</span>log10<span class="tok-op">(</span>vals <span class="tok-op">+</span> <span class="tok-number">1</span><span class="tok-op">)</span>
+
+        ax<span class="tok-op">.</span>set_xlabel<span class="tok-op">(</span>f&#x27;log10(<span class="tok-op">{</span>col<span class="tok-op">}</span> + 1)&#x27;<span class="tok-op">)</span>
+
+    <span class="tok-keyword">else</span><span class="tok-op">:</span>
+
+        ax<span class="tok-op">.</span>set_xlabel<span class="tok-op">(</span>col<span class="tok-op">)</span>
+
+    ax<span class="tok-op">.</span>hist<span class="tok-op">(</span>vals<span class="tok-op">,</span> bins<span class="tok-op">=</span><span class="tok-number">60</span><span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;#4477aa&#x27;</span><span class="tok-op">,</span> edgecolor<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span> linewidth<span class="tok-op">=</span><span class="tok-number">0.3</span><span class="tok-op">)</span>
+
+    ax<span class="tok-op">.</span>set_ylabel<span class="tok-op">(</span><span class="tok-string">&#x27;cells&#x27;</span><span class="tok-op">)</span>
+
+    ax<span class="tok-op">.</span>spines<span class="tok-op">[</span><span class="tok-op">[</span><span class="tok-string">&#x27;right&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;top&#x27;</span><span class="tok-op">]</span><span class="tok-op">]</span><span class="tok-op">.</span>set_visible<span class="tok-op">(</span><span class="tok-keyword">False</span><span class="tok-op">)</span>
+
+fig<span class="tok-op">.</span>suptitle<span class="tok-op">(</span>f&#x27;Per-cell QC (<span class="tok-op">{</span>adata<span class="tok-op">.</span>n_obs<span class="tok-op">:</span>,<span class="tok-op">}</span> cells)&#x27;<span class="tok-op">,</span> y<span class="tok-op">=</span><span class="tok-number">1.02</span><span class="tok-op">)</span>
+
+fig<span class="tok-op">.</span>tight_layout<span class="tok-op">(</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>show<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/atera-workflow/cell-012-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Inspect the four morphology channels</h2>
+<p>Atera ships morphology imaging as four separate stain channels rather than a single composite. Each channel is a standalone OME-TIFF pyramid:</p>
+<table><tr><th>Channel</th><th>Stain</th><th>Purpose</th></tr><tr><td><code>ch0000_dapi.ome.tif</code></td><td>DAPI</td><td>nucleus</td></tr><tr><td><code>ch0001_atp1a1_cd45_e-cadherin.ome.tif</code></td><td>ATP1A1 + CD45 + E-Cadherin</td><td>cell boundary</td></tr><tr><td><code>ch0002_18s.ome.tif</code></td><td>18S rRNA</td><td>RNA / cell mass</td></tr><tr><td><code>ch0003_alphasma_vimentin.ome.tif</code></td><td>αSMA + Vimentin</td><td>stromal cells</td></tr></table>
+<p>We re-read the bundle with each channel in turn. <code>read_atera</code> only loads the morphology image — the matrix and metadata reuse from <code>cache_file</code> are *not* triggered when re-reading directly from the source path with a different <code>image_key</code>, but image loading is cheap (~15 s per channel at 2048 px max) so we just call it four times.</p>
+<pre><code class="language-python">channel_keys <span class="tok-op">=</span> <span class="tok-op">[</span><span class="tok-op">(</span><span class="tok-string">&#x27;dapi&#x27;</span><span class="tok-op">,</span>     <span class="tok-string">&#x27;DAPI (nucleus)&#x27;</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+                <span class="tok-op">(</span><span class="tok-string">&#x27;boundary&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;ATP1A1 / CD45 / E-Cadherin (cell boundary)&#x27;</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+                <span class="tok-op">(</span><span class="tok-string">&#x27;rna&#x27;</span><span class="tok-op">,</span>      <span class="tok-string">&#x27;18S rRNA&#x27;</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+                <span class="tok-op">(</span><span class="tok-string">&#x27;stroma&#x27;</span><span class="tok-op">,</span>   <span class="tok-string">&#x27;αSMA / Vimentin (stroma)&#x27;</span><span class="tok-op">)</span><span class="tok-op">]</span>
+
+
+
+channel_imgs <span class="tok-op">=</span> <span class="tok-op">{</span><span class="tok-op">}</span>
+
+<span class="tok-keyword">for</span> key<span class="tok-op">,</span> _ <span class="tok-keyword">in</span> channel_keys<span class="tok-op">:</span>
+
+    a <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>spatial<span class="tok-op">.</span>read_atera<span class="tok-op">(</span>
+
+        ATERA<span class="tok-op">,</span> image_key<span class="tok-op">=</span>key<span class="tok-op">,</span> image_max_dim<span class="tok-op">=</span><span class="tok-number">2048</span><span class="tok-op">,</span>
+
+        load_boundaries<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span> load_nucleus_boundaries<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span>
+
+    <span class="tok-op">)</span>
+
+    channel_imgs<span class="tok-op">[</span>key<span class="tok-op">]</span> <span class="tok-op">=</span> a<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>library_id<span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;images&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;hires&#x27;</span><span class="tok-op">]</span>
+
+
+
+<span class="tok-comment"># Register every channel under a semantic key so ov.pl.spatialseg can use any</span>
+
+<span class="tok-comment"># of them as background via `img_key=...`. ov.pl.to_rgb_grayscale converts each</span>
+
+<span class="tok-comment"># 2-D channel to a contrast-clipped RGB stack — without this matplotlib&#x27;s</span>
+
+<span class="tok-comment"># default viridis colormap kicks in and washes the per-channel structure into</span>
+
+<span class="tok-comment"># a uniform purple background. All four channels share the same</span>
+
+<span class="tok-comment"># `tissue_hires_scalef` (loaded at the same `image_max_dim`).</span>
+
+spatial_block <span class="tok-op">=</span> adata<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>library_id<span class="tok-op">]</span>
+
+scalef <span class="tok-op">=</span> spatial_block<span class="tok-op">[</span><span class="tok-string">&#x27;scalefactors&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;tissue_hires_scalef&#x27;</span><span class="tok-op">]</span>
+
+<span class="tok-keyword">for</span> key<span class="tok-op">,</span> _ <span class="tok-keyword">in</span> channel_keys<span class="tok-op">:</span>
+
+    spatial_block<span class="tok-op">[</span><span class="tok-string">&#x27;images&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>key<span class="tok-op">]</span> <span class="tok-op">=</span> ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>to_rgb_grayscale<span class="tok-op">(</span>channel_imgs<span class="tok-op">[</span>key<span class="tok-op">]</span><span class="tok-op">)</span>
+
+    spatial_block<span class="tok-op">[</span><span class="tok-string">&#x27;scalefactors&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span>f&#x27;tissue_<span class="tok-op">{</span>key<span class="tok-op">}</span>_scalef&#x27;<span class="tok-op">]</span> <span class="tok-op">=</span> scalef
+
+spatial_block<span class="tok-op">[</span><span class="tok-string">&#x27;images&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;hires&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> spatial_block<span class="tok-op">[</span><span class="tok-string">&#x27;images&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-string">&#x27;dapi&#x27;</span><span class="tok-op">]</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">&#x27;available background channels:&#x27;</span><span class="tok-op">,</span> <span class="tok-builtin">list</span><span class="tok-op">(</span>spatial_block<span class="tok-op">[</span><span class="tok-string">&#x27;images&#x27;</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">)</span></code></pre>
+<pre><code class="language-python">fig<span class="tok-op">,</span> axes <span class="tok-op">=</span> plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span><span class="tok-number">2</span><span class="tok-op">,</span> <span class="tok-number">2</span><span class="tok-op">,</span> figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">12</span><span class="tok-op">,</span> <span class="tok-number">12</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-keyword">for</span> ax<span class="tok-op">,</span> <span class="tok-op">(</span>key<span class="tok-op">,</span> title<span class="tok-op">)</span> <span class="tok-keyword">in</span> <span class="tok-builtin">zip</span><span class="tok-op">(</span>axes<span class="tok-op">.</span>flat<span class="tok-op">,</span> channel_keys<span class="tok-op">)</span><span class="tok-op">:</span>
+
+    img <span class="tok-op">=</span> channel_imgs<span class="tok-op">[</span>key<span class="tok-op">]</span>
+
+    <span class="tok-comment"># Per-channel 99th-percentile contrast clip — Atera stains have a long tail</span>
+
+    <span class="tok-comment"># of bright outliers that flatten the rest of the image if not clipped.</span>
+
+    vmax <span class="tok-op">=</span> np<span class="tok-op">.</span>percentile<span class="tok-op">(</span>img<span class="tok-op">[</span>img <span class="tok-op">&gt;</span> <span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">,</span> <span class="tok-number">99</span><span class="tok-op">)</span> <span class="tok-keyword">if</span> <span class="tok-op">(</span>img <span class="tok-op">&gt;</span> <span class="tok-number">0</span><span class="tok-op">)</span><span class="tok-op">.</span>any<span class="tok-op">(</span><span class="tok-op">)</span> <span class="tok-keyword">else</span> img<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    ax<span class="tok-op">.</span>imshow<span class="tok-op">(</span>img<span class="tok-op">,</span> cmap<span class="tok-op">=</span><span class="tok-string">&#x27;gray&#x27;</span><span class="tok-op">,</span> vmin<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span> vmax<span class="tok-op">=</span>vmax<span class="tok-op">)</span>
+
+    ax<span class="tok-op">.</span>set_title<span class="tok-op">(</span>f&#x27;<span class="tok-op">{</span>key<span class="tok-op">}</span>: <span class="tok-op">{</span>title<span class="tok-op">}</span>&#x27;<span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">10</span><span class="tok-op">)</span>
+
+    ax<span class="tok-op">.</span>set_xticks<span class="tok-op">(</span><span class="tok-op">[</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">;</span> ax<span class="tok-op">.</span>set_yticks<span class="tok-op">(</span><span class="tok-op">[</span><span class="tok-op">]</span><span class="tok-op">)</span>
+
+fig<span class="tok-op">.</span>suptitle<span class="tok-op">(</span>f&#x27;Atera morphology focus channels (<span class="tok-op">{</span>img<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">}</span>×<span class="tok-op">{</span>img<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span> px)&#x27;<span class="tok-op">,</span>
+
+             y<span class="tok-op">=</span><span class="tok-number">0.94</span><span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">11</span><span class="tok-op">)</span>
+
+fig<span class="tok-op">.</span>tight_layout<span class="tok-op">(</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>show<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/atera-workflow/cell-015-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Vendor cell-group spatial map</h2>
+<p>Atera ships a CSV mapping every <code>cell_id</code> to a curated cell-type label and a display color (<code>*_cell_groups.csv</code>). The 10x team produces these labels with a downstream classifier on top of the segmentation, and they make a useful sanity reference for our own clustering later.</p>
+<p>We plot every cell as a tiny dot using its centroid and the vendor color directly.</p>
+<pre><code class="language-python"><span class="tok-builtin">print</span><span class="tok-op">(</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;cell_group&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>value_counts<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>head<span class="tok-op">(</span><span class="tok-number">10</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&quot;<span class="tok-op">{</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;cell_group&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>nunique<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> groups in total&quot;<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python"><span class="tok-comment"># Pull vendor display colours into uns[&#x27;cell_group_colors&#x27;] so ov.pl.spatial</span>
+
+<span class="tok-comment"># uses them as the categorical palette automatically.</span>
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>sync_categorical_palette<span class="tok-op">(</span>adata<span class="tok-op">,</span> key<span class="tok-op">=</span><span class="tok-string">&#x27;cell_group&#x27;</span><span class="tok-op">,</span> color_obs<span class="tok-op">=</span><span class="tok-string">&#x27;cell_group_color&#x27;</span><span class="tok-op">)</span>
+
+
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&#x27;cell_group&#x27;</span><span class="tok-op">,</span>
+
+    img_key<span class="tok-op">=</span><span class="tok-keyword">None</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">10</span><span class="tok-op">,</span>
+
+    show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>gcf<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>suptitle<span class="tok-op">(</span>f&#x27;Vendor cell-group classifier (<span class="tok-op">{</span>adata<span class="tok-op">.</span>n_obs<span class="tok-op">:</span>,<span class="tok-op">}</span> cells, &#x27;
+
+                   f&quot;<span class="tok-op">{</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;cell_group&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>nunique<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> groups)&quot;<span class="tok-op">,</span>
+
+                   y<span class="tok-op">=</span><span class="tok-number">1.02</span><span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">11</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>show<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/atera-workflow/cell-018-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Render cell polygons in a small region</h2>
+<p><code>ov.pl.spatialseg</code> reads the WKT polygons stored in <code>obs[&#x27;geometry&#x27;]</code> and renders each cell as its segmentation outline. Plotting all 170k polygons at once would dwarf the visible features, so we subset to a 1 mm × 1 mm window first.</p>
+<p>Background image selection: by registering all four morphology channels under semantic keys (<code>&#x27;dapi&#x27;</code>, <code>&#x27;boundary&#x27;</code>, <code>&#x27;rna&#x27;</code>, <code>&#x27;stroma&#x27;</code>) in <code>uns[&#x27;spatial&#x27;][lib][&#x27;images&#x27;]</code>, <code>ov.pl.spatialseg</code> can render polygons over *any* channel via <code>img_key=...</code>. For the cell-segmentation view the <code>boundary</code> channel (ATP1A1+CD45+E-Cadherin membrane stain) is the most informative — the polygons trace exactly the structures the stain lights up.</p>
+<pre><code class="language-python"><span class="tok-comment"># Pick a 1 mm × 1 mm window centred on the densest tumour patch and reuse</span>
+
+<span class="tok-comment"># the same window for both the cell subset and the spatialseg crop_coord —</span>
+
+<span class="tok-comment"># this keeps the rendered background image aligned to the polygon extent.</span>
+
+x0<span class="tok-op">,</span> y0 <span class="tok-op">=</span> np<span class="tok-op">.</span>median<span class="tok-op">(</span>adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span> axis<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">)</span>
+
+crop_window <span class="tok-op">=</span> <span class="tok-op">(</span>x0 <span class="tok-op">-</span> <span class="tok-number">500</span><span class="tok-op">,</span> x0 <span class="tok-op">+</span> <span class="tok-number">500</span><span class="tok-op">,</span> y0 <span class="tok-op">-</span> <span class="tok-number">500</span><span class="tok-op">,</span> y0 <span class="tok-op">+</span> <span class="tok-number">500</span><span class="tok-op">)</span>  <span class="tok-comment"># (x0, x1, y0, y1)</span>
+
+bdata <span class="tok-op">=</span> ov<span class="tok-op">.</span>space<span class="tok-op">.</span>subset_window<span class="tok-op">(</span>adata<span class="tok-op">,</span>
+
+                                xlim<span class="tok-op">=</span><span class="tok-op">(</span>crop_window<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">,</span> crop_window<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+                                ylim<span class="tok-op">=</span><span class="tok-op">(</span>crop_window<span class="tok-op">[</span><span class="tok-number">2</span><span class="tok-op">]</span><span class="tok-op">,</span> crop_window<span class="tok-op">[</span><span class="tok-number">3</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Subset window: <span class="tok-op">{</span>bdata<span class="tok-op">.</span>n_obs<span class="tok-op">:</span>,<span class="tok-op">}</span> cells&#x27;<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python">fig<span class="tok-op">,</span> axes <span class="tok-op">=</span> plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span><span class="tok-number">2</span><span class="tok-op">,</span> <span class="tok-number">2</span><span class="tok-op">,</span> figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">14</span><span class="tok-op">,</span> <span class="tok-number">14</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-keyword">for</span> i<span class="tok-op">,</span> <span class="tok-op">(</span>ax<span class="tok-op">,</span> <span class="tok-op">(</span>key<span class="tok-op">,</span> label<span class="tok-op">)</span><span class="tok-op">)</span> <span class="tok-keyword">in</span> <span class="tok-builtin">enumerate</span><span class="tok-op">(</span><span class="tok-builtin">zip</span><span class="tok-op">(</span>axes<span class="tok-op">.</span>flat<span class="tok-op">,</span> channel_keys<span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+        bdata<span class="tok-op">,</span>
+
+        color<span class="tok-op">=</span><span class="tok-string">&#x27;cell_group&#x27;</span><span class="tok-op">,</span>
+
+        img_key<span class="tok-op">=</span>key<span class="tok-op">,</span>
+
+        crop_coord<span class="tok-op">=</span>crop_window<span class="tok-op">,</span>
+
+        edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+        edges_width<span class="tok-op">=</span><span class="tok-number">0.4</span><span class="tok-op">,</span>
+
+        alpha<span class="tok-op">=</span><span class="tok-number">0.35</span><span class="tok-op">,</span>         <span class="tok-comment"># let the morphology dominate — was 0.85</span>
+
+        alpha_img<span class="tok-op">=</span><span class="tok-number">1.0</span><span class="tok-op">,</span>
+
+        ax<span class="tok-op">=</span>ax<span class="tok-op">,</span>
+
+        legend<span class="tok-op">=</span><span class="tok-op">(</span>i <span class="tok-op">==</span> <span class="tok-builtin">len</span><span class="tok-op">(</span>channel_keys<span class="tok-op">)</span> <span class="tok-op">-</span> <span class="tok-number">1</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+        show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span>
+
+    <span class="tok-op">)</span>
+
+    ax<span class="tok-op">.</span>set_title<span class="tok-op">(</span>f&#x27;<span class="tok-op">{</span>key<span class="tok-op">}</span>: <span class="tok-op">{</span>label<span class="tok-op">}</span>&#x27;<span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">10</span><span class="tok-op">)</span>
+
+fig<span class="tok-op">.</span>suptitle<span class="tok-op">(</span><span class="tok-string">&#x27;Cell polygons (vendor cell_group) over each morphology channel&#x27;</span><span class="tok-op">,</span>
+
+             y<span class="tok-op">=</span><span class="tok-number">0.94</span><span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">12</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>tight_layout<span class="tok-op">(</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>show<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/atera-workflow/cell-021-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Standard preprocessing</h2>
+<p>We follow the Visium HD / Xenium recipe: filter very-low-count cells, normalize counts to a fixed total, log-transform, and select highly-variable genes. The Atera matrix is dense enough (median ~2k counts/cell) that a count-based filter is gentle.</p>
+<pre><code class="language-python">adata<span class="tok-op">.</span>layers<span class="tok-op">[</span><span class="tok-string">&#x27;counts&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> adata<span class="tok-op">.</span>X<span class="tok-op">.</span>copy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>filter_cells<span class="tok-op">(</span>adata<span class="tok-op">,</span> min_counts<span class="tok-op">=</span><span class="tok-number">20</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>filter_genes<span class="tok-op">(</span>adata<span class="tok-op">,</span> min_cells<span class="tok-op">=</span><span class="tok-number">10</span><span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>adata<span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>log1p<span class="tok-op">(</span>adata<span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>adata<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>highly_variable_genes<span class="tok-op">(</span>adata<span class="tok-op">,</span> n_top_genes<span class="tok-op">=</span><span class="tok-number">2000</span><span class="tok-op">,</span> batch_key<span class="tok-op">=</span><span class="tok-keyword">None</span><span class="tok-op">)</span>
+
+adata<span class="tok-op">.</span>raw <span class="tok-op">=</span> adata
+
+adata <span class="tok-op">=</span> adata<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span> adata<span class="tok-op">.</span>var<span class="tok-op">[</span><span class="tok-string">&#x27;highly_variable&#x27;</span><span class="tok-op">]</span><span class="tok-op">]</span><span class="tok-op">.</span>copy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Kept <span class="tok-op">{</span>adata<span class="tok-op">.</span>n_vars<span class="tok-op">}</span> HVGs&#x27;<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>scale<span class="tok-op">(</span>adata<span class="tok-op">)</span>
+
+ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>pca<span class="tok-op">(</span>adata<span class="tok-op">,</span> layer<span class="tok-op">=</span><span class="tok-string">&#x27;scaled&#x27;</span><span class="tok-op">,</span> n_pcs<span class="tok-op">=</span><span class="tok-number">50</span><span class="tok-op">)</span>
+
+adata</code></pre>
+<h2>Spatial maps for canonical breast-cancer markers</h2>
+<p>With the matrix log-normalised, the same <code>obsm[&#x27;spatial&#x27;]</code> is the natural axis for visualising any gene. We pick four genes that should split cleanly between the cell types in the vendor classifier:</p>
+<ul><li><strong><code>KRT8</code></strong>: luminal-epithelial keratin (DCIS / luminal-like cells).</li><li><strong><code>PTPRC</code></strong>: CD45 — pan-immune.</li><li><strong><code>COL1A1</code></strong>: collagen — CAF / stromal.</li><li><strong><code>PECAM1</code></strong>: CD31 — endothelial.</li></ul>
+<p>We use <code>.raw</code> so we can plot any gene that wasn&#x27;t selected as HVG.</p>
+<pre><code class="language-python">marker_genes <span class="tok-op">=</span> <span class="tok-op">[</span><span class="tok-string">&#x27;KRT8&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;PTPRC&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;COL1A1&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;PECAM1&#x27;</span><span class="tok-op">]</span>
+
+available <span class="tok-op">=</span> <span class="tok-op">[</span>g <span class="tok-keyword">for</span> g <span class="tok-keyword">in</span> marker_genes <span class="tok-keyword">if</span> g <span class="tok-keyword">in</span> adata<span class="tok-op">.</span>raw<span class="tok-op">.</span>var_names<span class="tok-op">]</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">&#x27;Available markers:&#x27;</span><span class="tok-op">,</span> available<span class="tok-op">)</span>
+
+
+
+ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span>available<span class="tok-op">,</span>
+
+    use_raw<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">,</span>
+
+    img_key<span class="tok-op">=</span><span class="tok-keyword">None</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">10</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99.2&#x27;</span><span class="tok-op">,</span>     <span class="tok-comment"># scanpy parses &#x27;p&lt;N&gt;&#x27; as the N-th percentile per panel</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;magma&#x27;</span><span class="tok-op">,</span>
+
+    show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>gcf<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>suptitle<span class="tok-op">(</span><span class="tok-string">&#x27;Spatial expression (log-normalised) of canonical markers&#x27;</span><span class="tok-op">,</span>
+
+                   y<span class="tok-op">=</span><span class="tok-number">1.02</span><span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">11</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>show<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/atera-workflow/cell-027-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Marker spatialseg over each morphology channel</h2>
+<p>Re-creating the 1 mm × 1 mm subset on the <strong>post-preprocessing</strong> matrix lets us overlay marker expression on top of the cell polygons. Instead of fixing the background to DAPI, we pair each marker with a different morphology channel — every panel shows the same polygon set with the *same* zoom window but a *different* image behind it, so the multi-channel flexibility of <code>ov.pl.spatialseg(..., img_key=...)</code> is visible at a glance.</p>
+<p>Channel pairing (rationale):</p>
+<table><tr><th>Marker</th><th>Background channel</th><th>Why</th></tr><tr><td><code>KRT8</code> (luminal keratin)</td><td><code>dapi</code> (nuclei)</td><td>epithelial nuclei light up where KRT8 is expressed</td></tr><tr><td><code>PTPRC</code> / CD45 (immune)</td><td><code>boundary</code> (ATP1A1+CD45+E-Cad)</td><td>CD45 lives in the boundary stain itself</td></tr><tr><td><code>COL1A1</code> (collagen)</td><td><code>stroma</code> (αSMA+Vim)</td><td>both highlight stromal compartment</td></tr><tr><td><code>PECAM1</code> / CD31 (endothelial)</td><td><code>rna</code> (18S)</td><td>endothelial cells stand out against generic RNA</td></tr></table>
+<p><code>ov.pl.spatialseg</code> doesn&#x27;t parse the <code>&#x27;p99.2&#x27;</code> percentile string (only <code>ov.pl.spatial</code> does), so we compute the per-gene 99.2-th percentile up front and pass it through as a float <code>vmax</code>.</p>
+<pre><code class="language-python">bdata <span class="tok-op">=</span> ov<span class="tok-op">.</span>space<span class="tok-op">.</span>subset_window<span class="tok-op">(</span>adata<span class="tok-op">,</span>
+
+                                xlim<span class="tok-op">=</span><span class="tok-op">(</span>crop_window<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">,</span> crop_window<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+                                ylim<span class="tok-op">=</span><span class="tok-op">(</span>crop_window<span class="tok-op">[</span><span class="tok-number">2</span><span class="tok-op">]</span><span class="tok-op">,</span> crop_window<span class="tok-op">[</span><span class="tok-number">3</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Subset for spatialseg: <span class="tok-op">{</span>bdata<span class="tok-op">.</span>n_obs<span class="tok-op">:</span>,<span class="tok-op">}</span> cells&#x27;<span class="tok-op">)</span>
+
+
+
+<span class="tok-comment"># Re-attach the multi-channel uns so spatialseg can find each `img_key`.</span>
+
+bdata<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> adata<span class="tok-op">.</span>uns<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span>
+
+
+
+<span class="tok-comment"># Materialise per-gene log-normalised expression onto bdata.obs so spatialseg</span>
+
+<span class="tok-comment"># can colour polygons directly. p99.2 vmax per gene clips the bright tail.</span>
+
+raw <span class="tok-op">=</span> adata<span class="tok-op">.</span>raw<span class="tok-op">.</span>to_adata<span class="tok-op">(</span><span class="tok-op">)</span>
+
+raw_b <span class="tok-op">=</span> raw<span class="tok-op">[</span>bdata<span class="tok-op">.</span>obs_names<span class="tok-op">]</span><span class="tok-op">.</span>copy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+<span class="tok-keyword">for</span> gene <span class="tok-keyword">in</span> available<span class="tok-op">:</span>
+
+    bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span>f&#x27;<span class="tok-op">{</span>gene<span class="tok-op">}</span>_expr&#x27;<span class="tok-op">]</span> <span class="tok-op">=</span> raw_b<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span> gene<span class="tok-op">]</span><span class="tok-op">.</span>X<span class="tok-op">.</span>toarray<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>ravel<span class="tok-op">(</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-comment"># Pair each marker with a different morphology channel — see the markdown</span>
+
+<span class="tok-comment"># above for the rationale. Order matches `available`: KRT8/PTPRC/COL1A1/PECAM1.</span>
+
+pairings <span class="tok-op">=</span> <span class="tok-builtin">list</span><span class="tok-op">(</span><span class="tok-builtin">zip</span><span class="tok-op">(</span>available<span class="tok-op">,</span> <span class="tok-op">[</span><span class="tok-string">&#x27;dapi&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;boundary&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;stroma&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;rna&#x27;</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+
+
+fig<span class="tok-op">,</span> axes <span class="tok-op">=</span> plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span><span class="tok-number">2</span><span class="tok-op">,</span> <span class="tok-number">2</span><span class="tok-op">,</span> figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">14</span><span class="tok-op">,</span> <span class="tok-number">14</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+<span class="tok-keyword">for</span> ax<span class="tok-op">,</span> <span class="tok-op">(</span>gene<span class="tok-op">,</span> ch<span class="tok-op">)</span> <span class="tok-keyword">in</span> <span class="tok-builtin">zip</span><span class="tok-op">(</span>axes<span class="tok-op">.</span>flat<span class="tok-op">,</span> pairings<span class="tok-op">)</span><span class="tok-op">:</span>
+
+    expr <span class="tok-op">=</span> bdata<span class="tok-op">.</span>obs<span class="tok-op">[</span>f&#x27;<span class="tok-op">{</span>gene<span class="tok-op">}</span>_expr&#x27;<span class="tok-op">]</span><span class="tok-op">.</span>to_numpy<span class="tok-op">(</span><span class="tok-op">)</span>
+
+    nz <span class="tok-op">=</span> expr<span class="tok-op">[</span>expr <span class="tok-op">&gt;</span> <span class="tok-number">0</span><span class="tok-op">]</span>
+
+    vmax_val <span class="tok-op">=</span> <span class="tok-builtin">float</span><span class="tok-op">(</span>np<span class="tok-op">.</span>percentile<span class="tok-op">(</span>nz<span class="tok-op">,</span> <span class="tok-number">99.2</span><span class="tok-op">)</span><span class="tok-op">)</span> <span class="tok-keyword">if</span> nz<span class="tok-op">.</span>size <span class="tok-keyword">else</span> <span class="tok-builtin">float</span><span class="tok-op">(</span>expr<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span> <span class="tok-keyword">or</span> <span class="tok-number">1.0</span><span class="tok-op">)</span>
+
+    ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+        bdata<span class="tok-op">,</span>
+
+        color<span class="tok-op">=</span>f&#x27;<span class="tok-op">{</span>gene<span class="tok-op">}</span>_expr&#x27;<span class="tok-op">,</span>
+
+        img_key<span class="tok-op">=</span>ch<span class="tok-op">,</span>
+
+        crop_coord<span class="tok-op">=</span>crop_window<span class="tok-op">,</span>
+
+        edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+        edges_width<span class="tok-op">=</span><span class="tok-number">0.4</span><span class="tok-op">,</span>
+
+        alpha<span class="tok-op">=</span><span class="tok-number">0.55</span><span class="tok-op">,</span>
+
+        alpha_img<span class="tok-op">=</span><span class="tok-number">1.0</span><span class="tok-op">,</span>
+
+        cmap<span class="tok-op">=</span><span class="tok-string">&#x27;magma&#x27;</span><span class="tok-op">,</span>
+
+        vmax<span class="tok-op">=</span>vmax_val<span class="tok-op">,</span>
+
+        ax<span class="tok-op">=</span>ax<span class="tok-op">,</span>
+
+        show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">,</span>
+
+    <span class="tok-op">)</span>
+
+    ax<span class="tok-op">.</span>set_title<span class="tok-op">(</span>f&#x27;<span class="tok-op">{</span>gene<span class="tok-op">}</span> on <span class="tok-op">{</span>ch<span class="tok-op">}</span> (vmax≈<span class="tok-op">{</span>vmax_val<span class="tok-op">:</span>.2f<span class="tok-op">}</span>)&#x27;<span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">10</span><span class="tok-op">)</span>
+
+fig<span class="tok-op">.</span>suptitle<span class="tok-op">(</span><span class="tok-string">&#x27;Marker expression on cell polygons across morphology channels&#x27;</span><span class="tok-op">,</span>
+
+             y<span class="tok-op">=</span><span class="tok-number">0.94</span><span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">12</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>tight_layout<span class="tok-op">(</span><span class="tok-op">)</span>
+
+plt<span class="tok-op">.</span>show<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/atera-workflow/cell-029-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Summary</h2>
+<p>In this notebook we used <code>omicverse.io.spatial.read_atera</code> to:</p>
+<ul><li>load a 170,057-cell × 18,028-gene Atera v1 FFPE breast-cancer dataset into a single <code>AnnData</code>,</li><li>inspect Atera&#x27;s four-channel morphology focus stack (DAPI / boundary / 18S / stroma),</li><li>merge the vendor <code>cell_groups.csv</code> classifier directly into <code>obs</code>,</li><li>render cell polygons via <code>ov.pl.spatialseg</code> for region-of-interest views,</li><li>run a standard normalize → HVG → PCA preprocessing pipeline,</li><li>map canonical breast-cancer markers (KRT8, PTPRC, COL1A1, PECAM1) in physical space.</li></ul>
+<p>Atera&#x27;s <code>outs/</code> layout is a strict superset of Xenium&#x27;s, so any downstream OmicVerse spatial workflow (<code>ov.space.svg</code>, <code>ov.pl.spatial</code>, neighborhood graphs, leiden clustering, cell-cell communication) works without modification — <code>read_atera</code> is the only thing that has to know about the extras (nucleus polygons, channel-named morphology, cell-group CSV, optional H&amp;E + alignment).</p>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
+    </span>
+    <span class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

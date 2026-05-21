@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Analyzing NanoString CosMx Data — OmicVerse</title>
+  <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../people.html">People</a>
+      <a aria-current="page" href="../blog.html">Blog</a>
+      <a href="../events.html">Events</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main class="article page-width">
+    <a class="article-back" href="../blog.html">← Back to blog</a>
+    <p class="overline">Spatial</p>
+    <h1>Analyze NanoString data</h1>
+<p>CosMx Spatial Molecular Imager (SMI), introduced by NanoString in 2022, is a high-throughput in situ spatial molecular imaging platform designed for single-cell and even subcellular analysis. By combining high-resolution imaging with multiplexed RNA and protein detection, it makes it possible to visualize and quantify molecular signals directly inside intact tissue context. This is why CosMx is increasingly used to study tumor microenvironments, developmental programs, and tissue pathology: it lets you see where cells are, what they express, and how neighboring cells may interact inside the original specimen.</p>
+<p>This notebook uses <code>Lung5_Rep2</code> from the public CosMx NSCLC FFPE dataset to walk through an OmicVerse-based workflow. The core logic is straightforward but important: read the raw files, validate the FOV-aware spatial structure, inspect segmentation quality, and then prepare the data for downstream spatial modeling.</p>
+<p>The analysis is organized into four parts:</p>
+<ul><li>Set up the environment and confirm the input file structure.</li><li>Read the NanoString dataset and inspect spatial coordinates and expression patterns.</li><li>Zoom in on a single FOV to examine image overlays and segmentation boundaries.</li><li>Prepare CAST inputs, generate embeddings, and compare clustering results in spatial space.</li></ul>
+<p>The goal is not only to run the pipeline, but also to understand why each step appears where it does and what the key parameters control.</p>
+<h2>1. Environment setup</h2>
+<p>This section does three things: import <code>omicverse</code>, set the plotting font, and enable auto-reload.</p>
+<ul><li><code>ov.style(font_path=&#x27;Arial&#x27;)</code>: keeps the plotting style consistent and avoids font mismatches in exported figures.</li><li><code>%autoreload 2</code>: useful during local development or package debugging, because edited source code is picked up when the cell is rerun.</li><li><code>Path</code>: used later to build data paths in a readable way.</li></ul>
+<pre><code class="language-python"><span class="tok-keyword">from</span> pathlib <span class="tok-keyword">import</span> <span class="tok-builtin">Path</span>
+
+<span class="tok-keyword">import</span> omicverse <span class="tok-keyword">as</span> ov
+
+ov<span class="tok-op">.</span>style<span class="tok-op">(</span>font_path<span class="tok-op">=</span><span class="tok-string">&#x27;Arial&#x27;</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-comment"># Enable auto-reload for development</span>
+
+<span class="tok-op">%</span>load_ext autoreload
+
+<span class="tok-op">%</span>autoreload <span class="tok-number">2</span></code></pre>
+<p>This line initializes the mixed CPU/GPU runtime used by OmicVerse.</p>
+<p>For most users, the practical purpose is simple: later steps that involve deep learning or graph embedding can access hardware resources more reliably. If no GPU is available in the current environment, CAST should be configured to run on CPU instead.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>settings<span class="tok-op">.</span>cpu_gpu_mixed_init<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<h2>2. Check the NanoString data directory</h2>
+<p>Before reading the data, print the directory tree and confirm that the expression matrix, metadata, FOV coordinate files, and image-derived folders are all present where expected.</p>
+<p>This tutorial uses <code>Lung5_Rep2</code>, one sample from the open CosMx NSCLC FFPE dataset. According to the dataset description, the prototype study includes eight FFPE non-small-cell lung cancer samples profiled with a 960-plex RNA panel, with downstream use cases such as cell typing, tissue-state deconvolution, and ligand-receptor analysis. Because CosMx data are distributed as a combination of counts, metadata, per-FOV images, and segmentation-related files, path problems are usually much easier to catch here than after a loader or plotting function fails.</p>
+<p>We download the count data and HE image from https://nanostring.com/products/cosmx-spatial-molecular-imager/ffpe-dataset/</p>
+<pre><code class="language-python"><span class="tok-comment"># !mkdir data</span>
+
+<span class="tok-comment"># !mkdir data/nanostring_data</span>
+
+<span class="tok-comment"># !wget -P data/nanostring_data https://nanostring-public-share.s3.us-west-2.amazonaws.com/SMI-Compressed/Lung5_Rep2/Lung5_Rep2+SMI+Flat+data.tar.gz</span>
+
+<span class="tok-comment"># !tar -xzf data/nanostring_data/Lung5_Rep2+SMI+Flat+data.tar.gz -C data/nanostring_data/</span></code></pre>
+<pre><code class="language-python">ov<span class="tok-op">.</span>utils<span class="tok-op">.</span>print_tree<span class="tok-op">(</span><span class="tok-builtin">Path</span><span class="tok-op">(</span><span class="tok-string">&quot;data/nanostring_data/Lung5_Rep2/Lung5_Rep2-Flat_files_and_images&quot;</span><span class="tok-op">)</span><span class="tok-op">,</span><span class="tok-op">)</span></code></pre>
+<h2>3. Read the NanoString dataset</h2>
+<p>This cell builds an <code>AnnData</code> object with <code>ov.io.read_nanostring()</code>. Beyond the expression matrix itself, the loader brings together cell metadata, FOV annotations, optional morphology images, cell contours, and spatial coordinates into one analysis object.</p>
+<p>That integration step is especially important for CosMx-style datasets: once everything is organized inside <code>adata</code>, you can move cleanly from stitched whole-sample views to single-FOV overlays, segmentation-aware plots, and downstream graph learning without manually reconciling multiple file types.</p>
+<h3>Main parameters</h3>
+<ul><li><code>path</code>: directory containing the sample files.</li><li><code>counts_file</code>: expression matrix file, usually arranged as cells × genes.</li><li><code>meta_file</code>: metadata file with cell-level annotations.</li><li><code>fov_file</code>: file describing the spatial positions of different fields of view.</li></ul>
+<p>In practice, <code>read_nanostring()</code> is the entry point that converts raw NanoString outputs into a structure that can be used directly for plotting and downstream analysis.</p>
+<pre><code class="language-python"><span class="tok-keyword">from</span> pathlib <span class="tok-keyword">import</span> <span class="tok-builtin">Path</span>
+
+nanostring_dir <span class="tok-op">=</span> <span class="tok-builtin">Path</span><span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>resolve<span class="tok-op">(</span><span class="tok-op">)</span> <span class="tok-op">/</span> <span class="tok-string">&quot;data&quot;</span> <span class="tok-op">/</span> <span class="tok-string">&quot;nanostring_data&quot;</span>
+
+sample_dir <span class="tok-op">=</span> nanostring_dir <span class="tok-op">/</span> <span class="tok-string">&quot;Lung5_Rep2&quot;</span> <span class="tok-op">/</span> <span class="tok-string">&quot;Lung5_Rep2-Flat_files_and_images&quot;</span>
+
+
+
+adata <span class="tok-op">=</span> ov<span class="tok-op">.</span>io<span class="tok-op">.</span>read_nanostring<span class="tok-op">(</span>
+
+    path<span class="tok-op">=</span>sample_dir<span class="tok-op">,</span>
+
+    counts_file<span class="tok-op">=</span><span class="tok-string">&quot;Lung5_Rep2_exprMat_file.csv&quot;</span><span class="tok-op">,</span>
+
+    meta_file<span class="tok-op">=</span><span class="tok-string">&quot;Lung5_Rep2_metadata_file.csv&quot;</span><span class="tok-op">,</span>
+
+    fov_file<span class="tok-op">=</span><span class="tok-string">&quot;Lung5_Rep2_fov_positions_file.csv&quot;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<pre><code class="language-python">adata<span class="tok-op">.</span>write<span class="tok-op">(</span><span class="tok-string">&#x27;data/Lung5_Rep2_nanostring.h5ad&#x27;</span><span class="tok-op">)</span></code></pre>
+<h2>4. Inspect the spatial layout at the whole-sample level</h2>
+<p>Here <code>ov.pl.embedding()</code> is used for a first overview across all FOVs.</p>
+<h3>Main parameters</h3>
+<ul><li><code>basis=&#x27;spatial_fov&#x27;</code>: use the stitched spatial coordinate system across FOVs. This is the right view when you want to inspect how multiple FOVs are positioned relative to one another.</li><li><code>color=[&#x27;Max.PanCK&#x27;, &#x27;fov&#x27;]</code>: plot one panel by marker intensity and one by FOV identity.</li><li><code>vmax=&#x27;p99.2&#x27;</code>: cap the color scale at the 99.2th percentile to reduce the influence of extreme values.</li><li><code>cmap=&#x27;Reds&#x27;</code>: use a continuous red colormap for expression intensity.</li><li><code>wspace=0.35</code>: adjust spacing between panels.</li></ul>
+<p>At this stage, the aim is not fine detail. It is simply to confirm that coordinates, FOV stitching, and signal ranges look reasonable before moving to local inspection.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>embedding<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    basis<span class="tok-op">=</span><span class="tok-string">&#x27;spatial_fov&#x27;</span><span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;Max.PanCK&#x27;</span><span class="tok-op">,</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99.2&#x27;</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span><span class="tok-op">,</span>
+
+    wspace<span class="tok-op">=</span><span class="tok-number">0.35</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-013-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>Printing <code>adata</code> is a quick sanity check that the dataset loaded correctly. The most useful things to confirm here are:</p>
+<ul><li>the number of observations and variables, that is, cells and features;</li><li>which metadata columns are available in <code>obs</code>;</li><li>whether <code>obsm</code>, <code>layers</code>, and <code>uns</code> contain the spatial objects needed for downstream analysis.</li></ul>
+<pre><code class="language-python">adata</code></pre>
+<h2>5. Select a single FOV for local inspection</h2>
+<p>From this point on, the notebook focuses on <code>fov == &#x27;12&#x27;</code>. The reason is practical: CosMx does not image a large tissue section as one giant field. Instead, the sample is acquired as multiple FOVs, each with its own local image region and coordinate frame, and then stitched into a larger spatial layout.</p>
+<p>That is why a two-scale workflow matters here. The stitched whole-sample view is useful for orientation and cross-FOV consistency checks, while a single FOV is much easier to read when checking local image registration, segmentation boundaries, and marker patterns.</p>
+<p>To inspect a different field of view, replace <code>&#x27;12&#x27;</code> with the target FOV identifier.</p>
+<pre><code class="language-python">vdata<span class="tok-op">=</span>adata<span class="tok-op">[</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">==</span><span class="tok-string">&#x27;12&#x27;</span><span class="tok-op">]</span></code></pre>
+<p>First, inspect the spatial distribution of <code>Max.PanCK</code> within a single FOV.</p>
+<p>The important distinction here is between <code>basis=&#x27;spatial&#x27;</code> and the earlier <code>spatial_fov</code>:</p>
+<ul><li><code>spatial_fov</code>: better for stitched, whole-sample views across multiple FOVs.</li><li><code>spatial</code>: better for the original local coordinate system within one FOV.</li></ul>
+<p>If the orientation, aspect ratio, or point placement of an individual FOV looks unusual, this is usually the first place to diagnose it.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>embedding<span class="tok-op">(</span>
+
+    vdata<span class="tok-op">,</span>
+
+    basis<span class="tok-op">=</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&#x27;Max.PanCK&#x27;</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99.2&#x27;</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-019-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>6. Visualize a single FOV with the background image</h2>
+<p><code>ov.pl.spatial()</code> overlays the signal on the spatial background image. Compared with a plain scatter plot, this gives a more tissue-like view of the data.</p>
+<h3>Main parameters</h3>
+<ul><li><code>color=[None, &#x27;Max.PanCK&#x27;]</code>: the first panel shows only the background image, and the second overlays the selected marker. This side-by-side setup makes the correspondence easier to read.</li><li><code>size=100</code>: controls the size of plotted markers.</li><li><code>library_id=&#x27;12&#x27;</code>: explicitly selects the current FOV image.</li><li><code>img_key=&#x27;hires&#x27;</code>: use the high-resolution image stored for this library.</li><li><code>alpha_img=1</code>: set image opacity. A value of 1 keeps the image fully visible.</li><li><code>crop_coord=None</code>: do not crop; display the full FOV.</li></ul>
+<p>When working on figure preparation, this step is useful for checking whether the signal pattern matches the image context before adding segmentation contours.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class="tok-op">(</span>
+
+    vdata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-keyword">None</span><span class="tok-op">,</span><span class="tok-string">&quot;Max.PanCK&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">100</span><span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span><span class="tok-string">&#x27;12&#x27;</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+    frameon<span class="tok-op">=</span><span class="tok-keyword">None</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-number">50000</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-021-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>For nanostrings, Omicverse also supports visualizing them by stitching together any field of view (FOV).</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>nanostring<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&quot;Max.PanCK&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    fovs<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;19&#x27;</span><span class="tok-op">,</span><span class="tok-string">&#x27;20&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">0.25</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-number">50000</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-023-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>If you set <code>fovs=None</code>, you can see all fovs at the same time.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>nanostring<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-keyword">None</span><span class="tok-op">,</span><span class="tok-string">&quot;Max.PanCK&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    size<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    fovs<span class="tok-op">=</span><span class="tok-keyword">None</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-number">50000</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-025-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>7. Inspect segmentation contours together with expression</h2>
+<p>Next, switch to <code>ov.pl.spatialseg()</code>. This function is more suitable for datasets with segmentation information because it overlays cell boundaries on the image rather than only plotting points.</p>
+<p>For CosMx workflows, this is not just a prettier visualization. Official dataset materials repeatedly highlight robust cell segmentation as a prerequisite for cell atlasing, neighborhood analysis, and ligand-receptor interpretation, because all of those steps depend on assigning transcripts to the correct cell outlines.</p>
+<h3>Main parameters</h3>
+<ul><li><code>color=&#x27;Max.PanCK&#x27;</code>: color cells by the selected feature.</li><li><code>edges_color=&#x27;white&#x27;</code>, <code>edges_width=0</code>: control segmentation boundary color and line width.</li><li><code>seg_contourpx=15</code>: thickness of the segmentation contour in pixels.</li><li><code>library_id=&#x27;12&#x27;</code>: choose the FOV to display.</li><li><code>img_key=&#x27;hires&#x27;</code>: use the high-resolution background image.</li><li><code>crop_coord=None</code>: show the full field rather than a cropped region.</li></ul>
+<p>This is therefore a real quality-control checkpoint: you are judging whether the segmentation overlay is visually informative and whether boundary thickness is appropriate for the current figure scale before trusting downstream biological conclusions.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    vdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;Max.PanCK&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#edges_width=0.4,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span><span class="tok-string">&#x27;12&#x27;</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    seg_contourpx<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#crop_coord=(0, 0, 1400, 1400),</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-027-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>For segmentation overlay, omicverse also support fov concat to visualize.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>nanostringseg<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&quot;Max.PanCK&quot;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    fovs<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;12&#x27;</span><span class="tok-op">,</span><span class="tok-string">&#x27;13&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-number">50000</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span>
+
+    seg_contourpx<span class="tok-op">=</span><span class="tok-number">0.3</span><span class="tok-op">,</span>
+
+    bw<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">,</span>
+
+    rasterized<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-029-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>The next plot is similar to the previous one, except that <code>seg_contourpx</code> is no longer set explicitly. Looking at the two versions side by side makes it easier to judge how much the contour thickness affects readability.</p>
+<p>A practical rule of thumb:</p>
+<ul><li>if you want to emphasize segmentation structure, increase <code>seg_contourpx</code>;</li><li>if you want to emphasize continuous expression patterns, use thinner boundaries or weaken them visually.</li></ul>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    vdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;Max.PanCK&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#edges_width=0.4,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span><span class="tok-string">&#x27;12&#x27;</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#seg_contourpx=1,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#crop_coord=(0, 0, 1400, 1400),</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-031-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>8. Check coordinate ranges before local cropping</h2>
+<p>Before making a zoomed-in view, inspect the x and y coordinate ranges of the current FOV. This makes it easier to define <code>crop_coord</code> based on real values rather than trial and error.</p>
+<p>It is a small step, but very helpful when preparing publication figures or when trying to isolate a specific local region.</p>
+<pre><code class="language-python">vdata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>min<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">,</span>vdata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<p>This cell prints the y-coordinate range separately so that, together with the previous output, a local crop window can be chosen more deliberately.</p>
+<pre><code class="language-python">vdata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">.</span>min<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">,</span>vdata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span></code></pre>
+<h2>9. Zoom in on a selected region</h2>
+<p>This cell uses <code>crop_coord=(0, 2000, 400, 2400)</code> to display a local region. In practice, you can think of this as defining a rectangular window within the current FOV so that cell boundaries and expression patterns are easier to inspect at higher resolution.</p>
+<h3>What <code>crop_coord</code> does</h3>
+<p>Different plotting functions may implement coordinate order slightly differently internally, but the main idea is the same: supply a rectangular range and only display content inside it.</p>
+<p>For image-based plots, cropping is especially useful when:</p>
+<ul><li>a region of interest occupies only a small portion of the full FOV;</li><li>segmentation quality needs to be assessed locally;</li><li>figure panels require a tighter composition than the full image.</li></ul>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    vdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;Max.PanCK&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#edges_width=0.4,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span><span class="tok-string">&#x27;12&#x27;</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    seg_contourpx<span class="tok-op">=</span><span class="tok-number">0.5</span><span class="tok-op">,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    crop_coord<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">0</span><span class="tok-op">,</span> <span class="tok-number">2000</span><span class="tok-op">,</span> <span class="tok-number">400</span><span class="tok-op">,</span> <span class="tok-number">2400</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-037-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>Print <code>adata</code> again as a light sanity check before moving into the modeling part. The goal is simply to confirm that the visualization steps above did not introduce unexpected changes to the object state.</p>
+<pre><code class="language-python">adata</code></pre>
+<h2>10. Prepare spatial coordinates for CAST</h2>
+<p>CAST expects explicit coordinate inputs, so here the whole-sample coordinates from <code>spatial_fov</code> are written into <code>adata.obs[&#x27;x&#x27;]</code> and <code>adata.obs[&#x27;y&#x27;]</code>.</p>
+<p>The original note already hints that this assignment may need to be rerun occasionally and checked for <code>NA</code> values. In practice, that usually means one of two things:</p>
+<ul><li>the object state was not fully refreshed in a previous step;</li><li>the index alignment was not what you expected.</li></ul>
+<p>The purpose of this cell is to make the coordinates easy to access later when building the per-FOV dictionaries required by CAST.</p>
+<pre><code class="language-python"><span class="tok-comment">#This step sometimes needs to be run twice</span>
+
+<span class="tok-comment">#and you need to check that adata.obs[&#x27;X&#x27;] is correctly assigned instead of NA</span>
+
+adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;x&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial_fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">0</span><span class="tok-op">]</span>
+
+adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;y&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;spatial_fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">,</span><span class="tok-number">1</span><span class="tok-op">]</span>
+
+adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;x&#x27;</span><span class="tok-op">]</span><span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span></code></pre>
+<h2>11. Build a normalized expression layer</h2>
+<p>Here <code>ov.pp.normalize_total()</code> scales each cell to a total count of <code>1e4</code> and stores the result in <code>adata.layers[&#x27;norm_1e4&#x27;]</code>.</p>
+<h3>Main parameters</h3>
+<ul><li><code>target_sum=1e4</code>: the target total count after normalization for each cell.</li><li><code>inplace=False</code>: return the normalized matrix instead of overwriting the original data in place.</li></ul>
+<p>Keeping a separate normalized layer is useful because it preserves the raw matrix while creating a standardized input for downstream embedding methods.</p>
+<pre><code class="language-python">adata<span class="tok-op">.</span>layers<span class="tok-op">[</span><span class="tok-string">&#x27;norm_1e4&#x27;</span><span class="tok-op">]</span> <span class="tok-op">=</span> ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>adata<span class="tok-op">,</span> target_sum<span class="tok-op">=</span><span class="tok-number">1e4</span><span class="tok-op">,</span>
+
+                                                 inplace<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">)</span><span class="tok-op">[</span><span class="tok-string">&#x27;X&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>toarray<span class="tok-op">(</span><span class="tok-op">)</span> <span class="tok-comment"># we use normalized counts for each cell as input gene expression</span></code></pre>
+<h2>12. Organize CAST inputs by FOV</h2>
+<p>CAST expects two dictionaries:</p>
+<ul><li><code>coords_raw</code>: two-dimensional coordinates for each FOV;</li><li><code>exp_dict</code>: normalized expression matrices for each FOV.</li></ul>
+<p>The key idea is to split one large <code>AnnData</code> object into multiple FOV-level subsets and then pass them to CAST for cross-sample graph representation learning. <code>samples = np.unique(adata.obs[&#x27;fov&#x27;])</code> is used here to iterate over all available FOVs in a consistent order.</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> numpy <span class="tok-keyword">as</span> np
+
+<span class="tok-comment"># Get the coordinates and expression data for each sample</span>
+
+samples <span class="tok-op">=</span> np<span class="tok-op">.</span>unique<span class="tok-op">(</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">)</span> <span class="tok-comment"># used samples in adata</span>
+
+coords_raw <span class="tok-op">=</span> <span class="tok-op">{</span>
+
+    sample_t<span class="tok-op">:</span> np<span class="tok-op">.</span>array<span class="tok-op">(</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-op">[</span><span class="tok-string">&#x27;x&#x27;</span><span class="tok-op">,</span><span class="tok-string">&#x27;y&#x27;</span><span class="tok-op">]</span><span class="tok-op">]</span><span class="tok-op">)</span><span class="tok-op">[</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span> <span class="tok-op">==</span> sample_t<span class="tok-op">]</span> <span class="tok-keyword">for</span> sample_t <span class="tok-keyword">in</span> samples
+
+<span class="tok-op">}</span>
+
+exp_dict <span class="tok-op">=</span> <span class="tok-op">{</span>
+
+    sample_t<span class="tok-op">:</span> adata<span class="tok-op">[</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span> <span class="tok-op">==</span> sample_t<span class="tok-op">]</span><span class="tok-op">.</span>layers<span class="tok-op">[</span><span class="tok-string">&#x27;norm_1e4&#x27;</span><span class="tok-op">]</span> <span class="tok-keyword">for</span> sample_t <span class="tok-keyword">in</span> samples
+
+<span class="tok-op">}</span></code></pre>
+<h2>13. Run CAST_MARK to generate graph embeddings</h2>
+<p>This is the main modeling step of the notebook: learn graph embeddings from the spatial coordinates and expression matrix of each FOV.</p>
+<h3>Main parameters</h3>
+<ul><li><code>coords_raw</code>: dictionary of spatial coordinates for each FOV.</li><li><code>exp_dict</code>: dictionary of expression matrices for each FOV.</li><li><code>output_path</code>: directory where intermediate results or saved outputs are written.</li><li><code>graph_strategy=&#x27;delaunay&#x27;</code>: use Delaunay triangulation to define the spatial graph.</li><li><code>device=&#x27;cuda:0&#x27;</code>: run on the first GPU. Change this if you need CPU or another device.</li><li><code>args = Args(...)</code>: package a group of training hyperparameters used by CAST.</li></ul>
+<p>The exact optimization details belong to CAST itself, but from the notebook perspective, this is the step that converts raw spatial expression into a learned embedding space.</p>
+<pre><code class="language-python"><span class="tok-comment">### Run the model to generate the graph embedding</span>
+
+<span class="tok-comment"># Set up the output path</span>
+
+<span class="tok-keyword">import</span> os
+
+output_path <span class="tok-op">=</span> <span class="tok-string">&#x27;result/CAST_Mark/output&#x27;</span>
+
+os<span class="tok-op">.</span>makedirs<span class="tok-op">(</span>output_path<span class="tok-op">,</span> exist_ok<span class="tok-op">=</span><span class="tok-keyword">True</span><span class="tok-op">)</span>
+
+
+
+<span class="tok-keyword">from</span> omicverse<span class="tok-op">.</span>external<span class="tok-op">.</span>CAST <span class="tok-keyword">import</span> CAST_MARK
+
+embed_dict <span class="tok-op">=</span> CAST_MARK<span class="tok-op">(</span>
+
+    coords_raw<span class="tok-op">,</span>exp_dict<span class="tok-op">,</span>output_path<span class="tok-op">,</span>
+
+    gpu_t<span class="tok-op">=</span><span class="tok-number">0</span><span class="tok-op">,</span>device<span class="tok-op">=</span><span class="tok-string">&#x27;cuda:0&#x27;</span>
+
+<span class="tok-op">)</span></code></pre>
+<h2>14. Use K-means for a first look at the embedding structure</h2>
+<p>After CAST produces embeddings, <code>kmeans_plot_multiple()</code> is used as a quick unsupervised summary. The purpose here is not to produce a final biological interpretation, but to check whether the embedding already separates meaningful spatial domains.</p>
+<h3>Main parameters</h3>
+<ul><li><code>embed_dict</code>: embedding output generated by CAST.</li><li><code>samples</code>: the FOVs included in the analysis.</li><li><code>task_name_t=&#x27;Lung5_Rep2&#x27;</code>: label used in the visualization.</li><li><code>output_path_t</code>: directory for saving outputs.</li><li><code>k=20</code>: number of K-means clusters.</li><li><code>plot_strategy=&#x27;sep&#x27;</code>: plot samples separately rather than merging everything into one panel.</li></ul>
+<p>This is best treated as an exploratory checkpoint: if the embedding is informative, even a simple clustering method should begin to reveal structure.</p>
+<pre><code class="language-python"><span class="tok-comment">### Visualize the embedding with Kmeans clustering</span>
+
+<span class="tok-keyword">from</span> omicverse<span class="tok-op">.</span>external<span class="tok-op">.</span>CAST<span class="tok-op">.</span>visualize <span class="tok-keyword">import</span> kmeans_plot_multiple
+
+
+
+clusters_kmeans<span class="tok-op">=</span>kmeans_plot_multiple<span class="tok-op">(</span>
+
+    embed_dict<span class="tok-op">,</span>samples<span class="tok-op">,</span>coords_raw<span class="tok-op">,</span><span class="tok-string">&#x27;demo1&#x27;</span><span class="tok-op">,</span>output_path<span class="tok-op">,</span>
+
+    k<span class="tok-op">=</span><span class="tok-number">30</span><span class="tok-op">,</span>dot_size <span class="tok-op">=</span> <span class="tok-number">10</span><span class="tok-op">,</span>minibatch<span class="tok-op">=</span><span class="tok-keyword">False</span>
+
+<span class="tok-op">)</span></code></pre>
+<h2>15. Write CAST K-means labels back to <code>adata.obs</code></h2>
+<p>This loop maps <code>clusters_kmeans</code> back to the original cell table in FOV order and stores the final labels in <code>adata.obs[&#x27;cast_clusters&#x27;]</code>.</p>
+<p>The reason <code>front_idx</code> and <code>back_idx</code> are tracked manually is that <code>clusters_kmeans</code> is effectively a concatenation of per-FOV results. To restore the labels correctly, each segment has to be aligned back to the matching subset of cells.</p>
+<pre><code class="language-python">adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;cast_clusters&#x27;</span><span class="tok-op">]</span><span class="tok-op">=</span><span class="tok-string">&#x27;-1&#x27;</span>
+
+<span class="tok-keyword">for</span> idx<span class="tok-op">,</span>key <span class="tok-keyword">in</span> <span class="tok-builtin">enumerate</span><span class="tok-op">(</span>embed_dict<span class="tok-op">.</span>keys<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    <span class="tok-keyword">if</span> idx<span class="tok-op">==</span><span class="tok-number">0</span><span class="tok-op">:</span>
+
+        front_idx<span class="tok-op">=</span><span class="tok-number">0</span>
+
+        back_idx<span class="tok-op">=</span>adata<span class="tok-op">.</span>obs<span class="tok-op">.</span>loc<span class="tok-op">[</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">==</span>key<span class="tok-op">]</span><span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span>
+
+        adata<span class="tok-op">.</span>obs<span class="tok-op">.</span>loc<span class="tok-op">[</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">==</span>key<span class="tok-op">,</span><span class="tok-string">&#x27;cast_clusters&#x27;</span><span class="tok-op">]</span><span class="tok-op">=</span>clusters_kmeans<span class="tok-op">[</span>front_idx<span class="tok-op">:</span>front_idx<span class="tok-op">+</span>back_idx<span class="tok-op">]</span>
+
+        front_idx<span class="tok-op">+=</span>back_idx
+
+    <span class="tok-keyword">else</span><span class="tok-op">:</span>
+
+        back_idx<span class="tok-op">=</span>adata<span class="tok-op">.</span>obs<span class="tok-op">.</span>loc<span class="tok-op">[</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">==</span>key<span class="tok-op">]</span><span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span>
+
+        adata<span class="tok-op">.</span>obs<span class="tok-op">.</span>loc<span class="tok-op">[</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">==</span>key<span class="tok-op">,</span><span class="tok-string">&#x27;cast_clusters&#x27;</span><span class="tok-op">]</span><span class="tok-op">=</span>clusters_kmeans<span class="tok-op">[</span>front_idx<span class="tok-op">:</span>front_idx<span class="tok-op">+</span>back_idx<span class="tok-op">]</span>
+
+        front_idx<span class="tok-op">+=</span>back_idx
+</code></pre>
+<h2>16. Store CAST embeddings in <code>adata.obsm</code></h2>
+<p>In addition to the cluster labels, the 512-dimensional CAST embeddings themselves should be saved for downstream graph construction and Leiden clustering.</p>
+<p>The code first creates an empty matrix and then fills it FOV by FOV. Once stored in <code>obsm[&#x27;X_cast&#x27;]</code>, the representation can be used just like standard embeddings such as <code>X_pca</code> or <code>X_umap</code>.</p>
+<pre><code class="language-python"><span class="tok-keyword">import</span> pandas <span class="tok-keyword">as</span> pd
+
+adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;X_cast&#x27;</span><span class="tok-op">]</span><span class="tok-op">=</span>np<span class="tok-op">.</span>zeros<span class="tok-op">(</span><span class="tok-op">(</span>adata<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">,</span><span class="tok-number">512</span><span class="tok-op">)</span><span class="tok-op">)</span>
+
+adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;X_cast&#x27;</span><span class="tok-op">]</span><span class="tok-op">=</span>pd<span class="tok-op">.</span>DataFrame<span class="tok-op">(</span>adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;X_cast&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>index<span class="tok-op">=</span>adata<span class="tok-op">.</span>obs<span class="tok-op">.</span>index<span class="tok-op">)</span>
+
+<span class="tok-keyword">from</span> tqdm <span class="tok-keyword">import</span> tqdm
+
+<span class="tok-keyword">for</span> key <span class="tok-keyword">in</span> tqdm<span class="tok-op">(</span>embed_dict<span class="tok-op">.</span>keys<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">:</span>
+
+    adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;X_cast&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>loc<span class="tok-op">[</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">==</span>key<span class="tok-op">]</span><span class="tok-op">+=</span>embed_dict<span class="tok-op">[</span>key<span class="tok-op">]</span><span class="tok-op">.</span>cpu<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>numpy<span class="tok-op">(</span><span class="tok-op">)</span>
+</code></pre>
+<p>Convert <code>cast_clusters</code> to string so that plotting functions treat it as a discrete category rather than a continuous numeric variable. This small step is often necessary for categorical coloring to behave as expected.</p>
+<pre><code class="language-python">adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;cast_clusters&#x27;</span><span class="tok-op">]</span><span class="tok-op">=</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;cast_clusters&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>astype<span class="tok-op">(</span><span class="tok-builtin">str</span><span class="tok-op">)</span></code></pre>
+<h2>17. Visualize CAST clusters in whole-sample space</h2>
+<p>Here <code>basis=&#x27;spatial_fov&#x27;</code> is used again to project the CAST clustering labels back onto the stitched spatial layout of the whole sample. This makes it easy to judge whether clusters are spatially continuous and whether they show interpretable organization across FOVs.</p>
+<p><code>palette=ov.pl.palette_112[:]</code> provides enough distinct colors for cases with many categories.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>embedding<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    basis<span class="tok-op">=</span><span class="tok-string">&#x27;spatial_fov&#x27;</span><span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;cast_clusters&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99.2&#x27;</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span><span class="tok-op">,</span>
+
+    palette<span class="tok-op">=</span>ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>palette_112<span class="tok-op">[</span><span class="tok-op">:</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-057-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>Earlier, <code>X_cast</code> was temporarily stored as a <code>DataFrame</code> to make index-based assignment convenient. Before computing the neighborhood graph, it is converted back to a <code>numpy</code> array so downstream functions can use it directly.</p>
+<pre><code class="language-python">adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;X_cast&#x27;</span><span class="tok-op">]</span><span class="tok-op">=</span>adata<span class="tok-op">.</span>obsm<span class="tok-op">[</span><span class="tok-string">&#x27;X_cast&#x27;</span><span class="tok-op">]</span><span class="tok-op">.</span>values</code></pre>
+<h2>18. Build a neighborhood graph from the CAST embedding</h2>
+<p>At this stage, PCA is no longer used. Instead, <code>X_cast</code> itself is treated as the representation space for nearest-neighbor graph construction.</p>
+<h3>Main parameters</h3>
+<ul><li><code>n_neighbors=15</code>: connect each cell to 15 nearest neighbors.</li><li><code>n_pcs=512</code>: here this matches the embedding dimensionality because <code>X_cast</code> has 512 dimensions.</li><li><code>use_rep=&#x27;X_cast&#x27;</code>: explicitly tell the function to use the CAST embedding rather than a default representation.</li></ul>
+<p>This step turns the learned embedding into a graph structure that can support community detection and other downstream analyses.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>neighbors<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>n_neighbors<span class="tok-op">=</span><span class="tok-number">15</span><span class="tok-op">,</span>
+
+    n_pcs<span class="tok-op">=</span><span class="tok-number">512</span><span class="tok-op">,</span> use_rep<span class="tok-op">=</span><span class="tok-string">&#x27;X_cast&#x27;</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<h2>19. Run Leiden clustering</h2>
+<p>Leiden clustering is then applied to the neighborhood graph built from the CAST embedding.</p>
+<ul><li><code>resolution=0.1</code>: controls clustering granularity. Larger values usually produce more clusters, while smaller values give coarser partitions.</li></ul>
+<p>Compared with the earlier K-means result, Leiden depends more directly on the neighbor graph structure, so the two sets of clusters are not expected to be identical.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pp<span class="tok-op">.</span>leiden<span class="tok-op">(</span>adata<span class="tok-op">,</span>resolution<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">)</span></code></pre>
+<p>These Leiden labels are plotted back in <code>spatial_fov</code> coordinates so they can be compared directly with the earlier CAST K-means assignments.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>embedding<span class="tok-op">(</span>
+
+    adata<span class="tok-op">,</span>
+
+    basis<span class="tok-op">=</span><span class="tok-string">&#x27;spatial_fov&#x27;</span><span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-op">[</span><span class="tok-string">&#x27;leiden&#x27;</span><span class="tok-op">]</span><span class="tok-op">,</span>
+
+    vmax<span class="tok-op">=</span><span class="tok-string">&#x27;p99.2&#x27;</span><span class="tok-op">,</span>
+
+    cmap<span class="tok-op">=</span><span class="tok-string">&#x27;Reds&#x27;</span><span class="tok-op">,</span>
+
+    palette<span class="tok-op">=</span>ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>palette_112<span class="tok-op">,</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-065-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>20. Compare clustering results within a single FOV</h2>
+<p>Finally, return to <code>fov == &#x27;12&#x27;</code> and overlay both <code>leiden</code> and <code>cast_clusters</code> on the segmented image.</p>
+<p>This is a practical way to answer two common questions:</p>
+<ul><li>Do cluster boundaries follow tissue structure?</li><li>Are the local partitions from K-means and Leiden broadly consistent?</li></ul>
+<p>If the two results differ strongly in some regions, it is often worth revisiting the embedding quality, graph construction settings, or segmentation context.</p>
+<pre><code class="language-python">vdata<span class="tok-op">=</span>adata<span class="tok-op">[</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;fov&#x27;</span><span class="tok-op">]</span><span class="tok-op">==</span><span class="tok-string">&#x27;12&#x27;</span><span class="tok-op">]</span></code></pre>
+<p>This panel shows the spatial distribution of Leiden clusters on the segmentation overlay. Because the boundary lines are kept relatively thin, it is easier to inspect transitions between neighboring cell groups.</p>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    vdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;leiden&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#edges_width=0.4,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span><span class="tok-string">&#x27;12&#x27;</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#seg_contourpx=1,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#crop_coord=(0, 0, 1400, 1400),</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-069-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<p>This panel shows the CAST K-means clustering result. Viewed next to the Leiden panel, it helps clarify:</p>
+<ul><li>whether the CAST embedding captures the main spatial structure;</li><li>where local differences between graph-based clustering and direct clustering arise.</li></ul>
+<pre><code class="language-python">ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>
+
+    vdata<span class="tok-op">,</span>
+
+    color<span class="tok-op">=</span><span class="tok-string">&quot;cast_clusters&quot;</span><span class="tok-op">,</span>
+
+    edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
+
+    edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#edges_width=0.4,</span>
+
+    figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">7</span><span class="tok-op">,</span> <span class="tok-number">4</span><span class="tok-op">)</span><span class="tok-op">,</span>
+
+    library_id<span class="tok-op">=</span><span class="tok-string">&#x27;12&#x27;</span><span class="tok-op">,</span>
+
+    alpha_img<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#seg_contourpx=1,</span>
+
+    alpha<span class="tok-op">=</span><span class="tok-number">1</span><span class="tok-op">,</span>
+
+    <span class="tok-comment">#crop_coord=(0, 0, 1400, 1400),</span>
+
+    legend_fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">,</span>
+
+<span class="tok-op">)</span></code></pre>
+<figure><img src="../assets/blog/nanostring-cosmx-workflow/cell-071-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
+<h2>Summary</h2>
+<p>At this point, the full workflow is complete:</p>
+<ul><li>read NanoString raw files into an <code>AnnData</code> object;</li><li>inspect spatial expression and segmentation at both whole-sample and single-FOV scales;</li><li>prepare CAST inputs and learn graph embeddings;</li><li>perform K-means and Leiden clustering in the embedding space, then map the results back to spatial coordinates.</li></ul>
+<p>In the broader CosMx setting, these steps form the foundation for cell atlas construction, spatial niche analysis, ligand-receptor programs, and biomarker-oriented interpretation in FFPE tissue.</p>
+<p>Natural next steps would include:</p>
+<ul><li>annotating CAST-derived clusters with marker genes;</li><li>comparing clustering consistency across FOVs or biological replicates;</li><li>combining CAST embeddings with more formal downstream analyses such as neighborhood enrichment, differential expression, or region-level annotation.</li></ul>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
+    </span>
+    <span class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>

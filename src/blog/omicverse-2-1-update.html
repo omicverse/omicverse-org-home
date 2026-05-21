@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>What Changed in OmicVerse 2.1.x — OmicVerse</title>
+  <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../people.html">People</a>
+      <a aria-current="page" href="../blog.html">Blog</a>
+      <a href="../events.html">Events</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main class="article page-width">
+    <a class="article-back" href="../blog.html">← Back to blog</a>
+    <p class="overline">Release</p>
+    <h1>What Changed in OmicVerse 2.1.x</h1>
+<p>OmicVerse <code>2.1.x</code> is not just a small maintenance update. From <code>v2.0.0</code> to the current development tree, the project accumulated hundreds of commits, hundreds of changed files, and close to one hundred thousand added lines of code. Two major branches, metabolomics and 16S / microbiome analysis, were also moving toward the merge window.</p>
+<p>The update focuses on trajectory inference, spatial omics, preprocessing and I/O, plotting, the agent runtime, and new multi-omics modules.</p>
+<p>To update:</p>
+<pre><code class="language-bash"><span class="tok-builtin">pip</span> install -U omicverse</code></pre>
+<h2>Update overview</h2>
+<h3>PP module</h3>
+<ul><li>Added a pure-Python <code>pydoubletfinder</code> backend for doublet detection.</li><li>Automatically detects mitochondrial prefixes, avoiding manual <code>MT-</code> versus <code>mt-</code> handling.</li><li>Upgraded Harmony to <code>harmonypy v0.2.0</code>, with GPU, CPU NumPy, and Apple Silicon MLX backends.</li><li>Improved memory handling in <code>torch_pca</code> and <code>covariance_eigh</code>.</li><li>Added the Rust-backed <code>anndataoom</code> out-of-memory AnnData reader.</li></ul>
+<h3>Single module</h3>
+<ul><li>Added <code>ov.single.Monocle</code>, a pure Python rebuild of Monocle 2 that avoids <code>rpy2</code> and a separate R environment.</li><li>Continued work on dynamic trajectory tools, including lineage-aware trend plotting and improvements around Palantir and Slingshot visualization.</li></ul>
+<h3>Space module</h3>
+<ul><li>Added <code>ov.io.read_xenium</code> for full Xenium <code>outs/</code> ingestion.</li><li>Converts Xenium <code>cell_boundaries</code> into WKT polygons that can be passed directly to <code>ov.pl.spatialseg</code>.</li><li>Added <code>ov.io.write_visium_hd_cellseg</code> to export cell-level AnnData back into a Space Ranger v4-compatible directory structure.</li><li>Added CosMx FOV-aware plotting, including multi-FOV layout and per-FOV overlays.</li><li>Added CellSAM support and renamed <code>stardist()</code> to the more general <code>cellseg()</code>.</li><li>Added <code>method=&quot;cellcharter&quot;</code> to <code>ov.utils.cluster</code>.</li></ul>
+<h3>Plotting module</h3>
+<ul><li>Added Marsilea-based heatmap plotting.</li><li>Added a set of cell-cell communication plotting APIs.</li><li>Added <code>ov.pl.create_custom_colormap</code>.</li><li>Added half-violin boxplots and started consolidating older plotting APIs.</li><li>Improved legend behavior for subset plotting.</li></ul>
+<h3>Agent module</h3>
+<ul><li>Reworked <code>ov.Agent</code>, Jarvis, and OVAgent runtime internals.</li><li>Added Codex OAuth support.</li><li>Moved multiple message channels onto a unified <code>MessageRuntime</code>.</li><li>Added sandboxing, timeouts, stdout guards, retries, and security hardening.</li></ul>
+<h3>New modules</h3>
+<ul><li>Added <code>ov.metabol</code> for metabolomics workflows, including ID mapping, MSEA, Mummichog, SERRF, DGCA, ASCA / MixedLM, ROC, and biomarker panels.</li><li>Added <code>ov.micro</code> and <code>ov.alignment</code> for 16S / microbiome analysis from amplicons to microbiome AnnData objects.</li></ul>
+<h2>Why the update matters</h2>
+<p>The theme of this release is reducing dependency friction while making high-resolution spatial workflows more complete. Xenium, Visium HD, and CosMx are no longer only file formats that can be read; they now have fuller analysis paths that connect I/O, preprocessing, segmentation, plotting, and export.</p>
+<p>The pure-Python Monocle 2 rebuild points in the same direction. When core methods no longer require an R bridge, they become easier to install, easier to run in notebooks and pipelines, and easier to expose to agents.</p>
+<p>For day-to-day users, the headline is practical: update OmicVerse if you need modern spatial data support, more robust preprocessing, richer plotting, or a more capable agent runtime.</p>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
+    </span>
+    <span class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../packages.html">Packages</a>
+      <a href="../learn.html">Learn</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>
