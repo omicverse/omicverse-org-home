@@ -128,6 +128,64 @@ function sortRepos(items) {
   });
 }
 
+function packageWord(count) {
+  return count === 1 ? "package" : "packages";
+}
+
+function updatePackageStackNumbers(root, repos) {
+  const visibleRepos = repos.filter((repo) => categorizeRepo(repo) !== null);
+  const core = repos.find((repo) => repo.name === "omicverse");
+  const agentCount = visibleRepos.filter((repo) => {
+    const cat = categorizeRepo(repo);
+    return cat && cat.tags.split(/\s+/).includes("agent");
+  }).length;
+  const pythonPortCount = visibleRepos.filter((repo) => /^py-/i.test(repo.name)).length;
+  const rustPortCount = visibleRepos.filter((repo) => /^rust-/i.test(repo.name)).length;
+
+  root.querySelectorAll("[data-layer-index]").forEach((node, index) => {
+    node.textContent = `/ ${String(index + 1).padStart(2, "0")}`;
+  });
+
+  const agentLabel = root.querySelector("[data-stack-agent-label]");
+  if (agentLabel) agentLabel.textContent = `Agent layer · ${agentCount}`;
+
+  const coreLabel = root.querySelector("[data-stack-core-label]");
+  if (coreLabel && core) coreLabel.textContent = `Core API · ${core.stargazers_count}★`;
+
+  const pythonLabel = root.querySelector("[data-stack-python-label]");
+  if (pythonLabel) {
+    pythonLabel.textContent = `${pythonPortCount} ${packageWord(pythonPortCount)} · pure-python re-implementations`;
+  }
+
+  const rustLabel = root.querySelector("[data-stack-rust-label]");
+  if (rustLabel) {
+    rustLabel.textContent = `${rustPortCount} ${packageWord(rustPortCount)} · 10–200× faster, bit-identical`;
+  }
+}
+
+async function renderPackageStack() {
+  const holder = document.querySelector("[data-packages-network]");
+  if (!holder) return;
+
+  try {
+    const [svgRes, repos] = await Promise.all([
+      fetch(holder.dataset.src || "assets/packages-network.svg"),
+      fetchOrgRepos(),
+    ]);
+    if (!svgRes.ok) throw new Error(`SVG HTTP ${svgRes.status}`);
+    holder.innerHTML = await svgRes.text();
+    updatePackageStackNumbers(holder, repos);
+  } catch (_) {
+    try {
+      const repos = await fetchOrgRepos();
+      updatePackageStackNumbers(holder, repos);
+    } catch (_) {
+      // Keep the static SVG fallback when live data is unavailable.
+    }
+  }
+}
+renderPackageStack();
+
 // ─── Packages page: dynamic list ──────────────────
 async function renderOrgRepos() {
   const container = document.querySelector("[data-org-repos]");

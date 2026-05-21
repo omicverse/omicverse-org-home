@@ -334,6 +334,11 @@ section.band {
 }
 .filter:hover { color: var(--ink); }
 .filter.active { color: var(--accent); font-weight: 500; }
+.packages-network svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
 
 /* ─── Quickstart (learn page) ───────────────────── */
 .qs-block {

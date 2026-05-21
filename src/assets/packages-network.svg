@@ -20,7 +20,7 @@
   </defs>
 
   <!-- ╭──── /01 Agent layer — 2 packages ────╮ -->
-  <text x="22" y="58" class="layer-num">/ 01</text>
+  <text x="22" y="58" class="layer-num" data-layer-index>/ 01</text>
   <g transform="translate(80, 24)">
     <rect x="0"   y="0" width="426" height="60" rx="3" class="row"/>
     <text x="14"  y="36" class="pkg">omicverse-skills</text>
@@ -29,23 +29,23 @@
     <text x="448" y="36" class="pkg">omicclaw</text>
     <text x="448" y="50" class="desc">agent skill for OmicVerse workflows</text>
   </g>
-  <text x="920" y="58" class="layer-label" text-anchor="end">Agent layer · 2</text>
+  <text x="920" y="58" class="layer-label" text-anchor="end" data-stack-agent-label>Agent layer · 2</text>
 
   <line x1="510" y1="84" x2="510" y2="100" class="connector"/>
 
   <!-- ╭──── /02 Core API — 1 package, highlighted ────╮ -->
-  <text x="22" y="138" class="layer-num">/ 02</text>
+  <text x="22" y="138" class="layer-num" data-layer-index>/ 02</text>
   <rect x="80" y="100" width="860" height="60" rx="3" class="row-core"/>
   <text x="100" y="136" class="pkg-core">omicverse</text>
   <text x="190" y="136" class="desc">Unified Python API · bulk · single-cell · spatial · multi-omics</text>
-  <text x="920" y="136" class="layer-label" text-anchor="end" fill="#1f7a36">Core API · 979★</text>
+  <text x="920" y="136" class="layer-label" text-anchor="end" fill="#1f7a36" data-stack-core-label>Core API · 979★</text>
 
   <line x1="510" y1="160" x2="510" y2="186" class="connector"/>
 
   <!-- ╭──── /03a Method ports · Python — 11 packages ────╮ -->
-  <text x="22" y="208" class="layer-num">/ 03</text>
+  <text x="22" y="208" class="layer-num" data-layer-index>/ 03</text>
   <text x="80" y="200" class="group-label">Method ports · Python</text>
-  <text x="920" y="200" class="layer-label" text-anchor="end">11 packages · pure-python re-implementations</text>
+  <text x="920" y="200" class="layer-label" text-anchor="end" data-stack-python-label>11 packages · pure-python re-implementations</text>
 
   <g transform="translate(80, 212)">
     <!-- Row 1 -->
@@ -102,7 +102,7 @@
 
   <!-- ╭──── /03b Method ports · Rust — 3 packages ────╮ -->
   <text x="80" y="404" class="group-label">Method ports · Rust</text>
-  <text x="920" y="404" class="layer-label" text-anchor="end">3 packages · 10–200× faster, bit-identical</text>
+  <text x="920" y="404" class="layer-label" text-anchor="end" data-stack-rust-label>3 packages · 10–200× faster, bit-identical</text>
 
   <g transform="translate(80, 416)">
     <rect x="0"   y="0" width="280" height="50" rx="3" class="row"/>
@@ -121,7 +121,7 @@
   <line x1="510" y1="466" x2="510" y2="490" class="connector"/>
 
   <!-- ╭──── /04 Data foundation — 1 package ────╮ -->
-  <text x="22" y="524" class="layer-num">/ 04</text>
+  <text x="22" y="524" class="layer-num" data-layer-index>/ 04</text>
   <rect x="80" y="490" width="860" height="60" rx="3" class="row"/>
   <text x="100" y="522" class="pkg">anndata-oom</text>
   <text x="200" y="522" class="desc">drop-in AnnData replacement · matrix stays on disk · whole pipelines without loading</text>
