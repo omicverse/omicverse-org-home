@@ -41,6 +41,26 @@ function escapeHtml(s) {
   })[c]);
 }
 
+function repoLogoUrl(repo) {
+  return `https://raw.githubusercontent.com/${repo.full_name}/${repo.default_branch || "main"}/logo/logo.svg`;
+}
+
+function bindRepoLogoErrors(root = document) {
+  root.querySelectorAll("img[data-repo-logo]").forEach((img) => {
+    if (img._repoLogoErrorBound) return;
+    img._repoLogoErrorBound = true;
+    img.addEventListener("error", () => {
+      const logoLink = img.closest(".package-logo-link");
+      if (logoLink) {
+        logoLink.remove();
+        return;
+      }
+      const holder = img.closest(".t-logo");
+      if (holder) holder.classList.add("is-missing-logo");
+    });
+  });
+}
+
 // ─── GitHub API: contributors (cached per session) ──
 async function fetchContributors(repo) {
   const key = `gh:contrib:${repo}`;
@@ -72,11 +92,18 @@ async function fetchOrgRepos(org = "omicverse") {
   if (cached) {
     try { return JSON.parse(cached); } catch (_) { /* fall through */ }
   }
-  const res = await fetch(`https://api.github.com/orgs/${org}/repos?per_page=100&type=public`, {
-    headers: { Accept: "application/vnd.github+json" },
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const raw = await res.json();
+  let raw = [];
+  try {
+    const res = await fetch(`https://api.github.com/orgs/${org}/repos?per_page=100&type=public`, {
+      headers: { Accept: "application/vnd.github+json" },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    raw = await res.json();
+  } catch (_) {
+    const res = await fetch("assets/packages.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`manifest HTTP ${res.status}`);
+    raw = await res.json();
+  }
   const data = (Array.isArray(raw) ? raw : []).map((r) => ({
     name: r.name,
     full_name: r.full_name,
@@ -84,9 +111,12 @@ async function fetchOrgRepos(org = "omicverse") {
     description: r.description,
     language: r.language,
     stargazers_count: r.stargazers_count,
+    size: r.size,
     archived: r.archived,
     fork: r.fork,
     pushed_at: r.pushed_at,
+    default_branch: r.default_branch,
+    logo_url: r.logo_url,
   }));
   try { sessionStorage.setItem(key, JSON.stringify(data)); } catch (_) { /* quota */ }
   return data;
@@ -96,8 +126,8 @@ async function fetchOrgRepos(org = "omicverse") {
 // Returns null for repos that should be hidden from the package catalog.
 function categorizeRepo(repo) {
   const name = repo.name;
-  const skip = new Set([".github", "omicverse-pages"]);
-  if (skip.has(name) || repo.archived) return null;
+  const skip = new Set([".github", "omicverse", "omicverse-pages", "omicverse-org-home"]);
+  if (skip.has(name) || repo.archived || repo.size === 0) return null;
   if (name === "omicverse") {
     return { tags: "core python", role: "Core API", lang: "Python", weight: 0 };
   }
@@ -127,6 +157,51 @@ function sortRepos(items) {
     return a.repo.name.localeCompare(b.repo.name);
   });
 }
+
+function packageLogoGroup(repo, cat) {
+  const tags = cat.tags.split(/\s+/);
+  if (tags.includes("core") || tags.includes("data") || tags.includes("agent")) return "Core / Data / Agent";
+  if (/^py-/i.test(repo.name)) return "Python ports";
+  if (/^rust-/i.test(repo.name)) return "Rust ports";
+  return "Tools / Tutorials";
+}
+
+async function renderPackageLogoRows() {
+  const container = document.querySelector("[data-package-logo-rows]");
+  if (!container) return;
+  try {
+    const repos = await fetchOrgRepos();
+    const items = sortRepos(
+      repos
+        .map((r) => ({ repo: r, cat: categorizeRepo(r) }))
+        .filter((x) => x.cat !== null),
+    );
+    const groups = ["Core / Data / Agent", "Python ports", "Rust ports", "Tools / Tutorials"]
+      .map((name) => ({
+        name,
+        items: items.filter(({ repo, cat }) => packageLogoGroup(repo, cat) === name),
+      }))
+      .filter((group) => group.items.length > 0);
+
+    container.innerHTML = groups
+      .map((group) => `<div class="package-logo-row">
+        <div class="package-logo-row-label">${escapeHtml(group.name)}</div>
+        <div class="package-logo-row-items">
+          ${group.items.map(({ repo }) => {
+            const logo = escapeHtml(repoLogoUrl(repo));
+            return `<a class="package-logo-link" href="${repo.html_url}" target="_blank" rel="noopener" title="${escapeHtml(repo.name)}" aria-label="${escapeHtml(repo.name)}">
+              <img data-repo-logo src="${logo}" alt="" loading="eager" />
+            </a>`;
+          }).join("")}
+        </div>
+      </div>`)
+      .join("");
+    bindRepoLogoErrors(container);
+  } catch (_) {
+    container.innerHTML = `<p class="fetch-error">Couldn't load package logos.</p>`;
+  }
+}
+renderPackageLogoRows();
 
 function packageWord(count) {
   return count === 1 ? "package" : "packages";
@@ -206,13 +281,16 @@ async function renderOrgRepos() {
           repo.stargazers_count >= 5
             ? ` · ${repo.stargazers_count}★`
             : "";
+        const logo = escapeHtml(repoLogoUrl(repo));
         return `<a data-tags="${cat.tags}" href="${repo.html_url}" target="_blank" rel="noopener">
-          <span class="t-name">${escapeHtml(repo.name)}</span>
-          <span class="t-desc">${desc}</span>
-          <span class="t-tag">${escapeHtml(cat.role)} · ${escapeHtml(cat.lang)}${stars}</span>
+            <span class="t-logo"><img data-repo-logo src="${logo}" alt="" loading="eager" /></span>
+            <span class="t-name">${escapeHtml(repo.name)}</span>
+            <span class="t-desc">${desc}</span>
+            <span class="t-tag">${escapeHtml(cat.role)} · ${escapeHtml(cat.lang)}${stars}</span>
         </a>`;
       })
       .join("");
+    bindRepoLogoErrors(container);
     // re-bind filter to the freshly rendered nodes
     bindPackageFilter();
   } catch (err) {
