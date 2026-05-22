@@ -364,52 +364,35 @@ section.band {
 .package-logo-rows {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  padding: 16px 0 18px;
-  display: grid;
-  gap: 14px;
+  padding: 20px 0 22px;
 }
-.package-logo-row {
-  display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
-  gap: 18px;
-  align-items: start;
-}
-.package-logo-row-label {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding-top: 21px;
-}
-.package-logo-row-items {
+.package-logo-honeycomb-stage {
+  width: 100%;
   display: flex;
-  flex-wrap: nowrap;
-  gap: 8px 10px;
-  min-width: 0;
+  justify-content: center;
   overflow-x: auto;
-  padding-bottom: 4px;
+  overflow-y: hidden;
+  padding: 0 8px 6px;
   scrollbar-width: thin;
 }
-.package-logo-link {
-  width: 62px;
-  height: 62px;
-  flex: 0 0 62px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  transition: border-color 0.14s, transform 0.14s, background 0.14s;
+.package-logo-honeycomb {
+  position: relative;
+  flex: 0 0 auto;
 }
-.package-logo-link:hover {
-  background: rgba(78, 168, 70, 0.06);
-  border-color: var(--line-strong);
-  transform: translateY(-1px);
+.package-logo-cell {
+  position: absolute;
+  display: block;
+  clip-path: polygon(50% 4.3%, 89.45% 27.15%, 89.45% 72.85%, 50% 95.7%, 10.55% 72.85%, 10.55% 27.15%);
+  transition: transform 0.14s, filter 0.14s;
 }
-.package-logo-link img {
-  width: 58px;
-  height: 58px;
+.package-logo-cell:hover {
+  filter: drop-shadow(0 5px 10px rgba(21, 64, 35, 0.18));
+  transform: translateY(-2px);
+  z-index: 2;
+}
+.package-logo-cell img {
+  width: 100%;
+  height: 100%;
   display: block;
   object-fit: contain;
 }
@@ -920,20 +903,8 @@ section.band {
   }
   .package-list .t-logo { grid-area: logo; width: 48px; height: 48px; }
   .package-list .t-logo img { max-width: 48px; max-height: 48px; }
-  .package-logo-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  .package-logo-row-label {
-    padding-top: 0;
-  }
-  .package-logo-link {
-    width: 52px;
-    height: 52px;
-  }
-  .package-logo-link img {
-    width: 48px;
-    height: 48px;
+  .package-logo-rows {
+    padding: 16px 0 18px;
   }
   .people-list .row {
     grid-template-columns: 28px 1fr;
