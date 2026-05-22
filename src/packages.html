@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=core-packages" />
-  <script src="script.js?v=core-packages" defer></script>
+  <link rel="stylesheet" href="styles.css?v=package-svg-rows" />
+  <script src="script.js?v=package-svg-rows" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -31,32 +31,61 @@
   </header>
 
   <main>
-    <section class="page-width core-packages-section">
-      <h1 class="core-packages-title">Core packages</h1>
+    <section class="page-hero page-width">
+      <p class="overline">Packages</p>
+      <h1>Every project in the org.</h1>
+    </section>
 
-      <div class="core-package-grid">
-        <a class="core-package-card" href="https://github.com/omicverse/omicverse" target="_blank" rel="noopener">
-          <span class="core-package-icon">
-            <img src="assets/omicos-logo.png" alt="" />
-          </span>
-          <span class="core-package-copy">
-            <span class="core-package-name">omicverse</span>
-            <span class="core-package-desc">Unified Python API for bulk, single-cell, spatial, and multi-omics analysis.</span>
-            <span class="core-package-meta">Core API · Python</span>
-          </span>
+    <section class="page-width wide" style="padding-bottom: 40px;">
+      <div
+        class="packages-network"
+        data-packages-network
+        data-src="assets/packages-network.svg"
+        role="img"
+        aria-label="OmicVerse package stack: agent layer, core API, method ports, Rust runtime"
+      >
+        <img src="assets/packages-network.svg" alt="" style="width:100%; display:block;" />
+      </div>
+    </section>
+
+    <section class="page-width package-logo-rows-section">
+      <div class="package-logo-rows" data-package-logo-rows aria-label="Repository logo links">
+        <span class="skeleton-text" style="display:inline-block; width:100%; height:54px;"></span>
+      </div>
+    </section>
+
+    <section class="page-width">
+      <div class="filter-group" role="tablist" aria-label="Filter projects">
+        <button class="filter active" type="button" data-filter="all">All</button>
+        <button class="filter" type="button" data-filter="core">Core</button>
+        <button class="filter" type="button" data-filter="python">Python</button>
+        <button class="filter" type="button" data-filter="rust">Rust</button>
+        <button class="filter" type="button" data-filter="agent">Agent</button>
+        <button class="filter" type="button" data-filter="data">Data</button>
+        <button class="filter" type="button" data-filter="tools">Tools</button>
+      </div>
+
+      <div class="t-list cols-3 package-list" data-org-repos aria-live="polite">
+        <a data-tags="data" href="https://github.com/omicverse/anndata-oom" target="_blank" rel="noopener">
+          <span class="t-name skeleton-text" style="display:inline-block; width:120px; height:14px;"></span>
+          <span class="t-desc skeleton-text" style="display:inline-block; width:100%; height:14px;"></span>
+          <span class="t-tag skeleton-text" style="display:inline-block; width:80px; height:12px;"></span>
         </a>
-
-        <a class="core-package-card" href="https://github.com/omicverse/anndata-oom" target="_blank" rel="noopener">
-          <span class="core-package-icon">
-            <img src="assets/icon-anndata.svg" alt="" />
-          </span>
-          <span class="core-package-copy">
-            <span class="core-package-name">anndata-oom</span>
-            <span class="core-package-desc">Out-of-memory AnnData powered by Rust, keeping matrices on disk for full preprocessing pipelines.</span>
-            <span class="core-package-meta">Data foundation · Rust</span>
-          </span>
+        <a data-tags="agent" href="https://github.com/omicverse/omicverse-skills" target="_blank" rel="noopener">
+          <span class="t-name skeleton-text" style="display:inline-block; width:120px; height:14px;"></span>
+          <span class="t-desc skeleton-text" style="display:inline-block; width:100%; height:14px;"></span>
+          <span class="t-tag skeleton-text" style="display:inline-block; width:80px; height:12px;"></span>
+        </a>
+        <a data-tags="python" href="https://github.com/omicverse/py-hdWGCNA" target="_blank" rel="noopener">
+          <span class="t-name skeleton-text" style="display:inline-block; width:120px; height:14px;"></span>
+          <span class="t-desc skeleton-text" style="display:inline-block; width:100%; height:14px;"></span>
+          <span class="t-tag skeleton-text" style="display:inline-block; width:80px; height:12px;"></span>
         </a>
       </div>
+
+      <p style="margin-top: 18px; font-size: 13px; color: var(--muted);">
+        List rendered live from <a href="https://api.github.com/orgs/omicverse/repos" target="_blank" rel="noopener" style="color:var(--accent); border-bottom:1px solid var(--line-strong); padding-bottom:1px;">api.github.com/orgs/omicverse/repos</a>. Cached for the session.
+      </p>
     </section>
   </main>
 
