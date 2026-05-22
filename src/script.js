@@ -45,16 +45,24 @@ function repoLogoUrl(repo) {
   return `https://raw.githubusercontent.com/${repo.full_name}/${repo.default_branch || "main"}/logo/logo.svg`;
 }
 
+const missingPackageLogoRepos = new Set();
+
 function bindRepoLogoErrors(root = document) {
   root.querySelectorAll("img[data-repo-logo]").forEach((img) => {
     if (img._repoLogoErrorBound) return;
     img._repoLogoErrorBound = true;
     img.addEventListener("error", () => {
-      const logoLink = img.closest(".package-logo-link");
-      if (logoLink) {
-        logoLink.remove();
+      const honeycombCell = img.closest(".package-logo-cell");
+      if (honeycombCell && honeycombCell.dataset.repoName) {
+        missingPackageLogoRepos.add(honeycombCell.dataset.repoName);
+        const target = document.querySelector("[data-package-logo-rows]");
+        if (target && packageLogoHoneycombItems) {
+          renderPackageHoneycomb(target, packageLogoHoneycombItems);
+        }
         return;
       }
+      const logoLink = img.closest(".package-logo-link");
+      if (logoLink) logoLink.remove();
       const holder = img.closest(".t-logo");
       if (holder) holder.classList.add("is-missing-logo");
     });
@@ -166,6 +174,72 @@ function packageLogoGroup(repo, cat) {
   return "Tools / Tutorials";
 }
 
+const HONEYCOMB_HEX_WIDTH = 404 / 512;
+const HONEYCOMB_ROW_PITCH = 351 / 512;
+let packageLogoHoneycombItems = null;
+let packageLogoHoneycombResizeBound = false;
+
+function packageLogoHoneycombColumns(width) {
+  if (width < 360) return 7;
+  return 8;
+}
+
+function packageLogoHoneycombCell(width, cols) {
+  const usable = Math.max(260, width - 32);
+  const denominator = 1 + (cols - 1) * HONEYCOMB_HEX_WIDTH;
+  return Math.max(36, Math.min(92, Math.floor(usable / denominator)));
+}
+
+function buildHoneycombLayout(count, cols, cell) {
+  const dx = cell * HONEYCOMB_HEX_WIDTH;
+  const dy = cell * HONEYCOMB_ROW_PITCH;
+  const rows = [];
+  let remaining = count;
+  let rowIndex = 0;
+  while (remaining > 0) {
+    const capacity = rowIndex % 2 === 0 ? cols : Math.max(1, cols - 1);
+    const take = Math.min(capacity, remaining);
+    rows.push(take);
+    remaining -= take;
+    rowIndex += 1;
+  }
+
+  const positions = [];
+  rows.forEach((length, row) => {
+    const rowOffset = row % 2 === 0 ? 0 : dx / 2;
+    for (let col = 0; col < length; col += 1) {
+      positions.push({ x: rowOffset + col * dx, y: row * dy });
+    }
+  });
+
+  const width = rows.reduce((max, length, row) => {
+    const rowOffset = row % 2 === 0 ? 0 : dx / 2;
+    return Math.max(max, rowOffset + (length - 1) * dx + cell);
+  }, 0);
+  const height = rows.length ? (rows.length - 1) * dy + cell : 0;
+  return { positions, width, height, cell };
+}
+
+function renderPackageHoneycomb(container, items) {
+  const visibleItems = items.filter(({ repo }) => !missingPackageLogoRepos.has(repo.name));
+  const width = container.clientWidth || 960;
+  const cols = packageLogoHoneycombColumns(width);
+  const cell = packageLogoHoneycombCell(width, cols);
+  const layout = buildHoneycombLayout(visibleItems.length, cols, cell);
+  container.innerHTML = `<div class="package-logo-honeycomb-stage">
+    <div class="package-logo-honeycomb" style="width:${layout.width.toFixed(2)}px;height:${layout.height.toFixed(2)}px;">
+      ${visibleItems.map(({ repo }, index) => {
+        const pos = layout.positions[index];
+        const logo = escapeHtml(repoLogoUrl(repo));
+        return `<a class="package-logo-cell" data-repo-name="${escapeHtml(repo.name)}" href="${repo.html_url}" target="_blank" rel="noopener" title="${escapeHtml(repo.name)}" aria-label="${escapeHtml(repo.name)}" style="left:${pos.x.toFixed(2)}px;top:${pos.y.toFixed(2)}px;width:${cell}px;height:${cell}px;">
+          <img data-repo-logo src="${logo}" alt="" loading="eager" />
+        </a>`;
+      }).join("")}
+    </div>
+  </div>`;
+  bindRepoLogoErrors(container);
+}
+
 async function renderPackageLogoRows() {
   const container = document.querySelector("[data-package-logo-rows]");
   if (!container) return;
@@ -176,27 +250,20 @@ async function renderPackageLogoRows() {
         .map((r) => ({ repo: r, cat: categorizeRepo(r) }))
         .filter((x) => x.cat !== null),
     );
-    const groups = ["Core / Data / Agent", "Python ports", "Rust ports", "Tools / Tutorials"]
-      .map((name) => ({
-        name,
-        items: items.filter(({ repo, cat }) => packageLogoGroup(repo, cat) === name),
-      }))
-      .filter((group) => group.items.length > 0);
-
-    container.innerHTML = groups
-      .map((group) => `<div class="package-logo-row">
-        <div class="package-logo-row-label">${escapeHtml(group.name)}</div>
-        <div class="package-logo-row-items">
-          ${group.items.map(({ repo }) => {
-            const logo = escapeHtml(repoLogoUrl(repo));
-            return `<a class="package-logo-link" href="${repo.html_url}" target="_blank" rel="noopener" title="${escapeHtml(repo.name)}" aria-label="${escapeHtml(repo.name)}">
-              <img data-repo-logo src="${logo}" alt="" loading="eager" />
-            </a>`;
-          }).join("")}
-        </div>
-      </div>`)
-      .join("");
-    bindRepoLogoErrors(container);
+    packageLogoHoneycombItems = items;
+    renderPackageHoneycomb(container, items);
+    if (!packageLogoHoneycombResizeBound) {
+      packageLogoHoneycombResizeBound = true;
+      let resizeTimer = null;
+      window.addEventListener("resize", () => {
+        if (!packageLogoHoneycombItems) return;
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
+          const target = document.querySelector("[data-package-logo-rows]");
+          if (target) renderPackageHoneycomb(target, packageLogoHoneycombItems);
+        }, 120);
+      });
+    }
   } catch (_) {
     container.innerHTML = `<p class="fetch-error">Couldn't load package logos.</p>`;
   }
