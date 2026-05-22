@@ -61,27 +61,105 @@
         <a href="https://github.com/omicverse/omicverse" target="_blank" rel="noopener">
           <span class="t-num">/01</span>
           <span class="t-name">omicverse</span>
-          <span class="t-desc">Unified Python library for bulk, single-cell, spatial, and multi-omics analysis. 979★.</span>
+          <span class="t-desc">Unified Python library for bulk, single-cell, spatial, and multi-omics analysis.</span>
           <span class="t-tag">Core · Python</span>
         </a>
-        <a href="https://github.com/omicverse/py-CopyKAT" target="_blank" rel="noopener">
-          <span class="t-num">/02</span>
-          <span class="t-name">py-CopyKAT</span>
-          <span class="t-desc">Pure-Python re-implementation of CopyKAT (Gao et al., Nat Biotechnol 2021). 14 ports like this.</span>
-          <span class="t-tag">Method port · Python</span>
-        </a>
-        <a href="https://github.com/omicverse/rust-NMF" target="_blank" rel="noopener">
-          <span class="t-num">/03</span>
-          <span class="t-name">rust-NMF</span>
-          <span class="t-desc">Rust port of R NMF — bit-equivalent to brunet / lee / offset / nsNMF. ~76× faster than R Lee.</span>
-          <span class="t-tag">Method port · Rust</span>
-        </a>
         <a href="https://github.com/omicverse/anndata-oom" target="_blank" rel="noopener">
-          <span class="t-num">/04</span>
+          <span class="t-num">/02</span>
           <span class="t-name">anndata-oom</span>
           <span class="t-desc">Drop-in AnnData replacement that keeps the matrix on disk. Whole pipelines without loading.</span>
-          <span class="t-tag">Data · Rust</span>
+          <span class="t-tag">Data foundation · Rust</span>
         </a>
+      </div>
+    </section>
+
+    <section class="band page-width">
+      <div class="section-heading">
+        <p class="overline">Ecosystem coverage</p>
+        <h2>Omics modules already covered by OmicVerse.</h2>
+        <p>One ecosystem spans raw assays, preprocessing, major omics modalities, and domain-specific analysis layers.</p>
+      </div>
+      <div class="omics-grid">
+        <article class="omics-card omics-green">
+          <span class="omics-mark">DNA</span>
+          <span class="omics-copy">
+            <span class="omics-name">Assay</span>
+            <span class="omics-desc">FASTA, count matrix, VCF, and alignment-oriented input layers.</span>
+          </span>
+          <span class="omics-module">ov.align</span>
+        </article>
+        <article class="omics-card omics-green">
+          <span class="omics-mark">QC</span>
+          <span class="omics-copy">
+            <span class="omics-name">Preprocess</span>
+            <span class="omics-desc">QC, normalization, PCA, clustering, and batch correction.</span>
+          </span>
+          <span class="omics-module">ov.pp</span>
+        </article>
+        <article class="omics-card omics-blue">
+          <span class="omics-mark">SC</span>
+          <span class="omics-copy">
+            <span class="omics-name">Single-cell</span>
+            <span class="omics-desc">Velocity, annotation, NMF, trajectory inference, and cell-state analysis.</span>
+          </span>
+          <span class="omics-module">ov.single</span>
+        </article>
+        <article class="omics-card omics-purple">
+          <span class="omics-mark">XY</span>
+          <span class="omics-copy">
+            <span class="omics-name">Spatial</span>
+            <span class="omics-desc">Spatial clustering, deconvolution, neighborhoods, and segmentation workflows.</span>
+          </span>
+          <span class="omics-module">ov.space</span>
+        </article>
+        <article class="omics-card omics-orange">
+          <span class="omics-mark">BK</span>
+          <span class="omics-copy">
+            <span class="omics-name">Bulk</span>
+            <span class="omics-desc">Bulk transcriptomics, differential analysis, deconvolution, and pathway context.</span>
+          </span>
+          <span class="omics-module">ov.bulk</span>
+        </article>
+        <article class="omics-card omics-sky">
+          <span class="omics-mark">FM</span>
+          <span class="omics-copy">
+            <span class="omics-name">Foundation</span>
+            <span class="omics-desc">Cell embeddings, perturbation models, and foundation-model workflows.</span>
+          </span>
+          <span class="omics-module">ov.fm</span>
+        </article>
+        <article class="omics-card omics-forest">
+          <span class="omics-mark">3D</span>
+          <span class="omics-copy">
+            <span class="omics-name">Molecular</span>
+            <span class="omics-desc">Molecular structure, docking, and structure-aware analysis.</span>
+          </span>
+          <span class="omics-module">ov.mol</span>
+        </article>
+        <article class="omics-card omics-indigo">
+          <span class="omics-mark">AT</span>
+          <span class="omics-copy">
+            <span class="omics-name">Epigenomics</span>
+            <span class="omics-desc">ATAC, ChIP, Hi-C, CUT&amp;Tag, CUT&amp;RUN, and regulatory signals.</span>
+          </span>
+          <span class="omics-module">ov.epi</span>
+        </article>
+        <article class="omics-card omics-pink">
+          <span class="omics-mark">MB</span>
+          <span class="omics-copy">
+            <span class="omics-name">Microbiome</span>
+            <span class="omics-desc">16S workflows, taxonomy summaries, diversity analysis, and abundance testing.</span>
+          </span>
+          <span class="omics-module">ov.micro</span>
+        </article>
+        <article class="omics-card omics-violet">
+          <span class="omics-mark">MT</span>
+          <span class="omics-copy">
+            <span class="omics-name">Metabolomics</span>
+            <span class="omics-desc">ID mapping, MSEA, Mummichog, SERRF, biomarkers, and pathway-level readouts.</span>
+          </span>
+          <span class="omics-module">ov.metabol</span>
+        </article>
       </div>
     </section>
 
