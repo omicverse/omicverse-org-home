@@ -1,6 +1,6 @@
 {
  "schema": "omicverse-ports/v1",
- "generated_at": "2026-10-13T00:56:25Z",
+ "generated_at": "2026-10-13T09:22:25Z",
  "org": "omicverse",
  "domains": {
   "single-cell": "Single-cell",
@@ -21,7 +21,7 @@
   "packages": 70,
   "python": 67,
   "rust": 3,
-  "with_port_yaml": 67,
+  "with_port_yaml": 70,
   "functions_total": 1490,
   "functions_ported": 1246,
   "functions_partial": 4,
@@ -2011,7 +2011,7 @@
    "description": "A pure-Python re-implementation of CopyKAT (Gao et al., Nat Biotechnol 2021) — aneuploid / diploid classificati on and bin-level CNA calling from scRNA-seq counts. Drop-in for  the scanpy / AnnData ecosystem.",
    "lang": "python",
    "stars": 4,
-   "pushed_at": "2026-10-13T00:31:07Z",
+   "pushed_at": "2026-10-13T09:20:25Z",
    "default_branch": "main",
    "logo_url": "https://raw.githubusercontent.com/omicverse/py-CopyKAT/main/logo/logo.svg",
    "warnings": [],
@@ -2036,28 +2036,40 @@
      }
     ],
     "tests_count": 32,
-    "r_reference_driver": true
+    "r_reference_driver": true,
+    "compare_notebook": "https://github.com/omicverse/py-CopyKAT/blob/main/examples/compare_py_vs_R.ipynb"
    },
    "pypi": "pycopykat",
    "import_name": "pycopykat",
    "version": "0.1.0.dev2",
    "license": "GPL-2.0-or-later",
-   "source": "inferred",
+   "source": "port.yaml",
+   "source_detail": [
+    "port.yaml"
+   ],
    "upstream": {
     "name": "copykat",
+    "language": "R",
     "source": "GitHub",
     "version": null,
     "url": "https://github.com/navinlabcode/copykat",
     "citation": "Gao et al., Nat Biotechnol 2021",
-    "license": null,
-    "language": "R"
+    "license": null
    },
    "domain": "single-cell",
    "omicverse": {
     "module": "ov.external.copykat_py",
     "since": null
    },
-   "mapping_quality": "readme",
+   "parity": {
+    "status": "unverified",
+    "algorithm_class": null,
+    "metric": null,
+    "threshold": null,
+    "value": null,
+    "fixture": null,
+    "test": null
+   },
    "functions": [
     {
      "r": "copykat",
@@ -2198,6 +2210,7 @@
      "test": null
     }
    ],
+   "mapping_quality": "curated",
    "classes": [],
    "coverage": {
     "ported": 15,
@@ -2206,19 +2219,6 @@
     "skipped": 0,
     "total": 15,
     "r_functions": 11
-   },
-   "source_detail": [
-    "pyproject",
-    "readme-table"
-   ],
-   "parity": {
-    "status": "unverified",
-    "algorithm_class": null,
-    "metric": null,
-    "threshold": null,
-    "value": null,
-    "fixture": null,
-    "test": null
    }
   },
   {
@@ -5166,7 +5166,7 @@
    "description": "Pure-Python port of FastCAR — fast, deterministic per-gene ambient-RNA correction for droplet-based single-cell RNA-seq",
    "lang": "python",
    "stars": 0,
-   "pushed_at": "2026-10-13T00:35:46Z",
+   "pushed_at": "2026-10-13T09:18:09Z",
    "default_branch": "main",
    "logo_url": "https://raw.githubusercontent.com/omicverse/py-fastcar/main/logo/logo.svg",
    "warnings": [],
@@ -5183,28 +5183,40 @@
      }
     ],
     "tests_count": 2,
-    "r_reference_driver": true
+    "r_reference_driver": true,
+    "compare_notebook": "https://github.com/omicverse/py-fastcar/blob/main/examples/compare_R_vs_Python.ipynb"
    },
    "pypi": "pyfastcar",
    "import_name": "pyfastcar",
    "version": "0.1.0",
    "license": "LICENSE",
-   "source": "inferred",
+   "source": "port.yaml",
+   "source_detail": [
+    "port.yaml"
+   ],
    "upstream": {
     "name": "FastCAR",
+    "language": "R",
     "source": "GitHub",
     "version": null,
     "url": "https://github.com/Nusob888/FastCAR",
     "citation": "Gocht A.M., Berg M., et al. FastCAR: fast correction for ambient RNA to facilitate differential gene expression analysis in single-cell RNA-sequencing datasets. BMC Genomics 24, 2023.",
-    "license": null,
-    "language": "R"
+    "license": null
    },
    "domain": "single-cell",
    "omicverse": {
     "module": null,
     "since": null
    },
-   "mapping_quality": "readme",
+   "parity": {
+    "status": "unverified",
+    "algorithm_class": null,
+    "metric": null,
+    "threshold": null,
+    "value": null,
+    "fixture": null,
+    "test": "tests/test_exact_match.py"
+   },
    "functions": [
     {
      "r": "determine.background.to.remove",
@@ -5263,6 +5275,7 @@
      "test": null
     }
    ],
+   "mapping_quality": "curated",
    "classes": [],
    "coverage": {
     "ported": 6,
@@ -5271,19 +5284,6 @@
     "skipped": 0,
     "total": 6,
     "r_functions": 5
-   },
-   "source_detail": [
-    "pyproject",
-    "readme-table"
-   ],
-   "parity": {
-    "status": "unverified",
-    "algorithm_class": null,
-    "metric": null,
-    "threshold": null,
-    "value": null,
-    "fixture": null,
-    "test": "tests/test_exact_match.py"
    }
   },
   {
@@ -5629,7 +5629,7 @@
    "description": "A pure-Python re-implementation of hdWGCNA for weighted gene co-expression network analysis in single-cell RNA-seq data.",
    "lang": "python",
    "stars": 4,
-   "pushed_at": "2026-10-13T00:36:14Z",
+   "pushed_at": "2026-10-13T09:15:29Z",
    "default_branch": "main",
    "logo_url": "https://raw.githubusercontent.com/omicverse/py-hdWGCNA/main/logo/logo.svg",
    "warnings": [],
@@ -5656,22 +5656,33 @@
    "import_name": "py_hdWGCNA",
    "version": "0.1.0",
    "license": "LICENSE",
-   "source": "inferred",
+   "source": "port.yaml",
+   "source_detail": [
+    "port.yaml"
+   ],
    "upstream": {
     "name": "hdWGCNA",
+    "language": "R",
     "source": "GitHub",
     "version": null,
     "url": "https://github.com/smorabit/hdWGCNA",
     "citation": "Morabito, S. et al. hdWGCNA identifies co-expression networks in high-resolution transcriptomics data. Cell Reports Methods 3, 100498 (2023).",
-    "license": null,
-    "language": "R"
+    "license": null
    },
    "domain": "single-cell",
    "omicverse": {
     "module": null,
     "since": null
    },
-   "mapping_quality": "api-only",
+   "parity": {
+    "status": "unverified",
+    "algorithm_class": null,
+    "metric": null,
+    "threshold": null,
+    "value": null,
+    "fixture": null,
+    "test": null
+   },
    "functions": [
     {
      "r": null,
@@ -6286,6 +6297,7 @@
      "test": null
     }
    ],
+   "mapping_quality": "curated",
    "classes": [],
    "coverage": {
     "ported": 68,
@@ -6294,19 +6306,6 @@
     "skipped": 0,
     "total": 68,
     "r_functions": 0
-   },
-   "source_detail": [
-    "pyproject",
-    "__all__"
-   ],
-   "parity": {
-    "status": "unverified",
-    "algorithm_class": null,
-    "metric": null,
-    "threshold": null,
-    "value": null,
-    "fixture": null,
-    "test": null
    }
   },
   {
