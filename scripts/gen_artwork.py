@@ -103,39 +103,36 @@ ASSETS = {
         "simple leaves filled sage green along the branches; the tree fills most of the height of a portrait canvas "
         "with generous empty margins on every side; richly detailed but with the same calm flat marker style",
     ),
-    # Journal-cover style hero candidates (opaque cream paper, portrait). Theme:
-    # "biology infrastructure in the AI era — the OmicVerse open-source community".
+    # Hero cover candidates: landscape 3:2, Chinese ink-wash + loose oil/watercolour washes,
+    # very few elements, lots of empty paper on the left for the title. Theme: biology
+    # infrastructure for the AI era — the OmicVerse open-source community.
     "cover-1": (
-        "assets/art/cover-1.png", "1024x1536", 1024,
-        "COVER: a wide landscape in cross-section. Below ground, a dense root system drawn as branching pipes and "
-        "cables carrying tiny grids of dots (data) and small gears; above ground, the roots feed a field where "
-        "oversized cells, tissue blobs, DNA helices and molecules grow like crops; a few small friendly robotic "
-        "arms and tiny human figures tend the field together; in the sky a drifting cloud of hundreds of tiny "
-        "hand-drawn microbes and cells thins out toward the top-left, leaving open cream paper",
+        "assets/art/cover-1.png", "1536x1024", 1536,
+        "COVER: one large, loose ink-brush circle (an enso) in the right half of the canvas; inside it, soft "
+        "diluted washes suggest a single early embryo or cell with a few orange-ochre cell dots; a handful of "
+        "small ink dots drift out of the circle toward the lower left; at the bottom right two small sketched "
+        "human figures and one small sketched robot, drawn in a few grey pencil strokes, look up at the circle",
     ),
     "cover-2": (
-        "assets/art/cover-2.png", "1024x1536", 1024,
-        "COVER: a large old-fashioned brass microscope-telescope hybrid instrument on a rocky ledge at the bottom "
-        "right, its eyepiece turned toward the sky; from its lens a beam opens upward into a sky full of hundreds "
-        "of tiny hand-drawn cells, microbes, molecules and small neural-network graphs that drift and thin out "
-        "toward the top-left; at the instrument's base several small human figures and one small robot work "
-        "together over notebooks; grass and reeds in ink hatching at the bottom; open cream paper at the top-left",
+        "assets/art/cover-2.png", "1536x1024", 1536,
+        "COVER: distant ink-wash mountains fading into mist on the right half, their faint ridgelines drawn as "
+        "two intertwined strands like a DNA helix; a thin stream of small sage-green and ochre dots flows down "
+        "from the mountains into the foreground like a river of data; a tiny arched bridge with two small "
+        "human figures and a small robot crossing it; the left half is almost empty cream paper",
     ),
     "cover-3": (
-        "assets/art/cover-3.png", "1024x1536", 1024,
-        "COVER: a tall glasshouse (greenhouse) drawn in fine ink at the bottom right, inside which DNA double "
-        "helices grow upward like vines and bloom into cells, tissue slices and molecules at their tips; small "
-        "robots water the vines while small human figures take notes; a river of tiny dots flows into the "
-        "glasshouse from the left like irrigation; above, released cells drift up into a cloud that thins toward "
-        "the top-left, leaving open cream paper",
+        "assets/art/cover-3.png", "1536x1024", 1536,
+        "COVER: a single old pine tree painted in loose ink strokes rising from the bottom right, its needle "
+        "clusters replaced by soft clusters of round cells in diluted sage green and a few ochre dots; a pale "
+        "wash of a sun behind it; a few cells drift off the branches into the open space on the left; one "
+        "small sketched figure and a small robot sit under the tree",
     ),
     "cover-4": (
-        "assets/art/cover-4.png", "1024x1536", 1024,
-        "COVER: an enormous octopus-like organism made of intertwined DNA strands rests on an ink-hatched shore "
-        "at the bottom right, each arm holding a different instrument: a pipette, a tiny bar chart, a petri "
-        "dish, a molecule, a small circuit board; from its arms a stream of hundreds of tiny hand-drawn cells and "
-        "microbes rises and scatters across the sky toward the top-left, leaving open cream paper; small human "
-        "figures and one small robot stand on the shore looking up",
+        "assets/art/cover-4.png", "1536x1024", 1536,
+        "COVER: a broad, soft horizontal ink wash like a calm sea on the lower right, with a loose brush-drawn "
+        "DNA helix rising from it like a plant stem and opening at the top into a few soft green and ochre "
+        "blooms painted as cell clusters; two small sketched human figures and a small robot stand on the "
+        "shore at the bottom right; large empty cream paper on the left and top",
     ),
     "ports": (
         "assets/art/ports.png", "1536x1024", 900,
@@ -178,13 +175,13 @@ def _post(url: str, key: str, data: bytes, content_type: str) -> dict:
 
 
 COVER_STYLE = (
-    "A richly detailed scientific journal cover illustration drawn in pen and ink: fine confident linework, "
-    "dense cross-hatching and stippling for shading, hundreds of small hand-drawn organisms and objects, the "
-    "look of a classic hand-inked magazine cover. Colour: mostly black ink on warm cream paper (#FBFAF6), with "
-    "restrained muted sage-green (#858F69) and a little ochre as the only accents. The composition is anchored "
-    "at the bottom and right; the top-left third stays almost empty cream paper so that text can be placed there. "
-    "Absolutely no text, letters, numbers, logos, titles or watermarks anywhere. No photo-realism, no 3D "
-    "render, no glossy shading, no vignette, no frame."
+    "Painted in the manner of a contemporary Chinese ink-wash painting (shuimo) blended with loose oil and "
+    "watercolour washes: soft gradients of diluted black ink and muted sage green with a touch of ochre-orange, "
+    "visible brush texture and granulation, wet-into-wet bleeds, confident sparse strokes, large areas of empty "
+    "warm cream paper (liubai). Very few elements, calm, spacious, poetic; the eye rests. Landscape format: the "
+    "subject sits in the right half and lower part of the canvas, while the left third stays almost empty cream "
+    "paper (#FBFAF6) for a title. Absolutely no text, letters, numbers, logos, titles, seals or watermarks. No "
+    "photo-realism, no 3D render, no digital gloss, no heavy outlines, no busy detail, no frame."
 )
 
 

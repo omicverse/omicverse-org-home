@@ -1634,3 +1634,38 @@ section.band.band-dark h2 { letter-spacing: -0.02em; }
 .pkg-links a:hover { border-color: var(--accent); color: var(--accent-deep); background: var(--accent-tint); }
 @media (max-width: 1080px) { .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .catalog-grid { grid-template-columns: 1fr; } .catalog-search { flex-direction: column; align-items: stretch; gap: 8px; } }
+
+/* ─── Ink-wash cover hero (landscape painting as a full-bleed backdrop) ─── */
+.org-hero.cover-hero {
+  position: relative;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  min-height: min(84vh, 860px);
+  background: var(--bg);
+}
+.hero-cover {
+  position: absolute; inset: 0;
+  display: flex; justify-content: flex-end;
+}
+.hero-cover img {
+  height: 100%; width: auto; max-width: none;
+  display: block;
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, #000 30%);
+  mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, #000 30%);
+}
+.cover-hero-inner {
+  position: relative; z-index: 1;
+  display: flex; align-items: center;
+  min-height: min(84vh, 860px);
+}
+.cover-hero .hero-copy { max-width: 560px; padding: 72px 0 80px; }
+.cover-hero h1 { font-size: clamp(38px, 4.9vw, 62px); max-width: 560px; }
+.cover-hero .lede { max-width: 460px; }
+@media (max-width: 960px) {
+  .org-hero.cover-hero { min-height: 0; display: flex; flex-direction: column; }
+  .hero-cover { position: static; justify-content: center; order: 2; }
+  .hero-cover img { width: 100%; height: auto; max-width: 720px; mask-image: none; -webkit-mask-image: none; }
+  .cover-hero-inner { min-height: 0; }
+  .cover-hero .hero-copy { padding: 56px 0 8px; }
+}
