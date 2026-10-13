@@ -7,9 +7,9 @@
   <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css" />
-  <script src="../script.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css?v=2026-10-13a" />
+  <script src="../script.js?v=2026-10-13a" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -20,13 +20,13 @@
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
     <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
       <a href="../packages.html">Packages</a>
+      <a href="../ports.html">Ports</a>
       <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="../people.html">People</a>
       <a aria-current="page" href="../blog.html">Blog</a>
-      <a href="../events.html">Events</a>
+      <a href="../people.html">People</a>
       <a href="../about.html">About</a>
       <a href="../join.html">Join</a>
-      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener"><svg class="nav-gh" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
     </nav>
   </header>
 
@@ -210,7 +210,7 @@ mask <span class="tok-op">=</span> <span class="tok-op">(</span><span class="tok
 
         <span class="tok-op">(</span>adata<span class="tok-op">.</span>obs<span class="tok-op">[</span><span class="tok-string">&#x27;array_col&#x27;</span><span class="tok-op">]</span> <span class="tok-op">&lt;=</span> <span class="tok-number">1450</span><span class="tok-op">)</span><span class="tok-op">)</span>
 
-<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Subregion: <span class="tok-op">{</span>mask<span class="tok-op">.</span>sum<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> bins&#x27;<span class="tok-op">)</span></code></pre>
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;Subregion: {mask.sum()} bins&#x27;</span><span class="tok-op">)</span></code></pre>
 <pre><code class="language-python">bdata <span class="tok-op">=</span> adata<span class="tok-op">[</span>mask<span class="tok-op">]</span>
 
 <span class="tok-comment">#0 means unassigned</span>
@@ -301,7 +301,7 @@ cdata_export</code></pre>
 
         size <span class="tok-op">=</span> f<span class="tok-op">.</span>stat<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">.</span>st_size
 
-        <span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;  <span class="tok-op">{</span>f<span class="tok-op">.</span>relative_to<span class="tok-op">(</span><span class="tok-string">&quot;cellpose_spaceranger_output&quot;</span><span class="tok-op">)</span><span class="tok-op">}</span>: <span class="tok-op">{</span>size<span class="tok-op">:</span>,<span class="tok-op">}</span> bytes&#x27;<span class="tok-op">)</span>
+        <span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;  {f.relative_to(&quot;cellpose_spaceranger_output&quot;)}: {size:,} bytes&#x27;</span><span class="tok-op">)</span>
 </code></pre>
 <h2>Read Back with <code>ov.io.read_visium_hd</code></h2>
 <p>The exported directory can be read back with the same API used for native SpaceRanger v4 cell-segmentation output.</p>
@@ -318,11 +318,11 @@ cdata_read</code></pre>
 
 <span class="tok-comment"># from the GeoJSON, so the read-back may have fewer cells.</span>
 
-<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Exported: <span class="tok-op">{</span>cdata_export<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span> cells&#x27;<span class="tok-op">)</span>
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;Exported: {cdata_export.shape[0]} cells&#x27;</span><span class="tok-op">)</span>
 
-<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Read back: <span class="tok-op">{</span>cdata_read<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span> cells&#x27;<span class="tok-op">)</span>
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;Read back: {cdata_read.shape[0]} cells&#x27;</span><span class="tok-op">)</span>
 
-<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Cell IDs match (subset): <span class="tok-op">{</span><span class="tok-builtin">set</span><span class="tok-op">(</span>cdata_read<span class="tok-op">.</span>obs_names<span class="tok-op">)</span><span class="tok-op">.</span>issubset<span class="tok-op">(</span><span class="tok-builtin">set</span><span class="tok-op">(</span>cdata_export<span class="tok-op">.</span>obs_names<span class="tok-op">)</span><span class="tok-op">)</span><span class="tok-op">}</span>&#x27;<span class="tok-op">)</span></code></pre>
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;Cell IDs match (subset): {set(cdata_read.obs_names).issubset(set(cdata_export.obs_names))}&#x27;</span><span class="tok-op">)</span></code></pre>
 <h3>Visualize the re-imported data</h3>
 <p>These spatial plots confirm that the exported cell coordinates still align correctly with the H&amp;E background after round-tripping through the SpaceRanger-style directory structure.</p>
 <pre><code class="language-python">sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>cdata_read<span class="tok-op">)</span>
@@ -365,7 +365,7 @@ sc<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatial<span class
 
 tifffile<span class="tok-op">.</span>imwrite<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_crop.tiff&#x27;</span><span class="tok-op">,</span> crop<span class="tok-op">)</span>
 
-<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Crop: <span class="tok-op">{</span>crop<span class="tok-op">.</span>shape<span class="tok-op">}</span>&#x27;<span class="tok-op">)</span></code></pre>
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;Crop: {crop.shape}&#x27;</span><span class="tok-op">)</span></code></pre>
 <pre><code class="language-python"><span class="tok-comment"># Cellpose</span>
 
 cellseg<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_crop.tiff&#x27;</span><span class="tok-op">,</span> <span class="tok-string">&#x27;stardist/cmp_cp.npz&#x27;</span><span class="tok-op">,</span>
@@ -374,7 +374,7 @@ cellseg<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_
 
 cp <span class="tok-op">=</span> scipy<span class="tok-op">.</span>sparse<span class="tok-op">.</span>load_npz<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_cp.npz&#x27;</span><span class="tok-op">)</span><span class="tok-op">.</span>toarray<span class="tok-op">(</span><span class="tok-op">)</span>
 
-<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Cellpose: <span class="tok-op">{</span>cp<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> cells&#x27;<span class="tok-op">)</span>
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;Cellpose: {cp.max()} cells&#x27;</span><span class="tok-op">)</span>
 
 
 
@@ -386,7 +386,7 @@ cellseg<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_
 
 cs <span class="tok-op">=</span> scipy<span class="tok-op">.</span>sparse<span class="tok-op">.</span>load_npz<span class="tok-op">(</span><span class="tok-string">&#x27;stardist/cmp_cs.npz&#x27;</span><span class="tok-op">)</span><span class="tok-op">.</span>toarray<span class="tok-op">(</span><span class="tok-op">)</span>
 
-<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;CellSAM: <span class="tok-op">{</span>cs<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> cells&#x27;<span class="tok-op">)</span></code></pre>
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;CellSAM: {cs.max()} cells&#x27;</span><span class="tok-op">)</span></code></pre>
 <pre><code class="language-python"><span class="tok-keyword">import</span> matplotlib<span class="tok-op">.</span>pyplot <span class="tok-keyword">as</span> plt
 
 
@@ -419,9 +419,9 @@ axes<span class="tok-op">[</span><span class="tok-number">0</span><span class="t
 
 axes<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>axis<span class="tok-op">(</span><span class="tok-string">&#x27;off&#x27;</span><span class="tok-op">)</span>
 
-_overlay<span class="tok-op">(</span>axes<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">,</span> crop<span class="tok-op">,</span> cp<span class="tok-op">,</span> f&#x27;Cellpose (<span class="tok-op">{</span>cp<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> cells)&#x27;<span class="tok-op">)</span>
+_overlay<span class="tok-op">(</span>axes<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">,</span> crop<span class="tok-op">,</span> cp<span class="tok-op">,</span> <span class="tok-string">f&#x27;Cellpose ({cp.max()} cells)&#x27;</span><span class="tok-op">)</span>
 
-_overlay<span class="tok-op">(</span>axes<span class="tok-op">[</span><span class="tok-number">2</span><span class="tok-op">]</span><span class="tok-op">,</span> crop<span class="tok-op">,</span> cs<span class="tok-op">,</span> f&#x27;CellSAM (<span class="tok-op">{</span>cs<span class="tok-op">.</span>max<span class="tok-op">(</span><span class="tok-op">)</span><span class="tok-op">}</span> cells)&#x27;<span class="tok-op">)</span>
+_overlay<span class="tok-op">(</span>axes<span class="tok-op">[</span><span class="tok-number">2</span><span class="tok-op">]</span><span class="tok-op">,</span> crop<span class="tok-op">,</span> cs<span class="tok-op">,</span> <span class="tok-string">f&#x27;CellSAM ({cs.max()} cells)&#x27;</span><span class="tok-op">)</span>
 
 plt<span class="tok-op">.</span>tight_layout<span class="tok-op">(</span><span class="tok-op">)</span>
 
@@ -465,7 +465,7 @@ cmask <span class="tok-op">=</span> <span class="tok-op">(</span><span class="to
 
 adata_sub <span class="tok-op">=</span> adata<span class="tok-op">[</span>cmask<span class="tok-op">]</span><span class="tok-op">.</span>copy<span class="tok-op">(</span><span class="tok-op">)</span>
 
-<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Crop bins: <span class="tok-op">{</span>adata_sub<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span>&#x27;<span class="tok-op">)</span>
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;Crop bins: {adata_sub.shape[0]}&#x27;</span><span class="tok-op">)</span>
 
 
 
@@ -479,7 +479,7 @@ cdata_cp <span class="tok-op">=</span> ov<span class="tok-op">.</span>space<span
 
 sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>cdata_cp<span class="tok-op">)</span><span class="tok-op">;</span> sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>log1p<span class="tok-op">(</span>cdata_cp<span class="tok-op">)</span>
 
-<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;Cellpose cells: <span class="tok-op">{</span>cdata_cp<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span>&#x27;<span class="tok-op">)</span></code></pre>
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;Cellpose cells: {cdata_cp.shape[0]}&#x27;</span><span class="tok-op">)</span></code></pre>
 <pre><code class="language-python"><span class="tok-comment"># CellSAM: insert labels from the crop npz</span>
 
 <span class="tok-keyword">from</span> omicverse<span class="tok-op">.</span>external<span class="tok-op">.</span>bin2cell <span class="tok-keyword">import</span> insert_labels<span class="tok-op">,</span> expand_labels
@@ -534,20 +534,20 @@ cdata_cs <span class="tok-op">=</span> ov<span class="tok-op">.</span>space<span
 
 sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>normalize_total<span class="tok-op">(</span>cdata_cs<span class="tok-op">)</span><span class="tok-op">;</span> sc<span class="tok-op">.</span>pp<span class="tok-op">.</span>log1p<span class="tok-op">(</span>cdata_cs<span class="tok-op">)</span>
 
-<span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;CellSAM cells: <span class="tok-op">{</span>cdata_cs<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span>&#x27;<span class="tok-op">)</span></code></pre>
+<span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;CellSAM cells: {cdata_cs.shape[0]}&#x27;</span><span class="tok-op">)</span></code></pre>
 <pre><code class="language-python">fig<span class="tok-op">,</span> axes <span class="tok-op">=</span> plt<span class="tok-op">.</span>subplots<span class="tok-op">(</span><span class="tok-number">1</span><span class="tok-op">,</span> <span class="tok-number">2</span><span class="tok-op">,</span> figsize<span class="tok-op">=</span><span class="tok-op">(</span><span class="tok-number">14</span><span class="tok-op">,</span> <span class="tok-number">6</span><span class="tok-op">)</span><span class="tok-op">)</span>
 
 ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>cdata_cp<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;COL1A1&#x27;</span><span class="tok-op">,</span> edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
 
                  edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span> alpha<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span> ax<span class="tok-op">=</span>axes<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">,</span> show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">)</span>
 
-axes<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>set_title<span class="tok-op">(</span>f&#x27;Cellpose (<span class="tok-op">{</span>cdata_cp<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span> cells)&#x27;<span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">)</span>
+axes<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">.</span>set_title<span class="tok-op">(</span><span class="tok-string">f&#x27;Cellpose ({cdata_cp.shape[0]} cells)&#x27;</span><span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">)</span>
 
 ov<span class="tok-op">.</span>pl<span class="tok-op">.</span>spatialseg<span class="tok-op">(</span>cdata_cs<span class="tok-op">,</span> color<span class="tok-op">=</span><span class="tok-string">&#x27;COL1A1&#x27;</span><span class="tok-op">,</span> edges_color<span class="tok-op">=</span><span class="tok-string">&#x27;white&#x27;</span><span class="tok-op">,</span>
 
                  edges_width<span class="tok-op">=</span><span class="tok-number">0.1</span><span class="tok-op">,</span> alpha<span class="tok-op">=</span><span class="tok-number">0.8</span><span class="tok-op">,</span> ax<span class="tok-op">=</span>axes<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">,</span> show<span class="tok-op">=</span><span class="tok-keyword">False</span><span class="tok-op">)</span>
 
-axes<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">.</span>set_title<span class="tok-op">(</span>f&#x27;CellSAM (<span class="tok-op">{</span>cdata_cs<span class="tok-op">.</span>shape<span class="tok-op">[</span><span class="tok-number">0</span><span class="tok-op">]</span><span class="tok-op">}</span> cells)&#x27;<span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">)</span>
+axes<span class="tok-op">[</span><span class="tok-number">1</span><span class="tok-op">]</span><span class="tok-op">.</span>set_title<span class="tok-op">(</span><span class="tok-string">f&#x27;CellSAM ({cdata_cs.shape[0]} cells)&#x27;</span><span class="tok-op">,</span> fontsize<span class="tok-op">=</span><span class="tok-number">13</span><span class="tok-op">)</span>
 
 plt<span class="tok-op">.</span>tight_layout<span class="tok-op">(</span><span class="tok-op">)</span>
 
@@ -555,18 +555,21 @@ plt<span class="tok-op">.</span>show<span class="tok-op">(</span><span class="to
 <figure><img src="../assets/blog/cellpose-visium-hd/cell-044-1.png" alt="Output figure" loading="lazy" /><figcaption>Output figure</figcaption></figure>
   </main>
 
-  <footer class="footer page-width">
-    <span class="footer-brand">
-      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
-      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
-    </span>
-    <span class="footer-links">
-      <a href="../index.html">Home</a>
-      <a href="../packages.html">Packages</a>
-      <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="../about.html">About</a>
-      <a href="../join.html">Join</a>
-    </span>
+  <footer class="footer">
+    <div class="footer-inner page-width wide">
+      <div class="footer-brand-col">
+        <span class="footer-brand"><img src="../assets/omicos-logo.png" alt="" /> OmicVerse</span>
+        <p>Open-source multi-omics in Python, with Rust and Torch underneath. Trusted R methods, rebuilt and verified.</p>
+        <p class="footer-install"><code>pip install omicverse</code></p>
+      </div>
+      <div class="footer-col"><span class="footer-col-title">Project</span><ul><li><a href="../packages.html">Packages</a></li><li><a href="../ports.html">R-port catalog</a></li><li><a href="https://omicverse.readthedocs.io/" target="_blank" rel="noopener">Documentation</a></li><li><a href="../blog.html">Blog</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Community</span><ul><li><a href="../people.html">People</a></li><li><a href="../events.html">Events</a></li><li><a href="../join.html">Join</a></li><li><a href="https://github.com/omicverse/omicverse/discussions" target="_blank" rel="noopener">Discussions ↗</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Resources</span><ul><li><a href="../about.html">About & citation</a></li><li><a href="https://github.com/omicverse/omicverse-rebuildr" target="_blank" rel="noopener">Porting protocol ↗</a></li><li><a href="https://github.com/omicverse/omicverse-tutorials" target="_blank" rel="noopener">Tutorials ↗</a></li><li><a href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a></li></ul></div>
+    </div>
+    <div class="footer-bottom page-width wide">
+      <span>© OmicVerse contributors · Apache-2.0</span>
+      <span>Built with <a href="https://github.com/omicverse/omicverse-org-home" target="_blank" rel="noopener">omicverse-org-home</a></span>
+    </div>
   </footer>
 </body>
 </html>

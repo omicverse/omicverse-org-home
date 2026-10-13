@@ -7,9 +7,9 @@
   <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css" />
-  <script src="../script.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css?v=2026-10-13a" />
+  <script src="../script.js?v=2026-10-13a" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -20,13 +20,13 @@
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
     <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
       <a href="../packages.html">Packages</a>
+      <a href="../ports.html">Ports</a>
       <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="../people.html">People</a>
       <a aria-current="page" href="../blog.html">Blog</a>
-      <a href="../events.html">Events</a>
+      <a href="../people.html">People</a>
       <a href="../about.html">About</a>
       <a href="../join.html">Join</a>
-      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener"><svg class="nav-gh" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
     </nav>
   </header>
 
@@ -69,11 +69,11 @@ os<span class="tok-op">.</span>makedirs<span class="tok-op">(</span><span class=
 
 <span class="tok-keyword">def</span> fetch<span class="tok-op">(</span>key<span class="tok-op">)</span><span class="tok-op">:</span>
 
-    local <span class="tok-op">=</span> f&#x27;<span class="tok-op">{</span>key<span class="tok-op">}</span>.h5ad&#x27;
+    local <span class="tok-op">=</span> <span class="tok-string">f&#x27;{key}.h5ad&#x27;</span>
 
     <span class="tok-keyword">if</span> <span class="tok-keyword">not</span> os<span class="tok-op">.</span>path<span class="tok-op">.</span>exists<span class="tok-op">(</span>local<span class="tok-op">)</span><span class="tok-op">:</span>
 
-        <span class="tok-builtin">print</span><span class="tok-op">(</span>f&#x27;downloading <span class="tok-op">{</span>key<span class="tok-op">}</span>...&#x27;<span class="tok-op">)</span>
+        <span class="tok-builtin">print</span><span class="tok-op">(</span><span class="tok-string">f&#x27;downloading {key}...&#x27;</span><span class="tok-op">)</span>
 
         ov<span class="tok-op">.</span>datasets<span class="tok-op">.</span>download_data<span class="tok-op">(</span>CDN <span class="tok-op">+</span> DATA<span class="tok-op">[</span>key<span class="tok-op">]</span><span class="tok-op">,</span> local<span class="tok-op">)</span>
 
@@ -167,18 +167,21 @@ a200k</code></pre>
 <table><tr><th>Parameter</th><th>Purpose</th></tr><tr><td><code>clusters</code></td><td>obs column with the cluster label (required).</td></tr><tr><td><code>basis</code></td><td>obsm key, default <code>&#x27;X_umap&#x27;</code>. Any 2-D embedding works (<code>X_tSNE</code>, <code>X_pca</code>, harmony UMAPs, …).</td></tr><tr><td><code>tracks</code></td><td>list of obs columns → one concentric ring each, coloured by the run-length composition within each cluster sector. No hard limit; 6 rings render fine.</td></tr><tr><td><code>coord_scale</code></td><td>how much of the unit circle the scatter fills (0–1, default 0.8).</td></tr><tr><td><code>contour_levels</code></td><td>KDE levels to overlay; <code>None</code> disables.</td></tr><tr><td><code>label_orient</code></td><td><code>&#x27;auto&#x27;</code> (default) \</td><td><code>&#x27;tangent&#x27;</code> \</td><td><code>&#x27;radial&#x27;</code>. Auto uses tangent for ≤10 clusters (classic R look) and radial above that so labels never overlap.</td></tr><tr><td><code>gap_between_deg</code>, <code>gap_start_deg</code></td><td>angular gaps between sectors (2°) and at the start of the circle (12°) — match the R convention.</td></tr><tr><td><code>cluster_palette</code>, <code>track_palette</code></td><td>override the default <code>ov</code> palette. Accepts a colormap name or a list of colors.</td></tr><tr><td><code>bg_color</code></td><td>canvas colour (default the R parchment <code>&#x27;#F9F2E4&#x27;</code>). Use <code>&#x27;white&#x27;</code> for a plain look.</td></tr><tr><td><code>point_size</code>, <code>point_alpha</code></td><td>for dense scatters (&gt; 50k points) drop both to keep the KDE contour visible through the cloud.</td></tr><tr><td><code>return_data=True</code></td><td>also return the per-cell dataframe used internally.</td></tr></table>
   </main>
 
-  <footer class="footer page-width">
-    <span class="footer-brand">
-      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
-      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
-    </span>
-    <span class="footer-links">
-      <a href="../index.html">Home</a>
-      <a href="../packages.html">Packages</a>
-      <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="../about.html">About</a>
-      <a href="../join.html">Join</a>
-    </span>
+  <footer class="footer">
+    <div class="footer-inner page-width wide">
+      <div class="footer-brand-col">
+        <span class="footer-brand"><img src="../assets/omicos-logo.png" alt="" /> OmicVerse</span>
+        <p>Open-source multi-omics in Python, with Rust and Torch underneath. Trusted R methods, rebuilt and verified.</p>
+        <p class="footer-install"><code>pip install omicverse</code></p>
+      </div>
+      <div class="footer-col"><span class="footer-col-title">Project</span><ul><li><a href="../packages.html">Packages</a></li><li><a href="../ports.html">R-port catalog</a></li><li><a href="https://omicverse.readthedocs.io/" target="_blank" rel="noopener">Documentation</a></li><li><a href="../blog.html">Blog</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Community</span><ul><li><a href="../people.html">People</a></li><li><a href="../events.html">Events</a></li><li><a href="../join.html">Join</a></li><li><a href="https://github.com/omicverse/omicverse/discussions" target="_blank" rel="noopener">Discussions ↗</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Resources</span><ul><li><a href="../about.html">About & citation</a></li><li><a href="https://github.com/omicverse/omicverse-rebuildr" target="_blank" rel="noopener">Porting protocol ↗</a></li><li><a href="https://github.com/omicverse/omicverse-tutorials" target="_blank" rel="noopener">Tutorials ↗</a></li><li><a href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a></li></ul></div>
+    </div>
+    <div class="footer-bottom page-width wide">
+      <span>© OmicVerse contributors · Apache-2.0</span>
+      <span>Built with <a href="https://github.com/omicverse/omicverse-org-home" target="_blank" rel="noopener">omicverse-org-home</a></span>
+    </div>
   </footer>
 </body>
 </html>

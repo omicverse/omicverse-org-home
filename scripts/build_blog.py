@@ -7,7 +7,11 @@ import keyword
 import re
 import shutil
 import tokenize
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sync_chrome import ASSET_VERSION, footer_html, header_html  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -532,28 +536,12 @@ def article_shell(post, article_html):
   <link rel="icon" type="image/png" href="../assets/omicos-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css" />
-  <script src="../script.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css?v={ASSET_VERSION}" />
+  <script src="../script.js?v={ASSET_VERSION}" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="../index.html" aria-label="OmicVerse home">
-      <img class="brand-logo" src="../assets/omicos-logo.png" alt="" />
-      <span>OmicVerse</span>
-    </a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
-    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
-      <a href="../packages.html">Packages</a>
-      <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="../people.html">People</a>
-      <a aria-current="page" href="../blog.html">Blog</a>
-      <a href="../events.html">Events</a>
-      <a href="../about.html">About</a>
-      <a href="../join.html">Join</a>
-      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
-    </nav>
-  </header>
+{header_html("blog", "../")}
 
   <main class="article page-width">
     <a class="article-back" href="../blog.html">← Back to blog</a>
@@ -561,32 +549,39 @@ def article_shell(post, article_html):
     {article_html}
   </main>
 
-  <footer class="footer page-width">
-    <span class="footer-brand">
-      <img src="../assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
-      <a href="../blog.html" style="color:inherit; font-weight:500;">← Back to blog</a>
-    </span>
-    <span class="footer-links">
-      <a href="../index.html">Home</a>
-      <a href="../packages.html">Packages</a>
-      <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="../about.html">About</a>
-      <a href="../join.html">Join</a>
-    </span>
-  </footer>
+{footer_html("../")}
 </body>
 </html>
 """
 
 
+def post_thumb(post):
+    """First figure of the post (local or remote), or None."""
+    md = post.get("_markdown") or ""
+    m = re.search(r"!\[[^\]]*\]\(([^)\s]+)\)", md)
+    if not m:
+        return None
+    src = m.group(1)
+    return src[3:] if src.startswith("../") else src
+
+
+def post_card(post, prefix=""):
+    thumb = post.get("_thumb")
+    if thumb:
+        src = thumb if thumb.startswith("http") else prefix + thumb
+        fig = f'<span class="post-thumb"><img src="{escape_attr(src)}" alt="" loading="lazy" /></span>'
+    else:
+        fig = f'<span class="post-thumb is-placeholder">{html.escape(post["category"])}</span>'
+    return f"""        <a class="post-card" href="{prefix}blog/{escape_attr(post["slug"])}.html">
+          {fig}
+          <span class="post-chip">{html.escape(post["category"])}</span>
+          <span class="post-title">{html.escape(post["title"])}</span>
+          <span class="post-desc">{html.escape(post["excerpt"])}</span>
+        </a>"""
+
+
 def blog_index(posts):
-    cards = []
-    for post in posts:
-        cards.append(f"""        <a href="blog/{escape_attr(post["slug"])}.html">
-          <span class="t-name">{html.escape(post["category"])}</span>
-          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">{html.escape(post["title"])}</strong> {html.escape(post["excerpt"])}</span>
-          <span class="t-arrow">Read →</span>
-        </a>""")
+    cards = [post_card(p) for p in posts]
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -596,57 +591,27 @@ def blog_index(posts):
   <link rel="icon" type="image/png" href="assets/omicos-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-  <script src="script.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v={ASSET_VERSION}" />
+  <script src="script.js?v={ASSET_VERSION}" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="index.html" aria-label="OmicVerse home">
-      <img class="brand-logo" src="assets/omicos-logo.png" alt="" />
-      <span>OmicVerse</span>
-    </a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
-    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
-      <a href="packages.html">Packages</a>
-      <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="people.html">People</a>
-      <a aria-current="page" href="blog.html">Blog</a>
-      <a href="events.html">Events</a>
-      <a href="about.html">About</a>
-      <a href="join.html">Join</a>
-      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
-    </nav>
-  </header>
+{header_html("blog")}
 
   <main>
     <section class="page-hero page-width">
       <p class="overline">Blog</p>
-      <h1>Tutorials and technical notes from OmicVerse.</h1>
+      <h1>Tutorials and technical notes.</h1>
     </section>
 
-    <section class="page-width">
-      <div class="t-list blog-list">
+    <section class="page-width wide" style="padding-bottom:64px;">
+      <div class="post-grid">
 {chr(10).join(cards)}
       </div>
     </section>
   </main>
 
-  <footer class="footer page-width">
-    <span class="footer-brand">
-      <img src="assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
-      OmicVerse
-    </span>
-    <span class="footer-links">
-      <a href="index.html">Home</a>
-      <a href="packages.html">Packages</a>
-      <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="people.html">People</a>
-      <a href="events.html">Events</a>
-      <a href="about.html">About</a>
-      <a href="join.html">Join</a>
-    </span>
-  </footer>
+{footer_html()}
 </body>
 </html>
 """
@@ -665,6 +630,8 @@ def main():
             figures = ""
         if figures:
             markdown = f"{markdown}\n\n{figures}"
+        post["_markdown"] = markdown
+        post["_thumb"] = post_thumb(post)
         article_html = markdown_to_html(markdown)
         (BLOG_DIR / f"{post['slug']}.html").write_text(article_shell(post, article_html))
     (ROOT / "src" / "blog.html").write_text(blog_index(POSTS))
