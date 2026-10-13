@@ -134,6 +134,21 @@ ASSETS = {
         "blooms painted as cell clusters; two small sketched human figures and a small robot stand on the "
         "shore at the bottom right; large empty cream paper on the left and top",
     ),
+    # Brand mark candidates (square, transparent): a single ink-brush circle with a sage seed inside.
+    "logo-1": ("assets/art/logo-1.png", "1024x1024", 512,
+               "a brand mark: one loose, confident ink-brush circle (an enso) drawn in a single thick stroke with a "
+               "small opening at the top right, and inside it, slightly off-centre, one solid round sage-green dot "
+               "like a seed or a cell; nothing else"),
+    "logo-2": ("assets/art/logo-2.png", "1024x1024", 512,
+               "a brand mark: one thick ink-brush circle whose stroke is made of two intertwined strands like a "
+               "DNA helix bent into a ring, with one solid sage-green dot at the centre; nothing else"),
+    "logo-3": ("assets/art/logo-3.png", "1024x1024", 512,
+               "a brand mark: a round cell drawn as one thick ink outline with a soft off-white fill, containing "
+               "three small sage-green dots arranged in a loose triangle, with one short ink stroke leaving the "
+               "cell at the upper right like a sprout; nothing else"),
+    "logo-4": ("assets/art/logo-4.png", "1024x1024", 512,
+               "a brand mark: the letter-like shape of a thick ink-brush ring with a small gap, inside which a tiny "
+               "sage-green four-leaf cluster of round cells sits; nothing else"),
     "ports": (
         "assets/art/ports.png", "1536x1024", 900,
         "a horizontal composition: on the left a closed loop of DNA with black outline and off-white fill; a single "

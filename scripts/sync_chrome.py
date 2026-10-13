@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 
 # Bump when styles.css / script.js / ports.js change in a way cached clients must pick up.
-ASSET_VERSION = "2026-10-13a"
+ASSET_VERSION = "2026-10-13c"
 
 NAV = [
     ("packages", "Packages", "packages.html"),
@@ -66,7 +66,7 @@ def header_html(current: str | None, prefix: str = "") -> str:
     links.append('      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener"><svg class="nav-gh" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>')
     return f'''  <header class="site-header">
     <a class="brand" href="{prefix}index.html" aria-label="OmicVerse home">
-      <img class="brand-logo" src="{prefix}assets/omicos-logo.png" alt="" />
+      <img class="brand-logo" src="{prefix}assets/brand/mark.svg" alt="" width="28" height="28" />
       <span>OmicVerse</span>
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
@@ -88,7 +88,7 @@ def footer_html(prefix: str = "") -> str:
     return f'''  <footer class="footer">
     <div class="footer-inner page-width wide">
       <div class="footer-brand-col">
-        <span class="footer-brand"><img src="{prefix}assets/omicos-logo.png" alt="" /> OmicVerse</span>
+        <span class="footer-brand"><img src="{prefix}assets/brand/mark.svg" alt="" width="20" height="20" /> OmicVerse</span>
         <p>Open-source multi-omics in Python, with Rust and Torch underneath. Trusted R methods, rebuilt and verified.</p>
         <p class="footer-install"><code>pip install omicverse</code></p>
       </div>
@@ -103,7 +103,8 @@ def footer_html(prefix: str = "") -> str:
 
 HEADER_RE = re.compile(r"  <header class=\"site-header\">.*?</header>", re.S)
 FOOTER_RE = re.compile(r"  <footer class=\"footer[^\"]*\">.*?</footer>", re.S)
-ASSET_RE = re.compile(r'((?:href|src)="(?:\.\./)?(?:styles\.css|script\.js|ports\.js))(?:\?v=[^"]*)?"')
+ASSET_RE = re.compile(r'((?:href|src)="(?:\.\./)?(?:styles\.css|script\.js|ports\.js|packages\.js))(?:\?v=[^"]*)?"')
+ICON_RE = re.compile(r'  <link rel="icon"[^\n]*\n(?:  <link rel="apple-touch-icon"[^\n]*\n)?')
 
 
 def current_key(path: Path) -> str | None:
@@ -118,6 +119,9 @@ def render(path: Path, text: str) -> str:
     text = HEADER_RE.sub(lambda m: header_html(current_key(path), prefix), text, count=1)
     text = FOOTER_RE.sub(lambda m: footer_html(prefix), text, count=1)
     text = ASSET_RE.sub(lambda m: f'{m.group(1)}?v={ASSET_VERSION}"', text)
+    icons = (f'  <link rel="icon" type="image/png" sizes="32x32" href="{prefix}assets/brand/favicon-32.png" />\n'
+             f'  <link rel="apple-touch-icon" sizes="180x180" href="{prefix}assets/brand/favicon-180.png" />\n')
+    text = ICON_RE.sub(lambda m: icons, text, count=1)
     return text
 
 
