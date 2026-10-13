@@ -1319,7 +1319,7 @@ section.band.band-cta .btn-ghost:hover { border-color: #fff; background: rgba(25
 .split > * { min-width: 0; }
 .split-copy h2 { margin-bottom: 12px; overflow-wrap: anywhere; }
 .split-copy p { max-width: 520px; color: var(--ink-soft); font-size: 15px; }
-.split-art img { width: 100%; display: block; }
+.split-art img { width: 100%; height: auto; display: block; }
 .band-tint .split { margin-bottom: 28px; }
 
 /* Port logo wall */
@@ -1554,7 +1554,7 @@ h2 { text-wrap: balance; }
 .section-heading p { max-width: 560px; text-wrap: pretty; }
 .split-copy p, .lede, .pd-desc { text-wrap: pretty; }
 section.band.band-dark h2 { letter-spacing: -0.02em; }
-.band-tint .split-art img { max-width: 440px; margin-left: auto; }
+.band-tint .split-art img { max-width: 440px; height: auto; margin-left: auto; }
 .band-tint .split { align-items: center; }
 
 @media (max-width: 1080px) {
@@ -1567,5 +1567,5 @@ section.band.band-dark h2 { letter-spacing: -0.02em; }
   .stat-strip.stat-strip-flat .stat:nth-child(2n) { border-right: 0; }
   .stat-strip.stat-strip-flat .stat:nth-child(n + 3) { border-top: 1px solid var(--line); }
   .stat-strip.stat-strip-flat .stat:nth-child(odd) { padding-left: 0; }
-  .band-tint .split-art img { max-width: 320px; margin-left: 0; }
+  .band-tint .split-art img { max-width: 320px; height: auto; margin-left: 0; }
 }
