@@ -1,6 +1,6 @@
 {
  "schema": "omicverse-ports/v1",
- "generated_at": "2026-10-13T00:13:38Z",
+ "generated_at": "2026-10-13T00:27:39Z",
  "org": "omicverse",
  "domains": {
   "single-cell": "Single-cell",
@@ -86,7 +86,7 @@
     "source": "CRAN",
     "version": null,
     "url": "https://cran.r-project.org/package=alakazam",
-    "citation": null,
+    "citation": "repertoire sequencing data. Bioinformatics 2015.",
     "license": null,
     "language": "R"
    },
@@ -976,7 +976,7 @@
    "upstream": {
     "name": "Augur",
     "source": "GitHub",
-    "version": null,
+    "version": "1.0.3",
     "url": "https://github.com/neurorestore/Augur",
     "citation": "Skinnider et al., Nature Communications 2021",
     "license": null,
@@ -1073,16 +1073,19 @@
    },
    "source_detail": [
     "pyproject",
-    "__all__"
+    "__all__",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "stochastic_numerical",
     "metric": null,
-    "threshold": null,
-    "value": null,
+    "threshold": 0.95,
+    "value": 0.9999,
     "fixture": null,
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "Pearson 0.9999, Spearman 1.0",
+    "audit_class": "B"
    }
   },
   {
@@ -1518,16 +1521,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "deterministic",
     "metric": "max_abs_error",
-    "threshold": "1e-8",
-    "value": null,
+    "threshold": 1e-08,
+    "value": 1.0,
     "fixture": "Downsampled NSCLC CosMx spatial transcriptomics with molecule coords, cell annotations",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "Gene Probabilities: Pearson r = 1.0; Sparse Correlation: Pearson r = 1.0; Normalize Images: max error = 0.0",
+    "audit_class": "A"
    }
   },
   {
@@ -1561,7 +1567,7 @@
     "source": "GitHub",
     "version": "1.0.7",
     "url": "https://github.com/ShellyCoder/cellcall",
-    "citation": null,
+    "citation": "Liu, T. et al. cellcall: integrated analysis of ligand-receptor and transcription factor activities from single-cell transcriptomics. (2021)",
     "license": null,
     "language": "R"
    },
@@ -1723,7 +1729,7 @@
     "source": "CRAN",
     "version": null,
     "url": "https://cran.r-project.org/package=coloc",
-    "citation": null,
+    "citation": "Giambartolomei C et al.* (2014) Bayesian test for colocalisation",
     "license": null,
     "language": "R"
    },
@@ -2021,16 +2027,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "inference",
     "metric": "ordinal",
     "threshold": 0.7,
-    "value": null,
+    "value": 1.0,
     "fixture": null,
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "imbalancescore Pearson 1.0000** ✅; `progressionTest` agrees on direction ✅; `topologyTest` simplified (v0.1) 🟡",
+    "audit_class": "B"
    }
   },
   {
@@ -2679,7 +2688,7 @@
     "source": "GitHub",
     "version": "2.1",
     "url": "https://github.com/ay-lab/dcHiC",
-    "citation": null,
+    "citation": "Hi-C datasets. Nature Communications** 13, 6827 (2022).",
     "license": null,
     "language": "R"
    },
@@ -2777,16 +2786,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "embedding",
     "metric": "ordinal",
     "threshold": 0.99,
-    "value": null,
+    "value": 1.0,
     "fixture": "One-chromosome O/E-ready contact matrix (compartment calling) + multi-sample PC matrix (differential)",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "PC1 |r| = 1.0 (max |Δ| = 1.6e-14); differential Spearman = 0.981, Jaccard = 0.961",
+    "audit_class": "A"
    }
   },
   {
@@ -2825,7 +2837,7 @@
     "source": "Bioconductor",
     "version": null,
     "url": "https://bioconductor.org/packages/decontX",
-    "citation": null,
+    "citation": "Yang, S. et al. Decontamination of ambient RNA in single-cell RNA-seq with DecontX. Genome Biology 21, 57 (2020).",
     "license": null,
     "language": "R"
    },
@@ -2968,7 +2980,7 @@
     "source": "Bioconductor",
     "version": null,
     "url": "https://bioconductor.org/packages/DEqMS",
-    "citation": null,
+    "citation": "Zhu Y., Orre L.M., Tran Y.Z., Mermelekas G., Johansson H.J., Malyutina A., Anders S., Lehtiö J. DEqMS: A method for accurate variance estimation in differential protein expression analysis. Mol Cell Proteomics 19, 1047–1057 (2020). DOI: 10.",
     "license": null,
     "language": "R"
    },
@@ -3715,16 +3727,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "ordinal",
     "metric": "embedding",
     "threshold": 0.8,
-    "value": null,
+    "value": 0.916,
     "fixture": null,
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "eigvec Procrustes 0.916 ✅; eigval Pearson 0.967 ✅; DPT Pearson 0.974 ✅",
+    "audit_class": "A"
    }
   },
   {
@@ -4613,7 +4628,7 @@
     "source": "GitHub",
     "version": "0.9.9",
     "url": "https://github.com/dynverse/dyneval",
-    "citation": null,
+    "citation": "Saelens, W. et al. A comparison of single-cell trajectory inference methods. Nat Biotechnol 37, 547–554 (2019).",
     "license": null,
     "language": "R"
    },
@@ -4729,7 +4744,8 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
     "status": "gated",
@@ -4738,7 +4754,8 @@
     "threshold": 0.01,
     "value": null,
     "fixture": "3-branch tent trajectory (4 milestones, 30 cells, 50 genes) — gold\n+ slightly-perturbed prediction.\n",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "audit_class": "B"
    }
   },
   {
@@ -4789,7 +4806,7 @@
     "source": "GitHub",
     "version": "1.3.0",
     "url": "https://github.com/dynverse/dynwrap",
-    "citation": null,
+    "citation": "Saelens, W. et al. A comparison of single-cell trajectory inference methods. Nat Biotechnol 37, 547–554 (2019).",
     "license": null,
     "language": "R"
    },
@@ -4954,7 +4971,8 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
     "status": "gated",
@@ -4963,7 +4981,8 @@
     "threshold": 1e-06,
     "value": null,
     "fixture": "3-branch tent trajectory (1 stem milestone A + 3 branch ends B/C/D),\n30 cells equally distributed along the 3 edges.\n",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "audit_class": "A"
    }
   },
   {
@@ -4997,7 +5016,7 @@
     "source": "Bioconductor",
     "version": null,
     "url": "https://bioconductor.org/packages/edgeR",
-    "citation": null,
+    "citation": "Robinson, M.D., McCarthy, D.J., Smyth, G.K. edgeR: a Bioconductor package for differential expression analysis of digital gene expression data. Bioinformatics 26(1), 139–140 (2010).",
     "license": null,
     "language": "R"
    },
@@ -5285,7 +5304,7 @@
     "source": "GitHub",
     "version": null,
     "url": "https://github.com/Nusob888/FastCAR",
-    "citation": null,
+    "citation": "Gocht A.M., Berg M., et al. FastCAR: fast correction for ambient RNA to facilitate differential gene expression analysis in single-cell RNA-sequencing datasets. BMC Genomics 24, 2023.",
     "license": null,
     "language": "R"
    },
@@ -5546,16 +5565,18 @@
    },
    "source_detail": [
     "pyproject",
-    "__all__"
+    "__all__",
+    "report"
    ],
    "parity": {
     "status": "unverified",
-    "algorithm_class": null,
+    "algorithm_class": "Visualisation — adapted Class 1 (deterministic geometry)",
     "metric": null,
     "threshold": null,
     "value": null,
     "fixture": null,
-    "test": null
+    "test": null,
+    "audit_class": "A"
    }
   },
   {
@@ -5754,7 +5775,7 @@
     "source": "GitHub",
     "version": null,
     "url": "https://github.com/smorabit/hdWGCNA",
-    "citation": null,
+    "citation": "Morabito, S. et al. hdWGCNA identifies co-expression networks in high-resolution transcriptomics data. Cell Reports Methods 3, 100498 (2023).",
     "license": null,
     "language": "R"
    },
@@ -6449,7 +6470,7 @@
     "source": "Bioconductor",
     "version": "1.7.2",
     "url": "https://bioconductor.org/packages/hoodscanR",
-    "citation": null,
+    "citation": "data.* bioRxiv (2024). https://doi.org/10.1101/2024.03.26.586902",
     "license": null,
     "language": "R"
    },
@@ -6855,7 +6876,7 @@
     "source": "CRAN",
     "version": null,
     "url": "https://cran.r-project.org/package=imputeLCMD",
-    "citation": null,
+    "citation": "Lazar, C., Gatto, L., Ferro, M., Bruley, C., Burger, T. Accounting for the Multiple Natures of Missing Values in Label-Free Quantitative Proteomics Data Sets to Compare the Performance of Normalization Strategies. J Proteome Res 15, 1116–11",
     "license": null,
     "language": "R"
    },
@@ -7516,7 +7537,7 @@
     "source": "Bioconductor",
     "version": null,
     "url": "https://bioconductor.org/packages/limma",
-    "citation": null,
+    "citation": "Ritchie, M.E., Phipson, B., Wu, D., Hu, Y., Law, C.W., Shi, W., Smyth, G.K. limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Research 43(7), e47 (2015).",
     "license": null,
     "language": "R"
    },
@@ -7689,7 +7710,7 @@
     "source": "Bioconductor",
     "version": null,
     "url": "https://bioconductor.org/packages/lipidr",
-    "citation": null,
+    "citation": "Mining and Analysis of Lipidomics Datasets. J. Proteome Res.* 2020,",
     "license": null,
     "language": "R"
    },
@@ -7953,7 +7974,7 @@
     "source": "CRAN",
     "version": null,
     "url": "https://cran.r-project.org/package=MARVEL",
-    "citation": null,
+    "citation": "Wei Xiong Wen, Adam J Mead, Supat Thongjuea, MARVEL: an integrated alternative splicing analysis platform for single-cell RNA sequencing data, Nucleic Acids Research, Volume 51, Issue 5, 21 March 2023, Page e29, https://doi.org/10.1093/nar/",
     "license": null,
     "language": "R"
    },
@@ -8753,7 +8774,7 @@
     "source": "CRAN",
     "version": null,
     "url": "https://cran.r-project.org/package=MatrixEQTL",
-    "citation": null,
+    "citation": "Shabalin, A. A. (2012). Matrix eQTL: ultra fast eQTL analysis via large",
     "license": null,
     "language": "R"
    },
@@ -9197,7 +9218,7 @@
     "source": "Bioconductor",
     "version": null,
     "url": "https://bioconductor.org/packages/Mfuzz",
-    "citation": null,
+    "citation": "- L. Kumar, M. Futschik (2007). *Mfuzz: a software package for soft",
     "license": null,
     "language": "R"
    },
@@ -9923,9 +9944,9 @@
    "upstream": {
     "name": "monocle3",
     "source": "GitHub",
-    "version": null,
+    "version": "1.4.x",
     "url": "https://github.com/cole-trapnell-lab/monocle3",
-    "citation": null,
+    "citation": "Cao, J. et al. The single-cell transcriptional landscape of mammalian organogenesis. Nature 566, 496–502 (2019).",
     "license": null,
     "language": "R"
    },
@@ -10085,11 +10106,12 @@
    "source_detail": [
     "pyproject",
     "audit",
-    "__all__"
+    "__all__",
+    "report"
    ],
    "parity": {
     "status": "unverified",
-    "algorithm_class": null,
+    "algorithm_class": "(multi-output)",
     "metric": null,
     "threshold": null,
     "value": null,
@@ -10133,7 +10155,7 @@
     "source": "Bioconductor",
     "version": null,
     "url": "https://bioconductor.org/packages/MSstats",
-    "citation": null,
+    "citation": "Bioinformatics 30 (17), 2524-2526 (2014). DOI: 10.1093/bioinformatics/btu305",
     "license": null,
     "language": "R"
    },
@@ -11055,16 +11077,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "inference",
     "metric": "deterministic-standard",
-    "threshold": 1e-08,
-    "value": null,
+    "threshold": 0.9,
+    "value": 1.0,
     "fixture": "10x Visium liver metastasis, 848 spots x 36601 genes, 7 RCTD cell types",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "Tstat` Pearson = Spearman = 1.000000; p-values Spearman 0.9952 – 1.000000, top-50 Jaccard 0.923 – 1.000**",
+    "audit_class": "B"
    }
   },
   {
@@ -11498,7 +11523,7 @@
     "source": "Bioconductor",
     "version": null,
     "url": "https://bioconductor.org/packages/proDA",
-    "citation": null,
+    "citation": "Ahlmann-Eltze C., Anders S. proDA: Probabilistic Dropout Analysis for Identifying Differentially Abundant Proteins in Label-Free Quantitative Mass Spectrometry. bioRxiv (2020). DOI: 10.1101/661496",
     "license": null,
     "language": "R"
    },
@@ -11670,7 +11695,7 @@
     "source": "GitHub",
     "version": null,
     "url": "https://github.com/ZJU-UoE-CCW-LAB/scCDC",
-    "citation": null,
+    "citation": "Wang, W. et al. scCDC: a computational method for gene-specific contamination detection and correction in single-cell and single-nucleus RNA-seq data. Genome Biology 25, 122 (2024).",
     "license": null,
     "language": "R"
    },
@@ -11819,7 +11844,7 @@
     "source": "Bioconductor",
     "version": null,
     "url": "https://bioconductor.org/packages/scDblFinder",
-    "citation": null,
+    "citation": "F1000Research 10:979 (2022).",
     "license": null,
     "language": "R"
    },
@@ -12240,7 +12265,7 @@
     "source": "GitHub",
     "version": null,
     "url": "https://github.com/AntonioDeFalco/SCEVAN",
-    "citation": null,
+    "citation": "De Falco A, Caruso F, Su X-D, Iavarone A, Ceccarelli M. A variational algorithm to detect the clonal copy number substructure of tumours from single-cell data. Nat Commun. 2023;14(1):1074. doi:10.1038/s41467-023-36790-9",
     "license": null,
     "language": "R"
    },
@@ -12404,7 +12429,7 @@
     "source": "GitHub",
     "version": null,
     "url": "https://github.com/wu-yc/scMetabolism",
-    "citation": null,
+    "citation": "Wu, Y. et al. Spatiotemporal Immune Landscape of Colorectal Cancer Liver Metastasis at Single-Cell Level. Cancer Discovery (2021).",
     "license": null,
     "language": "R"
    },
@@ -12835,16 +12860,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "ordinal",
     "metric": "ordinal",
     "threshold": 0.95,
-    "value": null,
+    "value": 0.989,
     "fixture": null,
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "Pseudotime Pearson 0.989 ✅, Space Procrustes 0.999 ✅",
+    "audit_class": "A"
    }
   },
   {
@@ -12883,7 +12911,7 @@
     "source": "CRAN",
     "version": null,
     "url": "https://cran.r-project.org/package=shazam",
-    "citation": null,
+    "citation": "immunoglobulin repertoire sequencing data.* Bioinformatics 2015.",
     "license": null,
     "language": "R"
    },
@@ -13023,7 +13051,7 @@
     "source": "GitHub",
     "version": null,
     "url": null,
-    "citation": null,
+    "citation": "Hou, J. et al. Dissecting crosstalk induced by cell-cell communication using single-cell transcriptomic data. Nature Communications (2025).",
     "license": null,
     "language": "R"
    },
@@ -13044,16 +13072,19 @@
     "r_functions": 0
    },
    "source_detail": [
-    "pyproject"
+    "pyproject",
+    "report"
    ],
    "parity": {
-    "status": "gated",
-    "algorithm_class": null,
+    "status": "pass",
+    "algorithm_class": "Statistical inference (Class 8)",
     "metric": null,
-    "threshold": null,
-    "value": null,
+    "threshold": 0.95,
+    "value": 0.9912,
     "fixture": null,
-    "test": null
+    "test": null,
+    "value_text": "Pearson = 0.9912",
+    "audit_class": "B"
    }
   },
   {
@@ -13431,7 +13462,8 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
     "status": "gated",
@@ -13440,7 +13472,8 @@
     "threshold": 0.8,
     "value": null,
     "fixture": "Y-shaped 2-D synthetic (300 cells, 5 KMeans clusters) — common stem with\ntwo branches.  Generated deterministically with seed=42.\n",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "audit_class": "A"
    }
   },
   {
@@ -13479,7 +13512,7 @@
     "source": "CRAN",
     "version": null,
     "url": "https://cran.r-project.org/package=SoupX",
-    "citation": null,
+    "citation": "Young, M.D. & Behjati, S. SoupX removes ambient RNA contamination from droplet-based single-cell RNA sequencing data. GigaScience 9, giaa151 (2020).",
     "license": null,
     "language": "R"
    },
@@ -14847,7 +14880,8 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
     "status": "gated",
@@ -14856,7 +14890,8 @@
     "threshold": 1e-08,
     "value": null,
     "fixture": "Human DLPFC Visium sample, lowly expressed genes filtered",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "audit_class": "A"
    }
   },
   {
@@ -15380,16 +15415,18 @@
    },
    "source_detail": [
     "pyproject",
-    "__all__"
+    "__all__",
+    "report"
    ],
    "parity": {
     "status": "unverified",
-    "algorithm_class": null,
+    "algorithm_class": "Deterministic numerical workflow",
     "metric": null,
     "threshold": null,
     "value": null,
     "fixture": null,
-    "test": null
+    "test": null,
+    "audit_class": "A"
    }
   },
   {
@@ -15538,16 +15575,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "deterministic-bounded",
     "metric": "max_abs_error",
     "threshold": 1e-05,
-    "value": null,
+    "value": 2.67e-06,
     "fixture": "DLPFC spatial transcriptomics data with artifacts, 5000 genes x 3529 spots",
-    "test": null
+    "test": null,
+    "value_text": "max abs err 2.67e-6 (localVariance), F1 1.0 (localOutliers), ARI 1.0 (findArtifacts), exact match 1.0 (flagVisiumOutliers)",
+    "audit_class": "A"
    }
   },
   {
@@ -15759,16 +15799,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "deterministic",
     "metric": "max_abs_error",
     "threshold": 1e-08,
-    "value": null,
+    "value": 1.33e-11,
     "fixture": "Keren et al. 2018 MIBI-TOF breast cancer, patient 6",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "distances: 1.33e-11, abundances: 0.0, L-function: 0.0",
+    "audit_class": "A"
    }
   },
   {
@@ -16166,7 +16209,7 @@
     "source": "CRAN",
     "version": null,
     "url": "https://cran.r-project.org/package=tigger",
-    "citation": null,
+    "citation": "Gadala-Maria D, Yaari G, Uduman M, Kleinstein SH (2015).",
     "license": null,
     "language": "R"
    },
@@ -16539,16 +16582,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "partial",
     "algorithm_class": "inference",
     "metric": "inference",
     "threshold": 0.7,
-    "value": null,
+    "value": 0.8385,
     "fixture": "Bundled tradeSeq example data — Slingshot-fit + counts matrix",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "associationTest`: Spearman 0.8385, Jaccard 0.667 ✅; `startVsEndTest`: Spearman 0.45, Jaccard 0.45 ❌",
+    "audit_class": "B"
    }
   },
   {
@@ -17043,16 +17089,19 @@
    "source_detail": [
     "pyproject",
     "manifest",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "deterministic",
     "metric": "max_abs_error",
     "threshold": 1e-08,
     "value": null,
     "fixture": "TranspaceR example spatial transcriptomics dataset",
-    "test": null
+    "test": null,
+    "value_text": "All gates pass (29/29 tests)",
+    "audit_class": "A"
    }
   },
   {
@@ -17272,16 +17321,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "ordinal",
     "metric": "ordinal",
     "threshold": 0.99,
-    "value": null,
+    "value": 1.0,
     "fixture": "BMDC scRNA-seq, GSE48968 subset — 131 cells × 16776 genes; the canonical TSCAN vignette dataset",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "Pearson = 1.000000 in both default and verification modes (since py-mclustR ≥ 0.2.0)",
+    "audit_class": "A"
    }
   },
   {
@@ -19157,16 +19209,19 @@
     "pyproject",
     "manifest",
     "readme-table",
-    "audit"
+    "audit",
+    "report"
    ],
    "parity": {
-    "status": "gated",
+    "status": "pass",
     "algorithm_class": "stochastic",
     "metric": "spearman",
     "threshold": 0.8,
-    "value": null,
+    "value": 0.985,
     "fixture": "Guo et al. 2010 qPCR fixture from destiny (428 cells × 48 genes).\nDiffusion-map computed with destiny in R, used as input to floodPseudotime.\n",
-    "test": "tests/test_exact_match.py"
+    "test": "tests/test_exact_match.py",
+    "value_text": "pseudotime Spearman 0.985 ✅ (threshold 0.80); Pearson 0.992",
+    "audit_class": "C"
    }
   },
   {
@@ -19381,7 +19436,7 @@
     "source": "GitHub",
     "version": "1.3.5.dev22+gd566046",
     "url": "https://github.com/zhoujt1994/scHiCluster",
-    "citation": null,
+    "citation": "T. J., Dixon, J. R. & Ecker, J. R. (2019). *Robust single-cell Hi-C",
     "license": null,
     "language": "Python"
    },

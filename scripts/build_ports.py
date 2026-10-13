@@ -422,6 +422,66 @@ def parse_audit(md: str) -> dict:
     return out
 
 
+def parse_report(md: str) -> dict:
+    """Pull parity evidence out of RECONSTRUCTION_REPORT.md §1 (Identity table)."""
+    out: dict = {}
+    NUM = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?(?:e-?\d+)?)(?![\w.])")
+    def num(x):
+        """First number in a cell: '`0.9978`', 'Spearman **0.8385**, Jaccard **0.667** ✅', 'Pearson ≥ 0.99'."""
+        x = x.replace("**", "").replace("`", "")
+        m = re.search(r"[≥>]=?\s*" + NUM.pattern, x)
+        m = NUM.search(x, m.start()) if m else NUM.search(x)
+        try:
+            return float(m.group(1)) if m else None
+        except ValueError:
+            return None
+    for table in parse_md_tables(md):
+        hdr = [strip_md(h).lower() for h in table["header"]]
+        if hdr[:2] != ["field", "value"]:
+            continue
+        for row in table["rows"]:
+            if len(row) < 2:
+                continue
+            k = strip_md(row[0]).lower()
+            v = strip_md(row[1]).strip("`").strip()
+            if v.startswith("<") and v.endswith(">"):
+                continue  # unfilled template placeholder
+            if k.startswith("algorithm class"):
+                out["algorithm_class"] = v.split("/")[0].strip() or None
+            elif k.startswith("parity threshold"):
+                out["threshold"] = num(v)
+            elif k.startswith("final parity"):
+                # only trust decimal / scientific numbers as a parity value ("29/29 tests" is a count)
+                out["value"] = num(v) if re.search(r"\d\.\d|\de-?\d", v) else None
+                out["value_text"] = v[:160]
+                if "❌" in row[1]:
+                    out["verdict"] = "partial"
+                elif "✅" in row[1] or re.search(r"all (gates|outputs|tests)? ?pass", v, re.I):
+                    out["verdict"] = "pass"
+            elif k.startswith("audit class"):
+                out["audit_class"] = v[:1].upper() if v else None
+            elif k.startswith("upstream r package"):
+                m = re.search(r"v?`?(\d+[\w.\-]*)`?\s*$", v)
+                if m:
+                    out["upstream_version"] = m.group(1)
+        break
+    return out
+
+
+def readme_citation(readme: str | None) -> str | None:
+    if not readme:
+        return None
+    m = re.search(r"^#{2,3}\s*(?:citation|citing|cite|how to cite)[^\n]*\n(.*?)(?=^#{1,3}\s|\Z)", readme, re.I | re.M | re.S)
+    if not m:
+        return None
+    for line in m.group(1).splitlines():
+        t = strip_md(line.strip().lstrip(">").strip())
+        t = re.sub(r"^(if you use|please cite|cite)[^:]*:\s*", "", t, flags=re.I)
+        if len(t) > 25 and re.search(r"(19|20)\d{2}", t) and not t.lower().startswith(("```", "@", "and acknowledge")):
+            return t[:240]
+    return None
+
+
 # --------------------------------------------------------------------------- #
 # pyproject / description helpers                                             #
 # --------------------------------------------------------------------------- #
@@ -801,6 +861,33 @@ def build_record(gh: GitHub, repo: dict, overrides: dict, verbose: bool = False)
         if isinstance(o, dict):
             record["parity"]["metric"] = o.get("metric")
             record["parity"]["threshold"] = o.get("threshold")
+    if has("RECONSTRUCTION_REPORT.md"):
+        rep = parse_report(gh.file_text(name, "RECONSTRUCTION_REPORT.md", ref) or "")
+        if rep:
+            detail.append("report")
+            par = record["parity"]
+            par["algorithm_class"] = par["algorithm_class"] or rep.get("algorithm_class")
+            if rep.get("threshold") is not None:
+                par["threshold"] = rep["threshold"]
+            if rep.get("value") is None and rep.get("verdict"):
+                par["status"] = rep["verdict"]
+                par["value_text"] = rep.get("value_text")
+            if rep.get("value") is not None:
+                par["value"] = rep["value"]
+                thr = par.get("threshold")
+                lower_is_better = bool(re.search(r"abs|diff|err|rmse|tol|dist|mae|mse", str(par.get("metric") or rep.get("value_text") or ""), re.I))
+                ok = thr is None or (rep["value"] <= thr if lower_is_better else rep["value"] >= thr)
+                par["status"] = rep.get("verdict") or ("pass" if ok else "partial")
+                if rep.get("value_text"):
+                    par["value_text"] = rep["value_text"]
+            if rep.get("audit_class"):
+                par["audit_class"] = rep["audit_class"]
+            if rep.get("upstream_version") and not record["upstream"].get("version"):
+                record["upstream"]["version"] = rep["upstream_version"]
+    if ov.get("parity_status"):
+        record["parity"]["status"] = ov["parity_status"]
+    if not record["upstream"].get("citation"):
+        record["upstream"]["citation"] = readme_citation(readme)
     if not functions:
         record["warnings"].append("no Python<->R mapping table found in README and no AUDIT.md")
     return record
@@ -810,61 +897,97 @@ def build_record(gh: GitHub, repo: dict, overrides: dict, verbose: bool = False)
 # Scaffold: draft port.yaml for repos that lack one                            #
 # --------------------------------------------------------------------------- #
 
+def _y(v) -> str:
+    """YAML scalar: quoted string, number, bool, or null."""
+    if v is None or v == "":
+        return "null"
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if isinstance(v, (int, float)):
+        return repr(v)
+    return json.dumps(str(v), ensure_ascii=False)
+
+
 def scaffold_yaml(rec: dict) -> str:
+    """Draft port.yaml for a repo that has none. Unknowns are `null` with a TODO comment,
+    never literal 'TODO' strings (those would be rendered on the website)."""
     up = rec.get("upstream") or {}
-    up_version = json.dumps(up.get("version")) if up.get("version") else '"TODO"'
-    lines = [
-        "# Draft generated by omicverse-org-home/scripts/build_ports.py — review every line.",
-        "# Spec: https://github.com/omicverse/omicverse-org-home/blob/main/docs/PORT_MANIFEST.md",
+    par = rec.get("parity") or {}
+    om = rec.get("omicverse") or {}
+    art = rec.get("artifacts") or {}
+    nbs = art.get("notebooks") or []
+    nb_compare = next((f"examples/{n['name']}" for n in nbs if "compare" in n["name"].lower()), None)
+    nb_fn = next((f"examples/{n['name']}" for n in nbs if "function" in n["name"].lower()), None)
+    gate_status = par.get("status") if par.get("status") in ("pass", "partial") else "unverified"
+    L = [
+        "# port.yaml — machine-readable manifest read by omicverse.org/ports",
+        "# Draft generated by omicverse-org-home/scripts/build_ports.py from this repo's README / AUDIT.md /",
+        "# manifest.yaml / pyproject.toml. Lines marked TODO were not recoverable automatically — please",
+        "# review every entry. Spec: https://github.com/omicverse/omicverse-org-home/blob/main/docs/PORT_MANIFEST.md",
         "schema: omicverse-port/v1",
-        f"package: {rec['repo']}",
-        f"pypi: {rec.get('pypi') or 'TODO'}",
-        f"import_name: {rec.get('import_name') or 'TODO'}",
+        f"package: {_y(rec['repo'])}",
+        f"pypi: {_y(rec.get('pypi'))}" + ("" if rec.get("pypi") else "   # TODO: PyPI distribution name"),
+        f"import_name: {_y(rec.get('import_name'))}" + ("" if rec.get("import_name") else "   # TODO: top-level import name"),
         f"language: {rec.get('lang', 'python')}",
-        f"domain: {rec.get('domain') or 'other'}   # {', '.join(sorted(DOMAINS))}",
+        f"domain: {rec.get('domain') or 'other'}   # single-cell | spatial | trajectory | bulk | proteomics | metabolomics | genetics | immune | microbiome | hic | stats | visualization | other",
         "upstream:",
-        f"  name: {up.get('name') or 'TODO'}",
-        f"  source: {up.get('source') or 'TODO'}   # CRAN | Bioconductor | GitHub | other",
-        f"  version: {up_version}",
-        f"  url: {up.get('url') or 'TODO'}",
-        f"  license: {up.get('license') or rec.get('license') or 'TODO'}",
-        f"  citation: {json.dumps(up.get('citation')) if up.get('citation') else 'TODO'}",
+        f"  name: {_y(up.get('name'))}",
+        f"  source: {_y(up.get('source'))}   # CRAN | Bioconductor | GitHub | other",
+        f"  version: {_y(up.get('version'))}" + ("" if up.get("version") else "   # TODO: upstream version the parity test was run against"),
+        f"  url: {_y(up.get('url'))}",
+        "  license: null   # TODO: upstream R package license (GPL-3, MIT, Artistic-2.0, …)",
+        f"  citation: {_y(up.get('citation'))}" + ("" if up.get("citation") else "   # TODO: \"First author et al. (Year) Journal\""),
+    ]
+    if up.get("language") and up["language"] != "R":
+        L.append(f"  language: {_y(up['language'])}")
+    L += [
         "omicverse:",
-        f"  module: {(rec.get('omicverse') or {}).get('module') or 'null'}   # e.g. ov.single.pyDoubletFinder",
+        f"  module: {_y(om.get('module'))}" + ("" if om.get("module") else "   # TODO: e.g. ov.single.pyDoubletFinder, or leave null"),
         "  since: null",
         "parity:",
-        f"  status: {'pass' if (rec.get('parity') or {}).get('status') == 'gated' else 'unverified'}   # pass | partial | unverified",
-        f"  algorithm_class: {(rec.get('parity') or {}).get('algorithm_class') or 'TODO'}   # see omicverse-rebuildr/PARITY_TAXONOMY.md",
-        f"  metric: {(rec.get('parity') or {}).get('metric') or 'TODO'}",
-        f"  threshold: {(rec.get('parity') or {}).get('threshold') if (rec.get('parity') or {}).get('threshold') is not None else 'TODO'}",
-        "  value: TODO",
-        f"  fixture: {json.dumps((rec.get('parity') or {}).get('fixture').strip()) if (rec.get('parity') or {}).get('fixture') else 'TODO'}",
-        f"  test: {(rec.get('parity') or {}).get('test') or 'tests/test_exact_match.py'}",
+        f"  status: {gate_status}   # pass | partial | unverified",
+        f"  algorithm_class: {_y(par.get('algorithm_class'))}" + ("" if par.get("algorithm_class") else "   # TODO: see omicverse-rebuildr/PARITY_TAXONOMY.md"),
+        f"  metric: {_y(par.get('metric'))}" + ("" if par.get("metric") else "   # TODO: pearson | spearman | ari | jaccard | max_abs_diff | …"),
+        f"  threshold: {_y(par.get('threshold'))}",
+        f"  value: {_y(par.get('value'))}" + ("" if par.get("value") is not None else "   # TODO: measured value on the canonical fixture"),
+        f"  fixture: {_y(par.get('fixture').strip() if isinstance(par.get('fixture'), str) else par.get('fixture'))}",
+        f"  test: {_y(par.get('test'))}",
         "artifacts:",
-        f"  audit: {'AUDIT.md' if (rec.get('artifacts') or {}).get('audit') else 'null'}",
-        f"  report: {'RECONSTRUCTION_REPORT.md' if (rec.get('artifacts') or {}).get('report') else 'null'}",
-        "  compare_notebook: " + next((f"examples/{n['name']}" for n in (rec.get('artifacts') or {}).get('notebooks', []) if 'compare' in n['name'].lower()), "null"),
-        "  function_notebook: " + next((f"examples/{n['name']}" for n in (rec.get('artifacts') or {}).get('notebooks', []) if 'function' in n['name'].lower()), "null"),
-        "functions:",
+        f"  audit: {_y('AUDIT.md' if art.get('audit') else None)}",
+        f"  report: {_y('RECONSTRUCTION_REPORT.md' if art.get('report') else None)}",
+        f"  compare_notebook: {_y(nb_compare)}",
+        f"  function_notebook: {_y(nb_fn)}",
     ]
     fns = rec.get("functions") or []
     if not fns:
-        lines.append("  - r: TODO            # upstream R function name, exactly as exported")
-        lines.append("    py: TODO           # dotted Python path, e.g. pylimma.lm_fit")
-        lines.append("    status: ported     # ported | partial | planned | skipped")
-        lines.append("    parity: exact      # exact | approx | behavioural | none")
-        lines.append("    note: null")
-    for f in fns:
-        lines.append(f"  - r: {json.dumps(f.get('r')) if f.get('r') is not None else 'null'}")
-        lines.append(f"    py: {json.dumps(f.get('py')) if f.get('py') is not None else 'null'}")
-        if f.get("aliases"):
-            lines.append(f"    aliases: {json.dumps(f['aliases'])}")
-        lines.append(f"    status: {f.get('status') or 'ported'}")
-        if f.get("parity"):
-            lines.append(f"    parity: {f['parity']}")
-        if f.get("note"):
-            lines.append(f"    note: {json.dumps(f['note'])}")
-    return "\n".join(lines) + "\n"
+        L += [
+            "functions: []   # TODO: one entry per upstream R function, e.g.",
+            "#  - r: lmFit                    # R name exactly as exported",
+            "#    py: pylimma.lm_fit          # dotted Python path",
+            "#    status: ported              # ported | partial | planned | skipped",
+            "#    parity: exact               # exact | approx | behavioural | none",
+            "#    note: null",
+        ]
+    else:
+        api_only = rec.get("mapping_quality") == "api-only"
+        L.append("functions:" + ("   # TODO: public Python API only — fill in the `r:` counterpart (or status: skipped) for each" if api_only else ""))
+        for f in fns:
+            L.append(f"  - r: {_y(f.get('r'))}" + ("   # TODO" if f.get("r") is None else ""))
+            L.append(f"    py: {_y(f.get('py'))}")
+            if f.get("aliases"):
+                L.append(f"    aliases: {json.dumps(f['aliases'], ensure_ascii=False)}")
+            L.append(f"    status: {f.get('status') or 'ported'}")
+            if f.get("parity"):
+                L.append(f"    parity: {f['parity']}")
+            if f.get("note"):
+                L.append(f"    note: {_y(f['note'])}")
+    classes = rec.get("classes") or []
+    if classes:
+        L.append("classes:")
+        for c in classes:
+            L.append(f"  - r: {_y(c.get('r'))}")
+            L.append(f"    py: {_y(c.get('py'))}")
+    return "\n".join(L) + "\n"
 
 
 # --------------------------------------------------------------------------- #

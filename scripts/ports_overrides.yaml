@@ -5,11 +5,12 @@
 #                                metabolomics, genetics, immune, microbiome, hic, stats, visualization, other
 # repos.<repo>.upstream.*        overrides inferred upstream fields (name, source, url, language, citation)
 # repos.<repo>.omicverse_module  where the port surfaces inside omicverse (e.g. ov.single.pyDoubletFinder)
+# repos.<repo>.parity_status    pass | partial | unverified — when the report's verdict cannot be parsed
 repos:
   py-alakazam:      {domain: immune,       upstream: {name: alakazam, source: CRAN, url: https://cran.r-project.org/package=alakazam}}
   py-Augur:         {domain: single-cell,  upstream: {name: Augur, source: GitHub, url: https://github.com/neurorestore/Augur}}
   py-cca:           {domain: single-cell,  upstream: {name: "Seurat::RunCCA", source: GitHub, url: https://github.com/satijalab/seurat}}
-  py-cellAdmix:     {domain: spatial,      upstream: {name: cellAdmix, source: GitHub, url: https://github.com/kharchenkolab/cellAdmix}}
+  py-cellAdmix:     {domain: spatial,      upstream: {name: cellAdmix, source: GitHub, url: https://github.com/kharchenkolab/cellAdmix}, parity_status: pass}
   py-CellCall:      {domain: single-cell,  upstream: {name: cellcall, source: GitHub, url: https://github.com/ShellyCoder/cellcall}}
   py-coloc:         {domain: genetics,     upstream: {name: coloc, source: CRAN, url: https://cran.r-project.org/package=coloc}}
   py-condiments:    {domain: trajectory,   upstream: {name: condiments, source: Bioconductor, url: https://bioconductor.org/packages/condiments}}
