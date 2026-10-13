@@ -1,0 +1,44 @@
+name: Sync R-port catalog
+
+on:
+  schedule:
+    - cron: "17 3 * * *"          # daily, 03:17 UTC
+  workflow_dispatch:
+  repository_dispatch:
+    types: [port-manifest-updated]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-ports
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install pyyaml
+
+      - name: Build src/assets/ports.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/build_ports.py --out src/assets/ports.json
+
+      - name: Commit when changed
+        run: |
+          if git diff --quiet -- src/assets/ports.json; then
+            echo "ports.json unchanged"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/assets/ports.json
+          git commit -m "chore(ports): refresh R-port catalog"
+          git push

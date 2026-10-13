@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Catalog of the R packages rebuilt in Python and Rust by OmicVerse: upstream package, domain, parity status, and the one-to-one map from every R function to its Python counterpart." />
+  <title>R ports — OmicVerse</title>
+  <link rel="icon" type="image/png" href="assets/omicos-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=ports-1" />
+  <script src="script.js?v=ports-1" defer></script>
+  <script src="ports.js?v=ports-1" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="assets/omicos-logo.png" alt="" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a aria-current="page" href="packages.html">Packages</a>
+      <a href="https://omicverse.readthedocs.io/">Learn</a>
+      <a href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a href="join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main data-ports-root>
+    <section class="page-hero page-width">
+      <p class="overline"><a href="packages.html">Packages</a> / R ports</p>
+      <h1>Every R package we rebuilt, function by function.</h1>
+      <p class="lede ports-lede">Each row is one upstream R package and its Python or Rust re-implementation. Open a row to see which R function maps to which Python call, what was skipped, and how parity against the R reference was checked.</p>
+      <div class="ports-stats" data-ports-stats aria-live="polite">
+        <div class="stat"><span class="stat-num" data-ports-stat="packages">—</span><span class="stat-label">packages</span></div>
+        <div class="stat"><span class="stat-num" data-ports-stat="functions_total">—</span><span class="stat-label">function mappings</span></div>
+        <div class="stat"><span class="stat-num" data-ports-stat="ported_pct">—</span><span class="stat-label">ported</span></div>
+        <div class="stat"><span class="stat-num" data-ports-stat="with_parity_gate">—</span><span class="stat-label">with a parity gate</span></div>
+        <div class="stat"><span class="stat-num" data-ports-stat="with_port_yaml">—</span><span class="stat-label">curated port.yaml</span></div>
+      </div>
+    </section>
+
+    <section class="page-width wide ports-section">
+      <div class="ports-toolbar">
+        <label class="ports-search">
+          <span class="visually-hidden">Search</span>
+          <input type="search" data-ports-search placeholder="Search packages, upstream names, R or Python functions…" autocomplete="off" spellcheck="false" />
+        </label>
+        <div class="ports-toggle-group" role="group" aria-label="Language">
+          <button class="filter active" type="button" data-ports-lang="all">All</button>
+          <button class="filter" type="button" data-ports-lang="python">Python</button>
+          <button class="filter" type="button" data-ports-lang="rust">Rust</button>
+        </div>
+        <div class="ports-toggle-group" role="group" aria-label="Metadata">
+          <button class="filter active" type="button" data-ports-meta="all">Any metadata</button>
+          <button class="filter" type="button" data-ports-meta="gate">Parity gate</button>
+          <button class="filter" type="button" data-ports-meta="curated">port.yaml</button>
+        </div>
+      </div>
+      <div class="filter-group ports-domains" role="group" aria-label="Filter by domain" data-ports-domains>
+        <button class="filter active" type="button" data-ports-domain="all">All domains</button>
+      </div>
+
+      <div class="ports-table-wrap">
+        <table class="ports-table" data-ports-table>
+          <thead>
+            <tr>
+              <th scope="col"><button type="button" data-sort="name" aria-sort="ascending">Package</button></th>
+              <th scope="col"><button type="button" data-sort="upstream">Upstream R</button></th>
+              <th scope="col" class="col-domain"><button type="button" data-sort="domain">Domain</button></th>
+              <th scope="col" class="col-fn"><button type="button" data-sort="functions">Functions</button></th>
+              <th scope="col" class="col-parity">Parity</th>
+              <th scope="col" class="col-updated"><button type="button" data-sort="updated">Updated</button></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="6"><span class="skeleton-text" style="display:inline-block; width:100%; height:18px;"></span></td></tr>
+            <tr><td colspan="6"><span class="skeleton-text" style="display:inline-block; width:92%; height:18px;"></span></td></tr>
+            <tr><td colspan="6"><span class="skeleton-text" style="display:inline-block; width:96%; height:18px;"></span></td></tr>
+          </tbody>
+        </table>
+        <p class="ports-empty" data-ports-empty hidden>No package matches. Clear the search or filters.</p>
+      </div>
+
+      <p class="section-note ports-footnote" data-ports-footnote>
+        Catalog generated from <a href="https://github.com/omicverse" target="_blank" rel="noopener">github.com/omicverse</a> by <code>scripts/build_ports.py</code>.
+        Rows marked <span class="badge badge-auto">auto</span> were extracted from each repo's README / AUDIT.md; ship a <a href="https://github.com/omicverse/omicverse-org-home/blob/main/docs/PORT_MANIFEST.md" target="_blank" rel="noopener"><code>port.yaml</code></a> in the repo to curate the row.
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer page-width">
+    <span class="footer-brand">
+      <img src="assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
+      OmicVerse
+    </span>
+    <span class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="packages.html">Packages</a>
+      <a href="https://omicverse.readthedocs.io/">Learn</a>
+      <a href="people.html">People</a>
+      <a href="blog.html">Blog</a>
+      <a href="events.html">Events</a>
+      <a href="about.html">About</a>
+      <a href="join.html">Join</a>
+    </span>
+  </footer>
+</body>
+</html>
