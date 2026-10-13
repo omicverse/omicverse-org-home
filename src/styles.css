@@ -1416,7 +1416,8 @@ section.band.band-cta .btn-ghost:hover { border-color: #fff; background: rgba(25
   gap: 48px;
   align-items: center;
 }
-.split-copy h2 { margin-bottom: 12px; }
+.split > * { min-width: 0; }
+.split-copy h2 { margin-bottom: 12px; overflow-wrap: anywhere; }
 .split-copy p { max-width: 520px; color: var(--ink-soft); font-size: 15px; }
 .split-art img { width: 100%; display: block; }
 .band-tint .split { margin-bottom: 28px; }
@@ -1446,7 +1447,8 @@ section.band.band-cta .btn-ghost:hover { border-color: #fff; background: rgba(25
   border-radius: 10px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 }
-.band-dark .qs-terminal pre { font-size: 12.5px; line-height: 1.8; padding: 20px 22px; }
+.band-dark .qs-terminal { min-width: 0; max-width: 100%; }
+.band-dark .qs-terminal pre { font-size: 12.5px; line-height: 1.8; padding: 20px 22px; overflow-x: auto; }
 
 /* Blog cards */
 .post-grid {
