@@ -1032,6 +1032,7 @@ section.band {
   .package-list .t-logo img[data-repo-logo] {
     filter: invert(1) hue-rotate(180deg);
   }
+}
 
 /* ─── R-port catalog (ports.html) ───────────────── */
 .visually-hidden {
