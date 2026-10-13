@@ -468,15 +468,73 @@
     }
   }
 
-  // ─── Port sticker wall (index) ─────────────────────────────────────────
+  // ─── Port sticker honeycomb (index) ─────────────────────────────────────
+  // Pointy-top hexagons: the sticker's hex occupies 78.9% of the cell width and
+  // 91.4% of its height, so neighbours interlock when the horizontal pitch is
+  // ~0.80 cell and the vertical pitch ~0.70 cell, with odd rows shifted half a pitch.
+  const HEX_W = 0.789, HEX_H = 0.914;
+  let wallItems = null;
+  let wallResizeBound = false;
+
+  function honeycombLayout(count, width) {
+    const cell = width < 480 ? 48 : width < 900 ? 56 : 64;
+    const gap = 3;
+    const dx = cell * HEX_W + gap;
+    const dy = cell * HEX_H * 0.75 + gap * 0.87;
+    const cols = Math.max(3, Math.floor((width - cell * (1 - HEX_W)) / dx));
+    const rows = [];
+    let left = count, r = 0;
+    while (left > 0) {
+      const cap = r % 2 === 0 ? cols : cols - 1;
+      const take = Math.min(cap, left);
+      rows.push(take); left -= take; r += 1;
+    }
+    const positions = [];
+    let maxW = 0;
+    rows.forEach((n, row) => {
+      const off = row % 2 === 0 ? 0 : dx / 2;
+      for (let c = 0; c < n; c += 1) positions.push({ x: off + c * dx, y: row * dy });
+      maxW = Math.max(maxW, off + (n - 1) * dx + cell);
+    });
+    const height = rows.length ? (rows.length - 1) * dy + cell : 0;
+    return { positions, cell, width: maxW, height };
+  }
+
+  function drawHoneycomb(wall) {
+    const items = wallItems || [];
+    const width = wall.clientWidth || 960;
+    const lay = honeycombLayout(items.length, width);
+    const offset = Math.max(0, (width - lay.width) / 2);
+    wall.style.height = `${lay.height.toFixed(1)}px`;
+    wall.innerHTML = items.map((p, i) => {
+      const pos = lay.positions[i];
+      return `<a href="ports.html#${esc(p.repo)}" title="${esc(p.repo)} · ${esc((p.upstream || {}).name || "")}" aria-label="${esc(p.repo)}" style="left:${(offset + pos.x).toFixed(1)}px;top:${pos.y.toFixed(1)}px;width:${lay.cell}px;height:${lay.cell}px"><img src="${esc(p.logo_url)}" alt="" loading="lazy" data-repo-logo /></a>`;
+    }).join("");
+    wall.querySelectorAll("img").forEach((img) => {
+      img.addEventListener("error", () => {
+        // drop the sticker and re-flow once the burst of errors has settled
+        const src = img.getAttribute("src");
+        wallItems = wallItems.filter((p) => p.logo_url !== src);
+        img.closest("a").style.visibility = "hidden";
+        window.clearTimeout(drawHoneycomb._t);
+        drawHoneycomb._t = window.setTimeout(() => drawHoneycomb(wall), 400);
+      });
+    });
+  }
+
   function renderLogoWall(data) {
     const wall = document.querySelector("[data-ports-logos]");
     if (!wall) return;
-    const items = (data.packages || []).filter((p) => p.logo_url);
-    wall.innerHTML = items.map((p) => `<a href="ports.html#${esc(p.repo)}" title="${esc(p.repo)} · ${esc((p.upstream || {}).name || "")}" aria-label="${esc(p.repo)}"><img src="${esc(p.logo_url)}" alt="" loading="lazy" data-repo-logo /></a>`).join("");
-    wall.querySelectorAll("img").forEach((img) => {
-      img.addEventListener("error", () => { const a = img.closest("a"); if (a) a.remove(); });
-    });
+    wallItems = (data.packages || []).filter((p) => p.logo_url);
+    drawHoneycomb(wall);
+    if (!wallResizeBound) {
+      wallResizeBound = true;
+      let t = null;
+      window.addEventListener("resize", () => {
+        window.clearTimeout(t);
+        t = window.setTimeout(() => drawHoneycomb(wall), 120);
+      });
+    }
   }
 
   async function init() {
