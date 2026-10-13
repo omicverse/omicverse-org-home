@@ -93,6 +93,50 @@ ASSETS = {
         "a grid of dots; from the container one single arrow leads right to a small bar chart and a small "
         "scatter plot. A few sage-green fills for accent. Generous empty margins all round",
     ),
+    "hero-tree": (
+        "assets/art/hero-tree.png", "1024x1536", 960,
+        "a tall, intricate tree as a scientific editorial illustration: the trunk is a DNA double helix rising from "
+        "roots drawn as small square grids of dots; many branches spread upward and outward, and each branch ends "
+        "in a different object of biological data — a loose cluster of round cells, a rounded tissue slice tiled "
+        "with hexagons, a small bar chart, a ball-and-stick molecule, a petri dish with a few microbes, a chromatin "
+        "strand with round beads, a conical flask, a small network of connected nodes, a tiny scatter plot; a few "
+        "simple leaves filled sage green along the branches; the tree fills most of the height of a portrait canvas "
+        "with generous empty margins on every side; richly detailed but with the same calm flat marker style",
+    ),
+    # Journal-cover style hero candidates (opaque cream paper, portrait). Theme:
+    # "biology infrastructure in the AI era — the OmicVerse open-source community".
+    "cover-1": (
+        "assets/art/cover-1.png", "1024x1536", 1024,
+        "COVER: a wide landscape in cross-section. Below ground, a dense root system drawn as branching pipes and "
+        "cables carrying tiny grids of dots (data) and small gears; above ground, the roots feed a field where "
+        "oversized cells, tissue blobs, DNA helices and molecules grow like crops; a few small friendly robotic "
+        "arms and tiny human figures tend the field together; in the sky a drifting cloud of hundreds of tiny "
+        "hand-drawn microbes and cells thins out toward the top-left, leaving open cream paper",
+    ),
+    "cover-2": (
+        "assets/art/cover-2.png", "1024x1536", 1024,
+        "COVER: a large old-fashioned brass microscope-telescope hybrid instrument on a rocky ledge at the bottom "
+        "right, its eyepiece turned toward the sky; from its lens a beam opens upward into a sky full of hundreds "
+        "of tiny hand-drawn cells, microbes, molecules and small neural-network graphs that drift and thin out "
+        "toward the top-left; at the instrument's base several small human figures and one small robot work "
+        "together over notebooks; grass and reeds in ink hatching at the bottom; open cream paper at the top-left",
+    ),
+    "cover-3": (
+        "assets/art/cover-3.png", "1024x1536", 1024,
+        "COVER: a tall glasshouse (greenhouse) drawn in fine ink at the bottom right, inside which DNA double "
+        "helices grow upward like vines and bloom into cells, tissue slices and molecules at their tips; small "
+        "robots water the vines while small human figures take notes; a river of tiny dots flows into the "
+        "glasshouse from the left like irrigation; above, released cells drift up into a cloud that thins toward "
+        "the top-left, leaving open cream paper",
+    ),
+    "cover-4": (
+        "assets/art/cover-4.png", "1024x1536", 1024,
+        "COVER: an enormous octopus-like organism made of intertwined DNA strands rests on an ink-hatched shore "
+        "at the bottom right, each arm holding a different instrument: a pipette, a tiny bar chart, a petri "
+        "dish, a molecule, a small circuit board; from its arms a stream of hundreds of tiny hand-drawn cells and "
+        "microbes rises and scatters across the sky toward the top-left, leaving open cream paper; small human "
+        "figures and one small robot stand on the shore looking up",
+    ),
     "ports": (
         "assets/art/ports.png", "1536x1024", 900,
         "a horizontal composition: on the left a closed loop of DNA with black outline and off-white fill; a single "
@@ -133,15 +177,26 @@ def _post(url: str, key: str, data: bytes, content_type: str) -> dict:
     raise RuntimeError("unreachable")
 
 
-def request_image(model: str, prompt: str, quality: str, key: str, style_ref: Path | None, size: str = "1024x1024") -> bytes:
+COVER_STYLE = (
+    "A richly detailed scientific journal cover illustration drawn in pen and ink: fine confident linework, "
+    "dense cross-hatching and stippling for shading, hundreds of small hand-drawn organisms and objects, the "
+    "look of a classic hand-inked magazine cover. Colour: mostly black ink on warm cream paper (#FBFAF6), with "
+    "restrained muted sage-green (#858F69) and a little ochre as the only accents. The composition is anchored "
+    "at the bottom and right; the top-left third stays almost empty cream paper so that text can be placed there. "
+    "Absolutely no text, letters, numbers, logos, titles or watermarks anywhere. No photo-realism, no 3D "
+    "render, no glossy shading, no vignette, no frame."
+)
+
+
+def request_image(model: str, prompt: str, quality: str, key: str, style_ref: Path | None, size: str = "1024x1024", background: str = "transparent") -> bytes:
     if style_ref:
         fields = {"model": model, "prompt": prompt, "n": "1", "size": size,
-                  "background": "transparent", "output_format": "png", "quality": quality}
+                  "background": background, "output_format": "png", "quality": quality}
         body, boundary = _multipart(fields, [("image[]", style_ref)])
         data = _post("https://api.openai.com/v1/images/edits", key, body, f"multipart/form-data; boundary={boundary}")
     else:
         body = json.dumps({"model": model, "prompt": prompt, "n": 1, "size": size,
-                           "background": "transparent", "output_format": "png", "quality": quality}).encode()
+                           "background": background, "output_format": "png", "quality": quality}).encode()
         data = _post("https://api.openai.com/v1/images/generations", key, body, "application/json")
     return base64.b64decode(data["data"][0]["b64_json"])
 
@@ -204,15 +259,28 @@ def main() -> int:
         args.raw_dir.mkdir(parents=True, exist_ok=True)
     for k in keys:
         rel, size, edge, subject = ASSETS[k]
-        prompt = (("Use the attached image for STYLE ONLY (line weight, flat fills, palette, restraint); do not copy "
-                   "any of its objects. ") if args.style_ref else "") + f"Draw {subject}. " + STYLE
+        is_cover = subject.startswith("COVER:")
         t0 = time.time()
-        png = request_image(args.model, prompt, args.quality, key, args.style_ref, size)
-        if args.raw_dir:
-            (args.raw_dir / f"{k}.png").write_bytes(png)
-        im = postprocess(png, edge, square=(size == "1024x1024"))
+        if is_cover:
+            prompt = f"Draw {subject[6:].strip()}. " + COVER_STYLE
+            png = request_image(args.model, prompt, args.quality, key, None, size, background="opaque")
+            if args.raw_dir:
+                (args.raw_dir / f"{k}.png").write_bytes(png)
+            im = Image.open(io.BytesIO(png)).convert("RGB")
+            im = im.resize((edge, round(im.height * edge / im.width)), Image.LANCZOS)
+        else:
+            prompt = (("Use the attached image for STYLE ONLY (line weight, flat fills, palette, restraint); do not copy "
+                       "any of its objects. ") if args.style_ref else "") + f"Draw {subject}. " + STYLE
+            png = request_image(args.model, prompt, args.quality, key, args.style_ref, size)
+            if args.raw_dir:
+                (args.raw_dir / f"{k}.png").write_bytes(png)
+            im = postprocess(png, edge, square=(size == "1024x1024"))
         out = ROOT / "src" / rel
         out.parent.mkdir(parents=True, exist_ok=True)
+        if im.mode == "RGB":
+            im.save(out, format="JPEG", quality=88, optimize=True, progressive=True) if out.suffix == ".jpg" else im.save(out, optimize=True)
+            print(f"[art] {k:<14} {im.width}x{im.height} {out.stat().st_size // 1024:>4} KB  opaque  {time.time() - t0:.0f}s", file=sys.stderr)
+            continue
         im.save(out, optimize=True)
         transparent = sum(1 for a in im.getchannel("A").getdata() if a == 0) / (im.width * im.height)
         print(f"[art] {k:<14} {im.width}x{im.height} {out.stat().st_size // 1024:>4} KB  transparent={transparent:.0%}  {time.time() - t0:.0f}s", file=sys.stderr)

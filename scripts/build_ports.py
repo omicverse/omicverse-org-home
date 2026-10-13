@@ -991,6 +991,90 @@ def scaffold_yaml(rec: dict) -> str:
 
 
 # --------------------------------------------------------------------------- #
+# Catalog of every public repo (packages.html)                                #
+# --------------------------------------------------------------------------- #
+
+CATALOG_EXCLUDE = {".github", "omicverse-org-home", "omicverse-pages"}
+CATEGORIES = {
+    "core": "Core",
+    "data": "Data structures",
+    "port": "Method ports",
+    "agent": "Agents & skills",
+    "benchmark": "Benchmarks",
+    "learn": "Tutorials",
+    "tools": "Tools",
+}
+
+
+def default_category(name: str, lang: str | None) -> str:
+    n = name.lower()
+    if n == "omicverse":
+        return "core"
+    if re.match(r"^(py|rust)-", n):
+        return "port"
+    if "bench" in n or "reproducib" in n or n.endswith("-e2e"):
+        return "benchmark"
+    if "tutorial" in n:
+        return "learn"
+    if any(k in n for k in ("skill", "claw", "agent", "luria", "dsh-", "tavotto")):
+        return "agent"
+    if any(k in n for k in ("anndata", "mudata")):
+        return "data"
+    return "tools"
+
+
+def build_catalog(gh: GitHub, repos: list[dict], ports: list[dict], overrides: dict) -> list[dict]:
+    by_port = {p["repo"]: p for p in ports}
+    cat_over = overrides.get("catalog", {}) or {}
+    out: list[dict] = []
+    for r in sorted(repos, key=lambda x: x["name"].lower()):
+        name = r["name"]
+        if name in CATALOG_EXCLUDE or r.get("archived") or r.get("fork"):
+            continue
+        ov = cat_over.get(name, {}) or {}
+        port = by_port.get(name)
+        lang_gh = r.get("language")
+        lang = "rust" if (name.lower().startswith("rust-") or lang_gh == "Rust") else ("python" if lang_gh in ("Python", "Jupyter Notebook", None) and not name.lower().startswith("rust-") else "other")
+        if port:
+            lang = port["lang"]
+        category = ov.get("category") or default_category(name, lang_gh)
+        logo_url = port["logo_url"] if port else None
+        if not port and ov.get("logo", True):
+            tree = gh.tree(name, r.get("default_branch") or "main")
+            for cand in ("logo/logo.svg", "logo/logo.png"):
+                if cand in tree:
+                    logo_url = gh_raw(r, cand)
+                    break
+        entry = {
+            "name": name,
+            "full_name": r["full_name"],
+            "html_url": r["html_url"],
+            "description": ov.get("description") or (port["description"] if port else r.get("description")) or "",
+            "category": category,
+            "lang": ov.get("lang") or lang,
+            "language": lang_gh,
+            "stars": r.get("stargazers_count", 0),
+            "pushed_at": r.get("pushed_at"),
+            "license": ov.get("license") or (port.get("license") if port else None) or ((r.get("license") or {}).get("spdx_id") if isinstance(r.get("license"), dict) else None),
+            "docs": ov.get("docs") or (r.get("homepage") or None),
+            "pypi": ov.get("pypi") or (port.get("pypi") if port else None),
+            "version": ov.get("version") or (port.get("version") if port else None),
+            "topics": r.get("topics") or [],
+            "logo_url": logo_url,
+            "domain": (port["domain"] if port else ov.get("domain")),
+            "upstream": ({"name": port["upstream"].get("name"), "source": port["upstream"].get("source"), "url": port["upstream"].get("url")} if port else None),
+            "parity_status": (port["parity"]["status"] if port else None),
+            "functions_total": (port["coverage"]["total"] if port else None),
+            "catalog_url": (f"ports.html#{name}" if port else None),
+            "paper": ov.get("paper"),
+        }
+        if (entry["license"] or "").upper() in ("NOASSERTION", "NONE", "OTHER"):
+            entry["license"] = None
+        out.append(entry)
+    return out
+
+
+# --------------------------------------------------------------------------- #
 # main                                                                        #
 # --------------------------------------------------------------------------- #
 
@@ -1021,6 +1105,8 @@ def main() -> int:
     global ORG
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", type=Path, default=ROOT / "src" / "assets" / "ports.json")
+    ap.add_argument("--catalog-out", type=Path, default=ROOT / "src" / "assets" / "catalog.json",
+                    help="catalog of every public repo for packages.html (pass '' to skip)")
     ap.add_argument("--org", default=ORG)
     ap.add_argument("--cache", type=Path, default=None, help="directory for cached API responses")
     ap.add_argument("--only", default=None, help="comma-separated repo names to restrict to")
@@ -1031,9 +1117,10 @@ def main() -> int:
     ORG = args.org
 
     overrides: dict = {}
+    overrides_full: dict = {}
     if args.overrides and args.overrides.exists():
-        overrides = yaml.safe_load(args.overrides.read_text()) or {}
-        overrides = overrides.get("repos", overrides)
+        overrides_full = yaml.safe_load(args.overrides.read_text()) or {}
+        overrides = overrides_full.get("repos", overrides_full)
 
     gh = GitHub(resolve_token(), args.cache, args.verbose)
     if not gh.token:
@@ -1071,6 +1158,18 @@ def main() -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(out, ensure_ascii=False, indent=1) + "\n")
     print(f"[ports] wrote {args.out} ({args.out.stat().st_size // 1024} KB, {gh.calls} API calls)", file=sys.stderr)
+
+    if args.catalog_out and str(args.catalog_out) and not args.only:
+        catalog = build_catalog(gh, repos, records, overrides_full)
+        cat_doc = {
+            "schema": "omicverse-catalog/v1",
+            "generated_at": out["generated_at"],
+            "categories": CATEGORIES,
+            "domains": DOMAINS,
+            "packages": catalog,
+        }
+        args.catalog_out.write_text(json.dumps(cat_doc, ensure_ascii=False, indent=1) + "\n")
+        print(f"[ports] wrote {args.catalog_out} ({len(catalog)} repos, {args.catalog_out.stat().st_size // 1024} KB)", file=sys.stderr)
 
     if args.scaffold:
         args.scaffold.mkdir(parents=True, exist_ok=True)
