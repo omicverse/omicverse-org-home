@@ -77,3 +77,66 @@ repos:
   rust-bandnorm:    {domain: hic,          upstream: {name: BandNorm, source: GitHub, url: https://github.com/sstat-lab/BandNorm}}
   rust-NMF:         {domain: stats,        upstream: {name: NMF, source: CRAN, url: https://cran.r-project.org/package=NMF}}
   rust-scHiCluster: {domain: hic,          upstream: {name: scHiCluster, source: GitHub, url: https://github.com/zhoujt1994/scHiCluster, language: Python}}
+
+# ---------------------------------------------------------------------------
+# catalog.json (packages.html) — curated fields for repos that are NOT ports.
+# category: core | data | port | agent | benchmark | learn | tools
+# docs / pypi / paper / description / domain / lang override what GitHub reports.
+# ---------------------------------------------------------------------------
+catalog:
+  omicverse:               {category: core, pypi: omicverse, docs: https://omicverse.readthedocs.io/, domain: multi-omics,
+                            description: "The unified library: bulk, single-cell, spatial and multi-modal analysis through one AnnData-native API, with Rust and Torch underneath."}
+  anndata-oom:             {category: data, pypi: anndataoom, domain: data,
+                            description: "Out-of-memory AnnData powered by Rust — a drop-in for anndata.AnnData that keeps the matrix on disk and runs whole preprocessing pipelines without loading it."}
+  mudata-oom:              {category: data, domain: data,
+                            description: "Out-of-memory MuData — a drop-in for mudata.MuData built on mudata-rs and anndata-oom."}
+  mudata-rs:               {category: data, lang: rust, domain: data,
+                            description: "Rust implementation of MuData and the source of truth for the .h5mu on-disk format."}
+  omicverse-skills:        {category: agent, domain: agents,
+                            description: "Agent skills for OmicVerse: planning, inspection and reporting steps that analysis agents can call."}
+  omicclaw:                {category: agent, domain: agents, docs: https://omicverse.github.io/omicclaw/,
+                            description: "OmicClaw: the OmicVerse agent skill pack and runtime for end-to-end omics workflows."}
+  dsh-omicos:              {category: agent, domain: agents, lang: other,
+                            description: "Run OmicVerse / OmicOS analyses in a persistent Python kernel from inside DeepSeek Harness, with capability-catalog search."}
+  tavotto-omicos:          {category: agent, domain: agents,
+                            description: "Corresponding source of the OmicOS Figure Studio runtime (a modified Tavotto 0.15.0, AGPL-3.0)."}
+  luria-aido:              {category: agent, domain: foundation,
+                            description: "A shared-latent cell world model for K-562 over frozen single-modality encoders, shipped with the controls that say which legs work."}
+  luria-opal:              {category: agent, domain: genetics,
+                            description: "OPAL (PF11149): an operon-coupled accessory of large serine recombinases, found by an autonomous multi-agent system."}
+  beacon:                  {category: tools, domain: agents,
+                            description: "Probe-verified, agent-readable function registries: turn tutorials, docs and source into registered functions whose contract claims are checked by execution."}
+  awesome-paper2agent:     {category: tools, domain: agents,
+                            description: "A community collection of paper MCP packages — each wraps a paper's code and workflow as an MCP server an agent can install and call."}
+  omicos-portbuild:        {category: tools, domain: agents,
+                            description: "Port a third-party scientific Python package into a portable agent + skill bundle for Claude Code, Codex, OpenCode and OmicOS."}
+  omicverse-rebuildr:      {category: tools, domain: ports,
+                            description: "The porting protocol behind every py-* repo: reference-driven translation, class-aware numerical parity gates and verifier-guided acceleration."}
+  omicverse-notebook:      {category: tools, lang: other, domain: data,
+                            description: "JupyterLab plugin with DataFrame and AnnData previews, extracted from omicverse-web into a standalone package."}
+  CellOntologyMapper:      {category: tools, domain: single-cell,
+                            description: "Map free-text cell-type labels onto Cell Ontology terms."}
+  socialverse:             {category: tools, domain: other,
+                            description: "The omicverse function-registry mechanism ported to the social sciences and humanities, on a light StudyState vocabulary."}
+  matverse:                {category: tools, domain: other,
+                            description: "A materials-analysis ecosystem on the AnnData substrate."}
+  omicos:                  {category: tools, domain: agents, docs: https://omicos.cn, lang: other,
+                            description: "Release notes for OmicOS, the desktop agent built on OmicVerse (docs only; OmicOS itself is closed source)."}
+  omicos-e2e:              {category: benchmark, domain: agents, lang: other,
+                            description: "Post-publish six-platform end-to-end test for the @omicverse/omicos npm package."}
+  omicverse-data:          {category: tools, domain: data, lang: other,
+                            description: "Dataset release assets used by omicverse tutorials and tests."}
+  omicverse-tutorials:     {category: learn, domain: multi-omics, docs: https://omicverse.readthedocs.io/,
+                            description: "OmicVerse and OmicClaw tutorials as executable notebooks: spatial, single-cell, bulk and agent workflows."}
+  single_cell_tutorial:    {category: learn, domain: single-cell, docs: https://single-cell-tutorial.readthedocs.io, lang: other,
+                            description: "A Chinese-language single-cell analysis pipeline tutorial (单细胞分析的中文 pipeline)."}
+  OmicVerse-OmicBench:     {category: benchmark, domain: agents, docs: https://huggingface.co/datasets/omicverse/OmicBench,
+                            description: "Companion harness for the OmicBench dataset: mini-swe-agent runs and system-prompt variants for omics agents."}
+  OmicOS-BiomniBench:      {category: benchmark, domain: agents, docs: https://huggingface.co/datasets/phylobio/BiomniBench-DA,
+                            description: "Harness and per-model results for evaluating the OmicOS agent on BiomniBench-DA."}
+  OmicOS-BixBench:         {category: benchmark, domain: agents, docs: https://huggingface.co/datasets/phylobio/BixBench-Verified-50,
+                            description: "Harness and per-cell grades for evaluating the OmicOS agent on BixBench-Verified-50."}
+  BiomniBench-AI4S:        {category: benchmark, domain: agents, lang: other,
+                            description: "Horizontal comparison of seven AI-for-Science agents on BiomniBench-DA with a dual-judge rubric."}
+  OmicOS-HE_Reproducibility: {category: benchmark, domain: spatial,
+                            description: "Reproducibility of the OmicOS-PortBuild system for H&E-to-spatial-omics discovery."}
