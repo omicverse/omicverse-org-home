@@ -1023,3 +1023,13 @@ section.band {
   .section-heading .text-link { float: none; display: block; margin-top: 8px; }
   .section-heading h2 { display: block; }
 }
+
+/* Keep the original dark sticker; adapt its ink for the browser's light theme.
+   Compensating the hue after inversion preserves the accent-color family.
+   Applied only to repository stickers, never the OmicVerse brand or diagrams. */
+@media (prefers-color-scheme: light) {
+  .package-logo-cell img[data-repo-logo],
+  .package-list .t-logo img[data-repo-logo] {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}

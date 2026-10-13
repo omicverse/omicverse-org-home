@@ -95,18 +95,22 @@ async function fetchContributors(repo) {
 
 // ─── GitHub API: org repos (cached per session) ────
 async function fetchOrgRepos(org = "omicverse") {
-  const key = `gh:org-repos:${org}`;
+  const key = `gh:org-repos:${org}:paginated-v1`;
   const cached = sessionStorage.getItem(key);
   if (cached) {
     try { return JSON.parse(cached); } catch (_) { /* fall through */ }
   }
   let raw = [];
   try {
-    const res = await fetch(`https://api.github.com/orgs/${org}/repos?per_page=100&type=public`, {
-      headers: { Accept: "application/vnd.github+json" },
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    raw = await res.json();
+    for (let page = 1; ; page += 1) {
+      const res = await fetch(`https://api.github.com/orgs/${org}/repos?per_page=100&type=public&page=${page}`, {
+        headers: { Accept: "application/vnd.github+json" },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const batch = await res.json();
+      raw.push(...batch);
+      if (batch.length < 100) break;
+    }
   } catch (_) {
     const res = await fetch("assets/packages.json", { cache: "no-store" });
     if (!res.ok) throw new Error(`manifest HTTP ${res.status}`);
