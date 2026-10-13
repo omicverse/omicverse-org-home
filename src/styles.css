@@ -1244,21 +1244,11 @@ a.pt-upname:hover { color: var(--accent); }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; align-items: center; }
 
 /* Hero */
-.org-hero { padding: 80px 0 48px; gap: 56px; }
-.org-hero h1 { font-size: clamp(36px, 4.8vw, 56px); margin-bottom: 16px; }
-.org-hero .lede { font-size: 17px; max-width: 520px; }
-.hero-art {
-  position: relative;
-  width: 100%; max-width: 520px;
-  justify-self: end;
-}
-.hero-art::before {
-  content: "";
-  position: absolute; inset: -12% -8%;
-  background: radial-gradient(60% 60% at 60% 45%, rgba(31, 122, 54, 0.16), rgba(31, 122, 54, 0) 70%);
-  z-index: 0;
-}
-.hero-art img { position: relative; z-index: 1; width: 100%; display: block; filter: drop-shadow(0 12px 24px rgba(22, 22, 19, 0.08)); }
+.org-hero { padding: 72px 0 40px; gap: 48px; }
+.org-hero h1 { font-size: clamp(36px, 4.6vw, 56px); margin-bottom: 18px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.04; text-wrap: balance; }
+.org-hero .lede { font-size: 17px; max-width: 500px; text-wrap: pretty; }
+.hero-art { width: 100%; max-width: 560px; justify-self: end; }
+.hero-art img { width: 100%; height: auto; display: block; }
 .install-line { margin-top: 22px; }
 
 /* Stat strip */
@@ -1282,22 +1272,19 @@ a.stat-strip .stat, .stat-strip a.stat { cursor: pointer; }
 .stat-strip .stat-num { font-family: var(--mono); font-size: 26px; font-weight: 500; color: var(--ink); letter-spacing: -0.01em; }
 .stat-strip .stat-label { font-size: 12.5px; color: var(--muted); }
 
-/* Pillars */
+/* Pillars (artwork + text, no cards) */
 .pillars {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: 28px 32px;
+  margin-top: 8px;
 }
-.pillar {
-  padding: 20px 20px 22px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-}
-.pillar img { display: block; width: 100%; height: 84px; object-fit: contain; object-position: left center; margin-bottom: 14px; }
-.pillar h3 { font-size: 15.5px; margin-bottom: 6px; }
-.pillar p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+.pillar { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.pillar-art { display: block; width: 132px; height: 132px; margin: 0 0 14px -6px; }
+.pillar-art img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.pillar h3 { font-size: 16px; margin-bottom: 6px; letter-spacing: -0.01em; }
+.pillar p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); max-width: 260px; }
+.pillar p a { color: var(--accent); }
 .pillar p code { font-family: var(--mono); font-size: 12.5px; color: var(--accent-deep); }
 
 /* Section bands */
@@ -1541,4 +1528,44 @@ section.band.band-cta .btn-ghost:hover { border-color: #fff; background: rgba(25
   .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
   .module-art { width: 72px; height: 72px; }
   .module-desc { display: none; }
+}
+
+/* ─── Stat strip without cards ──────────────────── */
+.stat-strip.stat-strip-flat {
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin: 4px 0 0;
+}
+.stat-strip.stat-strip-flat .stat {
+  padding: 18px 20px 18px 0;
+  background: transparent; border: 0; border-right: 1px solid var(--line); border-radius: 0; box-shadow: none;
+}
+.stat-strip.stat-strip-flat .stat + .stat { padding-left: 20px; }
+.stat-strip.stat-strip-flat .stat:last-child { border-right: 0; }
+.stat-strip.stat-strip-flat .stat:hover { transform: none; box-shadow: none; border-color: var(--line); }
+.stat-strip.stat-strip-flat .stat:hover .stat-num { color: var(--accent); }
+.stat-strip.stat-strip-flat .stat-num { transition: color 0.14s; }
+
+/* Typography polish */
+.nowrap { white-space: nowrap; }
+h2 { text-wrap: balance; }
+.section-heading h2 { font-size: clamp(24px, 2.8vw, 32px); }
+.section-heading p { max-width: 560px; text-wrap: pretty; }
+.split-copy p, .lede, .pd-desc { text-wrap: pretty; }
+section.band.band-dark h2 { letter-spacing: -0.02em; }
+.band-tint .split-art img { max-width: 440px; margin-left: auto; }
+.band-tint .split { align-items: center; }
+
+@media (max-width: 1080px) {
+  .pillars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .pillars { grid-template-columns: 1fr; gap: 22px; }
+  .pillar-art { width: 104px; height: 104px; }
+  .stat-strip.stat-strip-flat { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat-strip.stat-strip-flat .stat:nth-child(2n) { border-right: 0; }
+  .stat-strip.stat-strip-flat .stat:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .stat-strip.stat-strip-flat .stat:nth-child(odd) { padding-left: 0; }
+  .band-tint .split-art img { max-width: 320px; margin-left: 0; }
 }
