@@ -38,8 +38,8 @@
     <section class="org-hero page-width wide">
       <div class="hero-copy">
         <p class="overline">Open-source multi-omics</p>
-        <h1><em>Unified</em> multi-omics in Python.</h1>
-        <p class="lede">Bulk, single-cell, spatial and multi-modal data through one AnnData-native API, with Rust and Torch doing the heavy lifting.</p>
+        <h1><em>Unified</em> <span class="nowrap">multi-omics</span> in Python.</h1>
+        <p class="lede">One AnnData-native API for bulk, single-cell, spatial and multi-modal data. Rust and Torch do the heavy lifting.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="packages.html">Browse packages</a>
           <a class="btn btn-ghost" href="ports.html">R-port catalog →</a>
@@ -47,12 +47,12 @@
         <p class="install-line"><span class="prompt">$</span><code>pip install omicverse</code></p>
       </div>
       <aside class="hero-art" aria-hidden="true">
-        <img src="assets/hero-topology.svg" alt="" />
+        <img src="assets/art/hero.png" alt="" width="1200" height="800" />
       </aside>
     </section>
 
     <section class="page-width wide">
-      <div class="stat-strip">
+      <div class="stat-strip stat-strip-flat">
         <a class="stat" href="https://github.com/omicverse/omicverse" target="_blank" rel="noopener">
           <span class="stat-num" data-gh-stars>1k+</span><span class="stat-label">GitHub stars</span>
         </a>
@@ -69,26 +69,30 @@
     </section>
 
     <section class="band page-width wide">
+      <div class="section-heading">
+        <p class="overline">Why OmicVerse</p>
+        <h2>One surface. Verified methods. Ready for agents.</h2>
+      </div>
       <div class="pillars">
         <article class="pillar">
-          <img src="assets/dir-02-anndata.svg" alt="" />
+          <span class="pillar-art"><img src="assets/art/pillar-api.png" alt="" loading="lazy" width="420" height="420" /></span>
           <h3>One API, AnnData throughout</h3>
-          <p>The same <code>ov.pp / ov.tl / ov.pl</code> surface for every modality; scanpy pipelines plug in unchanged.</p>
+          <p>The same <code>ov.pp / ov.tl / ov.pl</code> calls for every modality. scanpy pipelines plug in unchanged.</p>
         </article>
         <article class="pillar">
-          <img src="assets/dir-01-port.svg" alt="" />
+          <span class="pillar-art"><img src="assets/art/pillar-port.png" alt="" loading="lazy" width="420" height="420" /></span>
           <h3>Trusted R methods, rebuilt</h3>
           <p>Pure-Python and Rust ports of CRAN and Bioconductor packages. No rpy2, no R install.</p>
         </article>
         <article class="pillar">
-          <img src="assets/dir-03-validate.svg" alt="" />
-          <h3>Verified against the reference</h3>
-          <p>Every port ships a pre-registered parity gate and runs it against the original R output.</p>
+          <span class="pillar-art"><img src="assets/art/pillar-verify.png" alt="" loading="lazy" width="420" height="420" /></span>
+          <h3>Checked against the original</h3>
+          <p>Every port pre-registers a parity gate and runs it against the R reference before release.</p>
         </article>
         <article class="pillar">
-          <img src="assets/dir-04-agents.svg" alt="" />
+          <span class="pillar-art"><img src="assets/art/pillar-agent.png" alt="" loading="lazy" width="420" height="420" /></span>
           <h3>Agent-ready</h3>
-          <p>Skills, tutorials and report templates so analysis agents can run the stack end to end.</p>
+          <p>Skills, tutorials and report templates let analysis agents run the stack end to end.</p>
         </article>
       </div>
     </section>
@@ -171,14 +175,14 @@
           <div class="split-copy">
             <p class="overline">R ports</p>
             <h2>R packages, rebuilt <em>function by function</em>.</h2>
-            <p>Each port maps the upstream R functions to their Python or Rust counterparts and is checked against the R reference on a fixed fixture. Open any sticker to see its map.</p>
+            <p>Every port maps the upstream R functions to their Python or Rust counterparts and is checked against the R reference on a fixed fixture. Click a sticker to see its map.</p>
             <div class="hero-actions">
               <a class="btn btn-primary" href="ports.html">Open the catalog</a>
               <a class="btn btn-link" href="https://github.com/omicverse/omicverse-rebuildr" target="_blank" rel="noopener">How we port ↗</a>
             </div>
           </div>
           <div class="split-art" aria-hidden="true">
-            <img src="assets/post-thumb-porting.svg" alt="" />
+            <img src="assets/art/ports.png" alt="" loading="lazy" width="900" height="600" />
           </div>
         </div>
         <div class="ports-logo-wall" data-ports-logos aria-label="Ported package stickers"></div>
@@ -196,8 +200,8 @@
       <div class="page-width wide split">
         <div class="split-copy">
           <p class="overline">Quickstart</p>
-          <h2>From a count matrix to clusters in eight lines.</h2>
-          <p>Read, QC, normalize, embed and cluster with the same calls for every data type. Everything stays in AnnData, so you can hand the object to scanpy, Seurat exports or an agent at any step.</p>
+          <h2>Count matrix to clusters in eight lines.</h2>
+          <p>Read, QC, normalize, embed and cluster with the same calls for every data type. The object stays AnnData the whole way, so scanpy, exports or an agent can take over at any step.</p>
           <div class="hero-actions">
             <a class="btn btn-light" href="https://omicverse.readthedocs.io/">Read the docs</a>
             <a class="btn btn-link-light" href="blog.html">Tutorials →</a>
@@ -221,7 +225,7 @@ ov.pp.<span class="tk-fn">umap</span>(adata); ov.pp.<span class="tk-fn">leiden</
     <section class="band page-width wide">
       <div class="section-heading">
         <p class="overline">From the blog</p>
-        <h2>Recent notes.</h2>
+        <h2>Notes from the bench.</h2>
         <a class="text-link" href="blog.html">All posts</a>
       </div>
       <div class="post-grid">
@@ -251,7 +255,7 @@ ov.pp.<span class="tk-fn">umap</span>(adata); ov.pp.<span class="tk-fn">leiden</
         <div>
           <p class="overline">Contribute</p>
           <h2>Bring a method. We'll help you port it.</h2>
-          <p>Nominate an R package, follow the porting protocol, ship a verified wheel. Your repo stays yours.</p>
+          <p>Nominate an R package, follow the porting protocol, ship a verified wheel. The repository stays yours.</p>
         </div>
         <div class="hero-actions">
           <a class="btn btn-primary" href="join.html">How to contribute</a>

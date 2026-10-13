@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Generate the transparent module icons in src/assets/modules/ with OpenAI's image API.
+"""Generate the site's flat, transparent artwork (module icons, pillar illustrations, hero, ports band) with OpenAI's image API.
 
-    OPENAI_API_KEY=... python3 scripts/gen_module_icons.py --style-ref path/to/reference.png
-    OPENAI_API_KEY=... python3 scripts/gen_module_icons.py --only single,space   # regenerate a few
+    OPENAI_API_KEY=... python3 scripts/gen_artwork.py --style-ref path/to/reference.png
+    OPENAI_API_KEY=... python3 scripts/gen_artwork.py --only single,space   # regenerate a few
 
 Style: flat, minimal, hand-drawn marker illustration (thick rounded near-black
 outlines, warm off-white fills, one flat sage-green accent), no 3D, no
@@ -43,7 +43,7 @@ STYLE = (
     "muted sage green (#858F69), used for a few fills; no other colours. Confident spare marker strokes, not "
     "polished stock-vector art. Absolutely no 3D, shading, gradients, glow, glass, shadows, paper texture, "
     "grain or decorative scenery. No text in any language, no letters, numbers, labels, logos or watermarks. "
-    "One compact object centered, filling about 65% of the canvas with generous empty margin, isolated on a "
+    "The drawing is centered, filling about 65% of the canvas with generous empty margin, isolated on a "
     "fully transparent background (no background shape, no card, no circle behind it). Part of a matching "
     "icon family for a bioinformatics software website."
 )
@@ -59,6 +59,47 @@ MODULES = {
     "epi":     "a chromatin fiber: one smooth wavy strand wrapped around three round nucleosome beads, the beads off-white",
     "micro":   "a petri dish seen from above: a circle outline with a few rod-shaped and round microbes inside, some sage green",
     "metabol": "a conical laboratory flask with liquid drawn as a flat sage-green area and two small round bubbles above it",
+}
+
+# key -> (output path relative to src/, requested size, output edge/width in px, subject)
+ASSETS = {
+    **{k: (f"assets/modules/{k}.png", "1024x1024", 360, v) for k, v in MODULES.items()},
+    "pillar-api": (
+        "assets/art/pillar-api.png", "1024x1024", 420,
+        "one rounded square container (off-white fill) holding a small grid of dots, with three different small "
+        "shapes outside it on the left — a tiny cell cluster, a tiny tissue blob, a tiny bar chart — each joined to "
+        "the container by a short plain line; the container is the single shared data object",
+    ),
+    "pillar-port": (
+        "assets/art/pillar-port.png", "1024x1024", 420,
+        "a closed loop of DNA (off-white fill, black outline) on the left and an identical loop filled sage green on "
+        "the right, with one single curved arrow from left to right: the same method rebuilt in a new form",
+    ),
+    "pillar-verify": (
+        "assets/art/pillar-verify.png", "1024x1024", 420,
+        "two short bar charts side by side with exactly the same bar heights, the left one off-white and the right "
+        "one sage green, and a single large rounded check mark drawn above them",
+    ),
+    "pillar-agent": (
+        "assets/art/pillar-agent.png", "1024x1024", 420,
+        "a simple rounded robot head (off-white, two round dot eyes) beside a short vertical list of three rounded "
+        "bars, the first two bars filled sage green as completed steps and the last one off-white",
+    ),
+    "hero": (
+        "assets/art/hero.png", "1536x1024", 1200,
+        "a horizontal composition about unifying data: on the left three stacked small samples — a loose cell "
+        "cluster of circles, a rounded tissue blob with a few hexagonal spots, and a short DNA strand — each "
+        "connected by a short plain line to one central large rounded square container (off-white) that holds "
+        "a grid of dots; from the container one single arrow leads right to a small bar chart and a small "
+        "scatter plot. A few sage-green fills for accent. Generous empty margins all round",
+    ),
+    "ports": (
+        "assets/art/ports.png", "1536x1024", 900,
+        "a horizontal composition: on the left a closed loop of DNA with black outline and off-white fill; a single "
+        "curved arrow leads right to an identical loop filled sage green; beneath the arrow, two short bar charts "
+        "with identical bar heights sit side by side with a small equals sign made of two short parallel bars "
+        "between them; a small rounded check mark above the right loop. Generous empty margins",
+    ),
 }
 
 
@@ -92,14 +133,14 @@ def _post(url: str, key: str, data: bytes, content_type: str) -> dict:
     raise RuntimeError("unreachable")
 
 
-def request_image(model: str, prompt: str, quality: str, key: str, style_ref: Path | None) -> bytes:
+def request_image(model: str, prompt: str, quality: str, key: str, style_ref: Path | None, size: str = "1024x1024") -> bytes:
     if style_ref:
-        fields = {"model": model, "prompt": prompt, "n": "1", "size": "1024x1024",
+        fields = {"model": model, "prompt": prompt, "n": "1", "size": size,
                   "background": "transparent", "output_format": "png", "quality": quality}
         body, boundary = _multipart(fields, [("image[]", style_ref)])
         data = _post("https://api.openai.com/v1/images/edits", key, body, f"multipart/form-data; boundary={boundary}")
     else:
-        body = json.dumps({"model": model, "prompt": prompt, "n": 1, "size": "1024x1024",
+        body = json.dumps({"model": model, "prompt": prompt, "n": 1, "size": size,
                            "background": "transparent", "output_format": "png", "quality": quality}).encode()
         data = _post("https://api.openai.com/v1/images/generations", key, body, "application/json")
     return base64.b64decode(data["data"][0]["b64_json"])
@@ -125,17 +166,23 @@ def key_out_background(im: Image.Image) -> Image.Image:
     return out
 
 
-def postprocess(png: bytes, size: int) -> Image.Image:
+def postprocess(png: bytes, edge: int, square: bool) -> Image.Image:
     im = key_out_background(Image.open(io.BytesIO(png)).convert("RGBA"))
     bbox = im.getchannel("A").point(lambda a: 255 if a > 8 else 0).getbbox()
     if bbox:
         im = im.crop(bbox)
     w, h = im.size
-    side = max(w, h)
-    pad = int(side * 0.06)
-    canvas = Image.new("RGBA", (side + 2 * pad, side + 2 * pad), (0, 0, 0, 0))
-    canvas.paste(im, ((canvas.width - w) // 2, (canvas.height - h) // 2), im)
-    return canvas.resize((size, size), Image.LANCZOS)
+    if square:
+        side = max(w, h)
+        pad = int(side * 0.06)
+        canvas = Image.new("RGBA", (side + 2 * pad, side + 2 * pad), (0, 0, 0, 0))
+        canvas.paste(im, ((canvas.width - w) // 2, (canvas.height - h) // 2), im)
+        return canvas.resize((edge, edge), Image.LANCZOS)
+    pad = int(w * 0.03)
+    canvas = Image.new("RGBA", (w + 2 * pad, h + 2 * pad), (0, 0, 0, 0))
+    canvas.paste(im, (pad, pad), im)
+    scale = edge / canvas.width
+    return canvas.resize((edge, max(1, round(canvas.height * scale))), Image.LANCZOS)
 
 
 def main() -> int:
@@ -152,23 +199,23 @@ def main() -> int:
     if not key:
         print("OPENAI_API_KEY is not set", file=sys.stderr)
         return 2
-    keys = [k.strip() for k in args.only.split(",")] if args.only else list(MODULES)
-    OUT.mkdir(parents=True, exist_ok=True)
+    keys = [k.strip() for k in args.only.split(",")] if args.only else list(ASSETS)
     if args.raw_dir:
         args.raw_dir.mkdir(parents=True, exist_ok=True)
     for k in keys:
-        subject = MODULES[k]
+        rel, size, edge, subject = ASSETS[k]
         prompt = (("Use the attached image for STYLE ONLY (line weight, flat fills, palette, restraint); do not copy "
                    "any of its objects. ") if args.style_ref else "") + f"Draw {subject}. " + STYLE
         t0 = time.time()
-        png = request_image(args.model, prompt, args.quality, key, args.style_ref)
+        png = request_image(args.model, prompt, args.quality, key, args.style_ref, size)
         if args.raw_dir:
             (args.raw_dir / f"{k}.png").write_bytes(png)
-        im = postprocess(png, args.size)
-        out = OUT / f"{k}.png"
+        im = postprocess(png, edge, square=(size == "1024x1024"))
+        out = ROOT / "src" / rel
+        out.parent.mkdir(parents=True, exist_ok=True)
         im.save(out, optimize=True)
         transparent = sum(1 for a in im.getchannel("A").getdata() if a == 0) / (im.width * im.height)
-        print(f"[icons] {k:<8} {out.stat().st_size // 1024:>4} KB  transparent={transparent:.0%}  {time.time() - t0:.0f}s", file=sys.stderr)
+        print(f"[art] {k:<14} {im.width}x{im.height} {out.stat().st_size // 1024:>4} KB  transparent={transparent:.0%}  {time.time() - t0:.0f}s", file=sys.stderr)
     return 0
 
 
