@@ -446,7 +446,41 @@
     if (row) row.scrollIntoView({ block: "start", behavior: "smooth" });
   }
 
+  // ─── GitHub star count (index + about) ─────────────────────────────────
+  async function fillGithubStars() {
+    const nodes = document.querySelectorAll("[data-gh-stars]");
+    if (!nodes.length) return;
+    const key = "gh:stars:omicverse/omicverse";
+    let stars = null;
+    try { stars = JSON.parse(sessionStorage.getItem(key)); } catch (_) { /* ignore */ }
+    if (stars == null) {
+      try {
+        const res = await fetch("https://api.github.com/repos/omicverse/omicverse", { headers: { Accept: "application/vnd.github+json" } });
+        if (res.ok) {
+          stars = (await res.json()).stargazers_count;
+          try { sessionStorage.setItem(key, JSON.stringify(stars)); } catch (_) { /* quota */ }
+        }
+      } catch (_) { /* offline / rate-limited: keep the static fallback */ }
+    }
+    if (typeof stars === "number") {
+      const text = stars >= 1000 ? `${(stars / 1000).toFixed(1).replace(/\.0$/, "")}k` : fmtInt(stars);
+      nodes.forEach((n) => { n.textContent = text; });
+    }
+  }
+
+  // ─── Port sticker wall (index) ─────────────────────────────────────────
+  function renderLogoWall(data) {
+    const wall = document.querySelector("[data-ports-logos]");
+    if (!wall) return;
+    const items = (data.packages || []).filter((p) => p.logo_url);
+    wall.innerHTML = items.map((p) => `<a href="ports.html#${esc(p.repo)}" title="${esc(p.repo)} · ${esc((p.upstream || {}).name || "")}" aria-label="${esc(p.repo)}"><img src="${esc(p.logo_url)}" alt="" loading="lazy" data-repo-logo /></a>`).join("");
+    wall.querySelectorAll("img").forEach((img) => {
+      img.addEventListener("error", () => { const a = img.closest("a"); if (a) a.remove(); });
+    });
+  }
+
   async function init() {
+    fillGithubStars();
     let data;
     try {
       data = await loadPorts();
@@ -457,6 +491,7 @@
     }
     data.packages = (data.packages || []).map((p) => ({ ...p, _search: packageSearchText(p) }));
     fillStats(data);
+    renderLogoWall(data);
     const foot = document.querySelector("[data-ports-footnote]");
     if (foot && data.generated_at) {
       foot.insertAdjacentHTML("beforeend", ` Last generated <time datetime="${esc(data.generated_at)}">${esc(fmtDate(data.generated_at))}</time>.`);

@@ -7,9 +7,9 @@
   <link rel="icon" type="image/png" href="assets/omicos-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-  <script src="script.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=2026-10-13a" />
+  <script src="script.js?v=2026-10-13a" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -20,87 +20,97 @@
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
     <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
       <a href="packages.html">Packages</a>
+      <a href="ports.html">Ports</a>
       <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="people.html">People</a>
       <a aria-current="page" href="blog.html">Blog</a>
-      <a href="events.html">Events</a>
+      <a href="people.html">People</a>
       <a href="about.html">About</a>
       <a href="join.html">Join</a>
-      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener"><svg class="nav-gh" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
     </nav>
   </header>
 
   <main>
     <section class="page-hero page-width">
       <p class="overline">Blog</p>
-      <h1>Tutorials and technical notes from OmicVerse.</h1>
+      <h1>Tutorials and technical notes.</h1>
     </section>
 
-    <section class="page-width">
-      <div class="t-list blog-list">
-        <a href="blog/nanostring-cosmx-workflow.html">
-          <span class="t-name">Spatial</span>
-          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Analyzing NanoString CosMx Data</strong> Read CosMx data, validate FOV-level spatial structure, inspect segmentation quality, and prepare inputs for downstream spatial modeling.</span>
-          <span class="t-arrow">Read →</span>
+    <section class="page-width wide" style="padding-bottom:64px;">
+      <div class="post-grid">
+        <a class="post-card" href="blog/nanostring-cosmx-workflow.html">
+          <span class="post-thumb"><img src="assets/blog/nanostring-cosmx-workflow/cell-013-1.png" alt="" loading="lazy" /></span>
+          <span class="post-chip">Spatial</span>
+          <span class="post-title">Analyzing NanoString CosMx Data</span>
+          <span class="post-desc">Read CosMx data, validate FOV-level spatial structure, inspect segmentation quality, and prepare inputs for downstream spatial modeling.</span>
         </a>
-        <a href="blog/visium-hd-workflow.html">
-          <span class="t-name">Spatial</span>
-          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Analyzing Visium HD Data</strong> Work with Visium HD bin-level output, tissue images, spatially variable genes, low-dimensional representations, and segmentation-derived views.</span>
-          <span class="t-arrow">Read →</span>
+        <a class="post-card" href="blog/visium-hd-workflow.html">
+          <span class="post-thumb"><img src="assets/blog/visium-hd-workflow/cell-015-1.png" alt="" loading="lazy" /></span>
+          <span class="post-chip">Spatial</span>
+          <span class="post-title">Analyzing Visium HD Data</span>
+          <span class="post-desc">Work with Visium HD bin-level output, tissue images, spatially variable genes, low-dimensional representations, and segmentation-derived views.</span>
         </a>
-        <a href="blog/xenium-workflow.html">
-          <span class="t-name">Spatial</span>
-          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Analyzing Xenium Data</strong> Load a 10x Xenium outs folder into AnnData, keep cell polygon boundaries, run QC and Leiden clustering, then project clusters back onto tissue space.</span>
-          <span class="t-arrow">Read →</span>
+        <a class="post-card" href="blog/xenium-workflow.html">
+          <span class="post-thumb"><img src="assets/blog/xenium-workflow/cell-012-1.png" alt="" loading="lazy" /></span>
+          <span class="post-chip">Spatial</span>
+          <span class="post-title">Analyzing Xenium Data</span>
+          <span class="post-desc">Load a 10x Xenium outs folder into AnnData, keep cell polygon boundaries, run QC and Leiden clustering, then project clusters back onto tissue space.</span>
         </a>
-        <a href="blog/atera-workflow.html">
-          <span class="t-name">Spatial</span>
-          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Reading and Preprocessing Atera Data</strong> Use OmicVerse to read 10x Atera whole-transcriptome spatial data, align expression, centroids, boundaries, nuclei, morphology channels, and annotations.</span>
-          <span class="t-arrow">Read →</span>
+        <a class="post-card" href="blog/atera-workflow.html">
+          <span class="post-thumb"><img src="assets/blog/atera-workflow/cell-012-1.png" alt="" loading="lazy" /></span>
+          <span class="post-chip">Spatial</span>
+          <span class="post-title">Reading and Preprocessing Atera Data</span>
+          <span class="post-desc">Use OmicVerse to read 10x Atera whole-transcriptome spatial data, align expression, centroids, boundaries, nuclei, morphology channels, and annotations.</span>
         </a>
-        <a href="blog/cellpose-visium-hd.html">
-          <span class="t-name">Segmentation</span>
-          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Cell Segmentation for Visium HD with Cellpose</strong> Connect Visium HD 2 um bins, H&amp;E images, Cellpose segmentation, and bin-to-cell aggregation in a pure Python workflow.</span>
-          <span class="t-arrow">Read →</span>
+        <a class="post-card" href="blog/cellpose-visium-hd.html">
+          <span class="post-thumb"><img src="assets/blog/cellpose-visium-hd/cell-020-1.png" alt="" loading="lazy" /></span>
+          <span class="post-chip">Segmentation</span>
+          <span class="post-title">Cell Segmentation for Visium HD with Cellpose</span>
+          <span class="post-desc">Connect Visium HD 2 um bins, H&amp;E images, Cellpose segmentation, and bin-to-cell aggregation in a pure Python workflow.</span>
         </a>
-        <a href="blog/plot1cell-python.html">
-          <span class="t-name">Visualization</span>
-          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">Circular UMAPs with the Python Version of plot1cell</strong> Use ov.pl.plot1cell to place UMAP or t-SNE cells inside a circular layout and add cluster-aware metadata rings around the embedding.</span>
-          <span class="t-arrow">Read →</span>
+        <a class="post-card" href="blog/plot1cell-python.html">
+          <span class="post-thumb"><img src="assets/blog/plot1cell-python/cell-007-1.png" alt="" loading="lazy" /></span>
+          <span class="post-chip">Visualization</span>
+          <span class="post-title">Circular UMAPs with the Python Version of plot1cell</span>
+          <span class="post-desc">Use ov.pl.plot1cell to place UMAP or t-SNE cells inside a circular layout and add cluster-aware metadata rings around the embedding.</span>
         </a>
-        <a href="blog/leiden-resolution-selection.html">
-          <span class="t-name">Single-cell</span>
-          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">How to Choose Leiden Resolution</strong> Compare manual Leiden, bootstrap stability, and CHAMP on PBMC8k to choose a reproducible starting resolution for single-cell clustering.</span>
-          <span class="t-arrow">Read →</span>
+        <a class="post-card" href="blog/leiden-resolution-selection.html">
+          <span class="post-thumb"><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/omicverse_img/20260421_compare_resolution_pbmc8k_cell_15_1.png" alt="" loading="lazy" /></span>
+          <span class="post-chip">Single-cell</span>
+          <span class="post-title">How to Choose Leiden Resolution</span>
+          <span class="post-desc">Compare manual Leiden, bootstrap stability, and CHAMP on PBMC8k to choose a reproducible starting resolution for single-cell clustering.</span>
         </a>
-        <a href="blog/omicverse-2-1-update.html">
-          <span class="t-name">Release</span>
-          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">What Changed in OmicVerse 2.1.x</strong> A compact English release note for the 2.1.x line: pure-Python Monocle, Xenium and Visium HD workflows, plotting updates, agent runtime work, metabolomics, and microbiome support.</span>
-          <span class="t-arrow">Read →</span>
+        <a class="post-card" href="blog/omicverse-2-1-update.html">
+          <span class="post-thumb is-placeholder">Release</span>
+          <span class="post-chip">Release</span>
+          <span class="post-title">What Changed in OmicVerse 2.1.x</span>
+          <span class="post-desc">A compact English release note for the 2.1.x line: pure-Python Monocle, Xenium and Visium HD workflows, plotting updates, agent runtime work, metabolomics, and microbiome support.</span>
         </a>
-        <a href="blog/anthropic-mythos-security.html">
-          <span class="t-name">Agents</span>
-          <span class="t-desc"><strong style="font-weight:500; color:var(--ink);">What Anthropic Mythos Preview Signals for Agent Security</strong> A security-oriented note on why increasingly capable agents need bounded execution, provenance, credential discipline, and auditable scientific workflows.</span>
-          <span class="t-arrow">Read →</span>
+        <a class="post-card" href="blog/anthropic-mythos-security.html">
+          <span class="post-thumb"><img src="https://raw.githubusercontent.com/Starlitnightly/ImageStore/main/pantheon_image/20260407_mythos_tweet_project_glasswing.png" alt="" loading="lazy" /></span>
+          <span class="post-chip">Agents</span>
+          <span class="post-title">What Anthropic Mythos Preview Signals for Agent Security</span>
+          <span class="post-desc">A security-oriented note on why increasingly capable agents need bounded execution, provenance, credential discipline, and auditable scientific workflows.</span>
         </a>
       </div>
     </section>
   </main>
 
-  <footer class="footer page-width">
-    <span class="footer-brand">
-      <img src="assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
-      OmicVerse
-    </span>
-    <span class="footer-links">
-      <a href="index.html">Home</a>
-      <a href="packages.html">Packages</a>
-      <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="people.html">People</a>
-      <a href="events.html">Events</a>
-      <a href="about.html">About</a>
-      <a href="join.html">Join</a>
-    </span>
+  <footer class="footer">
+    <div class="footer-inner page-width wide">
+      <div class="footer-brand-col">
+        <span class="footer-brand"><img src="assets/omicos-logo.png" alt="" /> OmicVerse</span>
+        <p>Open-source multi-omics in Python, with Rust and Torch underneath. Trusted R methods, rebuilt and verified.</p>
+        <p class="footer-install"><code>pip install omicverse</code></p>
+      </div>
+      <div class="footer-col"><span class="footer-col-title">Project</span><ul><li><a href="packages.html">Packages</a></li><li><a href="ports.html">R-port catalog</a></li><li><a href="https://omicverse.readthedocs.io/" target="_blank" rel="noopener">Documentation</a></li><li><a href="blog.html">Blog</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Community</span><ul><li><a href="people.html">People</a></li><li><a href="events.html">Events</a></li><li><a href="join.html">Join</a></li><li><a href="https://github.com/omicverse/omicverse/discussions" target="_blank" rel="noopener">Discussions ↗</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Resources</span><ul><li><a href="about.html">About & citation</a></li><li><a href="https://github.com/omicverse/omicverse-rebuildr" target="_blank" rel="noopener">Porting protocol ↗</a></li><li><a href="https://github.com/omicverse/omicverse-tutorials" target="_blank" rel="noopener">Tutorials ↗</a></li><li><a href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a></li></ul></div>
+    </div>
+    <div class="footer-bottom page-width wide">
+      <span>© OmicVerse contributors · Apache-2.0</span>
+      <span>Built with <a href="https://github.com/omicverse/omicverse-org-home" target="_blank" rel="noopener">omicverse-org-home</a></span>
+    </div>
   </footer>
 </body>
 </html>

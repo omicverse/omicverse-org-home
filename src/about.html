@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-  <script src="script.js" defer></script>
+  <link rel="stylesheet" href="styles.css?v=2026-10-13a" />
+  <script src="script.js?v=2026-10-13a" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -20,13 +20,13 @@
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
     <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
       <a href="packages.html">Packages</a>
+      <a href="ports.html">Ports</a>
       <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="people.html">People</a>
       <a href="blog.html">Blog</a>
-      <a href="events.html">Events</a>
+      <a href="people.html">People</a>
       <a aria-current="page" href="about.html">About</a>
       <a href="join.html">Join</a>
-      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener"><svg class="nav-gh" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
     </nav>
   </header>
 
@@ -34,49 +34,59 @@
     <section class="page-hero page-width">
       <p class="overline">About</p>
       <h1>A <em>unified</em> Python ecosystem for multi-omics, with Rust and Torch underneath.</h1>
+      <p class="lede">One library exposes the API. Around it, the organization rebuilds trusted R methods in Python and Rust, verifies them against the originals, and makes everything runnable by analysis agents.</p>
     </section>
 
-    <section class="page-width">
-      <div class="about-section">
-        <h2>What this org is</h2>
-        <p>OmicVerse is a Python ecosystem for multi-omics analysis built around three principles:</p>
-        <ul class="glance-list">
-          <li><strong style="color:var(--ink); font-weight:600;">One unified API</strong> across bulk, single-cell, spatial, and multi-modal data.</li>
-          <li><strong style="color:var(--ink); font-weight:600;">AnnData-native throughout</strong>, so it plugs into existing scanpy pipelines without rewrites.</li>
-          <li><strong style="color:var(--ink); font-weight:600;">Rust and Torch underneath</strong> — hot loops in Rust, tensor methods on Torch, classical methods on NumPy / SciPy.</li>
-        </ul>
-        <p>The core library, <a href="https://github.com/omicverse/omicverse" target="_blank" rel="noopener">omicverse</a>, exposes the unified surface. Around it, the organization maintains pure-Python and pure-Rust re-implementations of widely-cited methods (CopyKAT, hdWGCNA, inferCNV, Monocle, scDblFinder, DoubletFinder, DADA2, mclust, Milo, scHiCluster, BandNorm, NMF…) so users have a parity-audited alternative that doesn't depend on R or rpy2.</p>
-        <p>An agent layer on top — <a href="https://github.com/omicverse/omicverse-skills" target="_blank" rel="noopener">omicverse-skills</a> and <a href="https://github.com/omicverse/omicclaw" target="_blank" rel="noopener">omicclaw</a> — exposes the same methods as callable skills for agent-driven analysis. The project is open-source, community-led, and aligned with the broader <a href="https://scverse.org/" target="_blank" rel="noopener">scverse</a> ecosystem.</p>
+    <section class="page-width wide">
+      <div class="stat-strip">
+        <a class="stat" href="https://github.com/omicverse/omicverse" target="_blank" rel="noopener"><span class="stat-num" data-gh-stars>1k+</span><span class="stat-label">GitHub stars · Apache-2.0</span></a>
+        <a class="stat" href="ports.html"><span class="stat-num" data-ports-stat="packages">70</span><span class="stat-label">R packages rebuilt</span></a>
+        <a class="stat" href="ports.html"><span class="stat-num" data-ports-stat="with_parity_gate">—</span><span class="stat-label">with a pre-registered parity gate</span></a>
+        <a class="stat" href="index.html#modules"><span class="stat-num">9</span><span class="stat-label">omics modules</span></a>
       </div>
+    </section>
 
-      <div class="about-section">
-        <h2>At a glance</h2>
-        <ul class="glance-list">
-          <li>One unified Python API · AnnData-native</li>
-          <li>Rust hot loops · Torch tensors · GPU support</li>
-          <li>14 method ports · 11 Python, 3 Rust · parity-audited</li>
-          <li>Bit-equivalent to the R reference at published defaults</li>
-          <li>Up to ~200× faster than R on the compute-heavy paths</li>
-          <li>979★ on GitHub · Apache-2.0 · scverse-aligned</li>
-        </ul>
+    <section class="band page-width wide">
+      <div class="pillars">
+        <article class="pillar">
+          <img src="assets/dir-02-anndata.svg" alt="" />
+          <h3>One API, AnnData throughout</h3>
+          <p>Bulk, single-cell, spatial and multi-modal data share the same calls and conventions.</p>
+        </article>
+        <article class="pillar">
+          <img src="assets/dir-01-port.svg" alt="" />
+          <h3>Rust and Torch underneath</h3>
+          <p>Hot loops in Rust, tensor methods on Torch, classical statistics on NumPy and SciPy.</p>
+        </article>
+        <article class="pillar">
+          <img src="assets/dir-03-validate.svg" alt="" />
+          <h3>Verified, not approximated</h3>
+          <p>Ports are gated on numerical parity with the R reference before release.</p>
+        </article>
+        <article class="pillar">
+          <img src="assets/dir-04-agents.svg" alt="" />
+          <h3>Agent-ready</h3>
+          <p><a href="https://github.com/omicverse/omicverse-skills" target="_blank" rel="noopener">omicverse-skills</a> and <a href="https://github.com/omicverse/omicclaw" target="_blank" rel="noopener">omicclaw</a> let agents run the stack.</p>
+        </article>
       </div>
+    </section>
 
+    <section class="page-width wide">
       <div class="about-section">
         <h2>Governance</h2>
-        <p>OmicVerse follows a lightweight model: maintainers own tracks, contributions are reviewed in the open, breaking changes go through an RFC.</p>
-        <div class="governance-list" style="margin-top: 12px;">
-          <article><span class="num">/01</span><div><h3>Track maintainers</h3><p>Each track (ports, runtime, agents, docs) has a named maintainer who reviews PRs and signs off releases.</p></div></article>
-          <article><span class="num">/02</span><div><h3>Open review</h3><p>All design discussion happens in GitHub Issues and Discussions. Contributing doesn't require maintainer status.</p></div></article>
-          <article><span class="num">/03</span><div><h3>RFC for breaking changes</h3><p>Anything that changes a public API, AnnData contract, or benchmark methodology requires a public RFC.</p></div></article>
-          <article><span class="num">/04</span><div><h3>Code of conduct</h3><p>The project follows the Contributor Covenant. Reports go to the maintainer contact in the org README.</p></div></article>
-          <article><span class="num">/05</span><div><h3>Release cadence</h3><p>Stable releases monthly, patch releases as needed. Each release ships changelog, parity diffs, updated benchmarks.</p></div></article>
-          <article><span class="num">/06</span><div><h3>Funding</h3><p>OmicVerse is independent. Acknowledgments to research groups and funding sources live next to the code they support.</p></div></article>
+        <div class="gov-grid">
+          <article><h3>Track maintainers</h3><p>Ports, runtime, agents and docs each have a named maintainer who reviews and releases.</p></article>
+          <article><h3>Open review</h3><p>Design discussion happens in GitHub Issues and Discussions. No maintainer status needed to contribute.</p></article>
+          <article><h3>RFC for breaking changes</h3><p>Public API, AnnData contract or benchmark changes go through a public RFC.</p></article>
+          <article><h3>Code of conduct</h3><p>Contributor Covenant. Reports go to the maintainer contact in the org README.</p></article>
+          <article><h3>Release cadence</h3><p>Stable monthly, patches as needed, each with changelog and parity diffs.</p></article>
+          <article><h3>Independent</h3><p>Funding and research-group acknowledgments live next to the code they support.</p></article>
         </div>
       </div>
 
       <div class="about-section" id="citation">
         <h2>Citation</h2>
-        <p>If you use OmicVerse in published work, please cite the framework paper. For specific method ports, also cite the original method.</p>
+        <p>If you use OmicVerse in published work, please cite the framework paper. For a specific port, also cite the original method.</p>
 <pre class="citation-block"><span class="ck">@article</span>{<span class="cv">omicverse</span>,
   <span class="ck">title</span>   = <span class="cf">"OmicVerse: a unified multi-omics analysis framework"</span>,
   <span class="ck">author</span>  = <span class="cf">"Zeng, Zehua and others"</span>,
@@ -89,20 +99,21 @@
     </section>
   </main>
 
-  <footer class="footer page-width">
-    <span class="footer-brand">
-      <img src="assets/omicos-logo.png" alt="" style="width:14px; height:14px;" />
-      OmicVerse
-    </span>
-    <span class="footer-links">
-      <a href="index.html">Home</a>
-      <a href="packages.html">Packages</a>
-      <a href="https://omicverse.readthedocs.io/">Learn</a>
-      <a href="people.html">People</a>
-      <a href="blog.html">Blog</a>
-      <a href="events.html">Events</a>
-      <a href="join.html">Join</a>
-    </span>
+  <footer class="footer">
+    <div class="footer-inner page-width wide">
+      <div class="footer-brand-col">
+        <span class="footer-brand"><img src="assets/omicos-logo.png" alt="" /> OmicVerse</span>
+        <p>Open-source multi-omics in Python, with Rust and Torch underneath. Trusted R methods, rebuilt and verified.</p>
+        <p class="footer-install"><code>pip install omicverse</code></p>
+      </div>
+      <div class="footer-col"><span class="footer-col-title">Project</span><ul><li><a href="packages.html">Packages</a></li><li><a href="ports.html">R-port catalog</a></li><li><a href="https://omicverse.readthedocs.io/" target="_blank" rel="noopener">Documentation</a></li><li><a href="blog.html">Blog</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Community</span><ul><li><a href="people.html">People</a></li><li><a href="events.html">Events</a></li><li><a href="join.html">Join</a></li><li><a href="https://github.com/omicverse/omicverse/discussions" target="_blank" rel="noopener">Discussions ↗</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Resources</span><ul><li><a href="about.html">About & citation</a></li><li><a href="https://github.com/omicverse/omicverse-rebuildr" target="_blank" rel="noopener">Porting protocol ↗</a></li><li><a href="https://github.com/omicverse/omicverse-tutorials" target="_blank" rel="noopener">Tutorials ↗</a></li><li><a href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a></li></ul></div>
+    </div>
+    <div class="footer-bottom page-width wide">
+      <span>© OmicVerse contributors · Apache-2.0</span>
+      <span>Built with <a href="https://github.com/omicverse/omicverse-org-home" target="_blank" rel="noopener">omicverse-org-home</a></span>
+    </div>
   </footer>
 </body>
 </html>
