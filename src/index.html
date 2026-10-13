@@ -13,6 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <script src="script.js" defer></script>
+  <script src="ports.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -70,6 +71,22 @@
           <span class="t-desc">Drop-in AnnData replacement that keeps the matrix on disk. Whole pipelines without loading.</span>
           <span class="t-tag">Data foundation · Rust</span>
         </a>
+      </div>
+    </section>
+
+    <section class="band page-width">
+      <div class="section-heading">
+        <p class="overline">R ports</p>
+        <h2>R packages, rebuilt <em>function by function</em>.</h2>
+        <a class="text-link" href="ports.html">Open the port catalog</a>
+        <p>Every port maps upstream R functions to their Python or Rust counterparts and is checked against the R reference on a fixed fixture.</p>
+      </div>
+      <div class="ports-stats compact" data-ports-stats aria-live="polite">
+        <div class="stat"><span class="stat-num" data-ports-stat="packages">—</span><span class="stat-label">R packages ported</span></div>
+        <div class="stat"><span class="stat-num" data-ports-stat="functions_total">—</span><span class="stat-label">function mappings</span></div>
+        <div class="stat"><span class="stat-num" data-ports-stat="ported_pct">—</span><span class="stat-label">ported</span></div>
+        <div class="stat"><span class="stat-num" data-ports-stat="upstream_bioc">—</span><span class="stat-label">from Bioconductor</span></div>
+        <div class="stat"><span class="stat-num" data-ports-stat="upstream_cran">—</span><span class="stat-label">from CRAN</span></div>
       </div>
     </section>
 

@@ -1,0 +1,78 @@
+# Curated overrides for scripts/build_ports.py (used ONLY for repos without a port.yaml).
+# Once a repo ships port.yaml, everything here is ignored for that repo.
+#
+# repos.<repo>.domain            one of: single-cell, spatial, trajectory, bulk, proteomics,
+#                                metabolomics, genetics, immune, microbiome, hic, stats, visualization, other
+# repos.<repo>.upstream.*        overrides inferred upstream fields (name, source, url, language, citation)
+# repos.<repo>.omicverse_module  where the port surfaces inside omicverse (e.g. ov.single.pyDoubletFinder)
+repos:
+  py-alakazam:      {domain: immune,       upstream: {name: alakazam, source: CRAN, url: https://cran.r-project.org/package=alakazam}}
+  py-Augur:         {domain: single-cell,  upstream: {name: Augur, source: GitHub, url: https://github.com/neurorestore/Augur}}
+  py-cca:           {domain: single-cell,  upstream: {name: "Seurat::RunCCA", source: GitHub, url: https://github.com/satijalab/seurat}}
+  py-cellAdmix:     {domain: spatial,      upstream: {name: cellAdmix, source: GitHub, url: https://github.com/kharchenkolab/cellAdmix}}
+  py-CellCall:      {domain: single-cell,  upstream: {name: cellcall, source: GitHub, url: https://github.com/ShellyCoder/cellcall}}
+  py-coloc:         {domain: genetics,     upstream: {name: coloc, source: CRAN, url: https://cran.r-project.org/package=coloc}}
+  py-condiments:    {domain: trajectory,   upstream: {name: condiments, source: Bioconductor, url: https://bioconductor.org/packages/condiments}}
+  py-CopyKAT:       {domain: single-cell,  upstream: {name: copykat, source: GitHub, url: https://github.com/navinlabcode/copykat}}
+  py-dada2:         {domain: microbiome,   upstream: {name: dada2, source: Bioconductor, url: https://bioconductor.org/packages/dada2}}
+  py-dcHiC:         {domain: hic,          upstream: {name: dcHiC, source: GitHub, url: https://github.com/ay-lab/dcHiC}}
+  py-decontx:       {domain: single-cell,  upstream: {name: decontX, source: Bioconductor, url: https://bioconductor.org/packages/decontX}}
+  py-DEqMS:         {domain: proteomics,   upstream: {name: DEqMS, source: Bioconductor, url: https://bioconductor.org/packages/DEqMS}}
+  py-destiny:       {domain: trajectory,   upstream: {name: destiny, source: Bioconductor, url: https://bioconductor.org/packages/destiny}}
+  py-DoubletFinder: {domain: single-cell,  upstream: {name: DoubletFinder, source: GitHub, url: https://github.com/chris-mcginnis-ucsf/DoubletFinder}}
+  py-dowser:        {domain: immune,       upstream: {name: dowser, source: CRAN, url: https://cran.r-project.org/package=dowser}}
+  py-dynbenchmark:  {domain: trajectory,   upstream: {name: dynbenchmark, source: GitHub, url: https://github.com/dynverse/dynbenchmark}}
+  py-dyneval:       {domain: trajectory,   upstream: {name: dyneval, source: GitHub, url: https://github.com/dynverse/dyneval}}
+  py-dynwrap:       {domain: trajectory,   upstream: {name: dynwrap, source: GitHub, url: https://github.com/dynverse/dynwrap}}
+  py-edgeR:         {domain: bulk,         upstream: {name: edgeR, source: Bioconductor, url: https://bioconductor.org/packages/edgeR}}
+  py-fastcar:       {domain: single-cell,  upstream: {name: FastCAR, source: GitHub, url: https://github.com/Nusob888/FastCAR}}
+  py-funkyheatmap:  {domain: visualization, upstream: {name: funkyheatmap, source: CRAN, url: https://cran.r-project.org/package=funkyheatmap}}
+  py-gliph:         {domain: immune,       upstream: {name: turboGliph, source: GitHub, url: https://github.com/HetzDra/turboGliph}}
+  py-hdWGCNA:       {domain: single-cell,  upstream: {name: hdWGCNA, source: GitHub, url: https://github.com/smorabit/hdWGCNA}}
+  py-hoodscanr:     {domain: spatial,      upstream: {name: hoodscanR, source: Bioconductor, url: https://bioconductor.org/packages/hoodscanR}}
+  py-immunarch:     {domain: immune,       upstream: {name: immunarch, source: CRAN, url: https://cran.r-project.org/package=immunarch}}
+  py-imputeLCMD:    {domain: proteomics,   upstream: {name: imputeLCMD, source: CRAN, url: https://cran.r-project.org/package=imputeLCMD}}
+  py-inferCNV:      {domain: single-cell,  upstream: {name: infercnv, source: Bioconductor, url: https://github.com/broadinstitute/inferCNV}}
+  py-ldsc:          {domain: genetics,     upstream: {name: ldsc, source: GitHub, url: https://github.com/bulik/ldsc, language: Python}}
+  py-limma:         {domain: bulk,         upstream: {name: limma, source: Bioconductor, url: https://bioconductor.org/packages/limma}}
+  py-lipidr:        {domain: metabolomics, upstream: {name: lipidr, source: Bioconductor, url: https://bioconductor.org/packages/lipidr}}
+  py-MARVEL:        {domain: single-cell,  upstream: {name: MARVEL, source: CRAN, url: https://cran.r-project.org/package=MARVEL}}
+  py-matrixeqtl:    {domain: genetics,     upstream: {name: MatrixEQTL, source: CRAN, url: https://cran.r-project.org/package=MatrixEQTL}}
+  py-mclustR:       {domain: stats,        upstream: {name: mclust, source: CRAN, url: https://cran.r-project.org/package=mclust}}
+  py-mfuzz:         {domain: bulk,         upstream: {name: Mfuzz, source: Bioconductor, url: https://bioconductor.org/packages/Mfuzz}}
+  py-miloR:         {domain: single-cell,  upstream: {name: miloR, source: Bioconductor, url: https://bioconductor.org/packages/miloR}}
+  py-monocle2:      {domain: trajectory,   upstream: {name: monocle (v2), source: Bioconductor, url: https://bioconductor.org/packages/monocle}}
+  py-Monocle3:      {domain: trajectory,   upstream: {name: monocle3, source: GitHub, url: https://github.com/cole-trapnell-lab/monocle3}}
+  py-MSstats:       {domain: proteomics,   upstream: {name: MSstats, source: Bioconductor, url: https://bioconductor.org/packages/MSstats}}
+  py-nichede:       {domain: spatial,      upstream: {name: nicheDE, source: GitHub, url: https://github.com/Kmason23/NicheDE}}
+  py-OlinkAnalyze:  {domain: proteomics,   upstream: {name: OlinkAnalyze, source: CRAN, url: https://cran.r-project.org/package=OlinkAnalyze}}
+  py-proDA:         {domain: proteomics,   upstream: {name: proDA, source: Bioconductor, url: https://bioconductor.org/packages/proDA}}
+  py-sccdc:         {domain: single-cell,  upstream: {name: scCDC, source: GitHub, url: https://github.com/ZJU-UoE-CCW-LAB/scCDC}}
+  py-scDblFinder:   {domain: single-cell,  upstream: {name: scDblFinder, source: Bioconductor, url: https://bioconductor.org/packages/scDblFinder}}
+  py-scdrs:         {domain: genetics,     upstream: {name: scDRS, source: GitHub, url: https://github.com/martinjzhang/scDRS, language: Python}}
+  py-SCEVAN:        {domain: single-cell,  upstream: {name: SCEVAN, source: GitHub, url: https://github.com/AntonioDeFalco/SCEVAN}}
+  py-Scissors:      {domain: single-cell,  upstream: {name: Scissor, source: GitHub, url: https://github.com/sunduanchen/Scissor}}
+  py-scmetabolism:  {domain: single-cell,  upstream: {name: scMetabolism, source: GitHub, url: https://github.com/wu-yc/scMetabolism}}
+  py-scoper:        {domain: immune,       upstream: {name: scoper, source: CRAN, url: https://cran.r-project.org/package=scoper}}
+  py-SCORPIUS:      {domain: trajectory,   upstream: {name: SCORPIUS, source: CRAN, url: https://cran.r-project.org/package=SCORPIUS}}
+  py-shazam:        {domain: immune,       upstream: {name: shazam, source: CRAN, url: https://cran.r-project.org/package=shazam}}
+  py-SigXTalk:      {domain: single-cell,  upstream: {name: SigXTalk, source: GitHub}}
+  py-Slingshot:     {domain: trajectory,   upstream: {name: slingshot, source: Bioconductor, url: https://bioconductor.org/packages/slingshot}}
+  py-soupx:         {domain: single-cell,  upstream: {name: SoupX, source: CRAN, url: https://cran.r-project.org/package=SoupX}}
+  py-SpaceTrooper:  {domain: spatial,      upstream: {name: SpaceTrooper, source: GitHub}}
+  py-spanorm:       {domain: spatial,      upstream: {name: SpaNorm, source: Bioconductor, url: https://bioconductor.org/packages/SpaNorm}}
+  py-SPATA2:        {domain: spatial,      upstream: {name: SPATA2, source: GitHub, url: https://github.com/theMILOlab/SPATA2}}
+  py-SPLIT:         {domain: spatial,      upstream: {name: SPLIT, source: GitHub}}
+  py-spotsweeper:   {domain: spatial,      upstream: {name: SpotSweeper, source: Bioconductor, url: https://bioconductor.org/packages/SpotSweeper}}
+  py-Statial:       {domain: spatial,      upstream: {name: Statial, source: Bioconductor, url: https://bioconductor.org/packages/Statial}}
+  py-susie:         {domain: genetics,     upstream: {name: susieR, source: CRAN, url: https://cran.r-project.org/package=susieR}}
+  py-tigger:        {domain: immune,       upstream: {name: tigger, source: CRAN, url: https://cran.r-project.org/package=tigger}}
+  py-tradeSeq:      {domain: trajectory,   upstream: {name: tradeSeq, source: Bioconductor, url: https://bioconductor.org/packages/tradeSeq}}
+  py-TranspaceR:    {domain: spatial,      upstream: {name: TranspaceR, source: GitHub}}
+  py-TSCAN:         {domain: trajectory,   upstream: {name: TSCAN, source: Bioconductor, url: https://bioconductor.org/packages/TSCAN}}
+  py-twas:          {domain: genetics,     upstream: {name: MetaXcan, source: GitHub, url: https://github.com/hakyimlab/MetaXcan, language: Python}}
+  py-twosamplemr:   {domain: genetics,     upstream: {name: TwoSampleMR, source: GitHub, url: https://github.com/MRCIEU/TwoSampleMR}}
+  py-URD:           {domain: trajectory,   upstream: {name: URD, source: GitHub, url: https://github.com/farrellja/URD}}
+  rust-bandnorm:    {domain: hic,          upstream: {name: BandNorm, source: GitHub, url: https://github.com/sstat-lab/BandNorm}}
+  rust-NMF:         {domain: stats,        upstream: {name: NMF, source: CRAN, url: https://cran.r-project.org/package=NMF}}
+  rust-scHiCluster: {domain: hic,          upstream: {name: scHiCluster, source: GitHub, url: https://github.com/zhoujt1994/scHiCluster, language: Python}}
