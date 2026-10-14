@@ -1,6 +1,6 @@
 {
  "schema": "omicverse-ports/v1",
- "generated_at": "2026-10-13T12:52:35Z",
+ "generated_at": "2026-10-14T08:42:09Z",
  "org": "omicverse",
  "domains": {
   "single-cell": "Single-cell",
@@ -18,20 +18,20 @@
   "other": "Other"
  },
  "summary": {
-  "packages": 70,
-  "python": 67,
+  "packages": 71,
+  "python": 68,
   "rust": 3,
-  "with_port_yaml": 70,
-  "functions_total": 1490,
-  "functions_ported": 1246,
+  "with_port_yaml": 71,
+  "functions_total": 1541,
+  "functions_ported": 1285,
   "functions_partial": 4,
   "functions_planned": 238,
-  "functions_skipped": 2,
-  "with_parity_gate": 14,
-  "with_audit": 18,
+  "functions_skipped": 14,
+  "with_parity_gate": 16,
+  "with_audit": 19,
   "domains": {
    "immune": 7,
-   "single-cell": 18,
+   "single-cell": 19,
    "spatial": 10,
    "genetics": 7,
    "trajectory": 12,
@@ -45,7 +45,7 @@
   },
   "upstream_sources": {
    "CRAN": 17,
-   "GitHub": 31,
+   "GitHub": 32,
    "Bioconductor": 22
   }
  },
@@ -80,7 +80,7 @@
    "pypi": "pyalakazam",
    "import_name": "pyalakazam",
    "version": "0.1.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -1115,7 +1115,7 @@
    "pypi": "pyccasc",
    "import_name": "cca_py",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -1713,7 +1713,7 @@
    "pypi": "pycoloc",
    "import_name": "pycoloc",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -1846,7 +1846,7 @@
    "pypi": "pycondiments",
    "import_name": "pycondiments",
    "version": "0.2.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -2258,7 +2258,7 @@
    "pypi": "pydada2",
    "import_name": "pydada2",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -2644,7 +2644,7 @@
    "pypi": "pydchic",
    "import_name": "pydchic",
    "version": "0.1.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -2787,7 +2787,7 @@
    "pypi": "pydecontx",
    "import_name": "pydecontx",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -2930,7 +2930,7 @@
    "pypi": "pydeqms",
    "import_name": "pydeqms",
    "version": "0.1.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -3215,7 +3215,7 @@
    "pypi": "pydestiny-bio",
    "import_name": "pydestiny",
    "version": "0.2.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -3673,7 +3673,7 @@
    "pypi": "pydoubletfinder",
    "import_name": "pydoubletfinder",
    "version": "0.2.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -3834,7 +3834,7 @@
    "pypi": "pydowser",
    "import_name": "pydowser",
    "version": "0.1.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -4331,7 +4331,7 @@
    "pypi": "pydynbenchmark",
    "import_name": "pydynbenchmark",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -4523,7 +4523,7 @@
    "pypi": "pydyneval-bio",
    "import_name": "pydyneval",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -4697,7 +4697,7 @@
    "pypi": "pydynwrap-bio",
    "import_name": "pydynwrap",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -5189,7 +5189,7 @@
    "pypi": "pyfastcar",
    "import_name": "pyfastcar",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -5491,7 +5491,7 @@
    "pypi": "pygliph",
    "import_name": "pygliph",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -5655,7 +5655,7 @@
    "pypi": "py-hdwgcna",
    "import_name": "py_hdWGCNA",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -6532,7 +6532,7 @@
    "pypi": "pyimmunarch",
    "import_name": "pyimmunarch",
    "version": "0.1.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -6756,7 +6756,7 @@
    "pypi": "pyimputelcmd",
    "import_name": "pyimputelcmd",
    "version": "0.1.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -7152,7 +7152,7 @@
    "pypi": "pyldsc",
    "import_name": "pyldsc",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -7588,7 +7588,7 @@
    "pypi": "pylipidr",
    "import_name": "pylipidr",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -7851,7 +7851,7 @@
    "pypi": "marvel-python",
    "import_name": "marvel_py",
    "version": "0.1.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -8651,7 +8651,7 @@
    "pypi": "pymatrixeqtl",
    "import_name": "pymatrixeqtl",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -8816,7 +8816,7 @@
    "pypi": "pymclustR",
    "import_name": "mclust_py",
    "version": "0.2.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -9094,7 +9094,7 @@
    "pypi": "pymfuzz",
    "import_name": "pymfuzz",
    "version": "0.1.2",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -9316,7 +9316,7 @@
    "pypi": "milor-py",
    "import_name": "milor_py",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -9424,7 +9424,7 @@
    "pypi": "monocle2-py",
    "import_name": "monocle2_py",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -9821,7 +9821,7 @@
    "pypi": "pymonocle3-bio",
    "import_name": "pymonocle3",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -10027,7 +10027,7 @@
    "pypi": "pymsstats",
    "import_name": "pymsstats",
    "version": "0.3.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -10618,7 +10618,7 @@
    "pypi": "pynichede",
    "import_name": "pynichede",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -10941,7 +10941,7 @@
    "pypi": "pyolinkanalyze",
    "import_name": "pyolinkanalyze",
    "version": "0.2.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -11307,6 +11307,549 @@
    }
   },
   {
+   "repo": "py-Pando",
+   "full_name": "omicverse/py-Pando",
+   "html_url": "https://github.com/omicverse/py-Pando",
+   "description": "Pure-Python port of Pando (Fleck et al., Nature 2023): gene regulatory networks from paired scRNA + scATAC, parity-tested against R Pando 1.1.1",
+   "lang": "python",
+   "stars": 0,
+   "pushed_at": "2026-10-14T07:33:01Z",
+   "default_branch": "main",
+   "logo_url": null,
+   "warnings": [],
+   "artifacts": {
+    "readme": "https://github.com/omicverse/py-Pando/blob/main/README.md",
+    "audit": "https://github.com/omicverse/py-Pando/blob/main/AUDIT.md",
+    "report": "https://github.com/omicverse/py-Pando/blob/main/RECONSTRUCTION_REPORT.md",
+    "manifest": "https://github.com/omicverse/py-Pando/blob/main/data/manifest.yaml",
+    "math": "https://github.com/omicverse/py-Pando/blob/main/MATH.md",
+    "notebooks": [
+     {
+      "name": "compare_R_vs_Python.ipynb",
+      "url": "https://github.com/omicverse/py-Pando/blob/main/examples/compare_R_vs_Python.ipynb"
+     },
+     {
+      "name": "evolution.ipynb",
+      "url": "https://github.com/omicverse/py-Pando/blob/main/examples/evolution.ipynb"
+     },
+     {
+      "name": "function_by_function_R_parity.ipynb",
+      "url": "https://github.com/omicverse/py-Pando/blob/main/examples/function_by_function_R_parity.ipynb"
+     },
+     {
+      "name": "tutorial_pbmc10k_multiome.ipynb",
+      "url": "https://github.com/omicverse/py-Pando/blob/main/examples/tutorial_pbmc10k_multiome.ipynb"
+     }
+    ],
+    "tests_count": 2,
+    "r_reference_driver": true,
+    "compare_notebook": "https://github.com/omicverse/py-Pando/blob/main/examples/compare_R_vs_Python.ipynb",
+    "function_notebook": "https://github.com/omicverse/py-Pando/blob/main/examples/function_by_function_R_parity.ipynb"
+   },
+   "pypi": "pypando",
+   "import_name": "pypando",
+   "version": "0.1.0",
+   "license": "LICENSE",
+   "source": "port.yaml",
+   "source_detail": [
+    "port.yaml"
+   ],
+   "upstream": {
+    "name": "Pando",
+    "language": "R",
+    "source": "GitHub",
+    "version": "1.1.1",
+    "url": "https://github.com/quadbio/Pando",
+    "citation": "Fleck et al. Inferring and perturbing cell fate regulomes in human brain organoids. Nature 621, 365-372 (2023).",
+    "license": "MIT"
+   },
+   "domain": "single-cell",
+   "omicverse": {
+    "module": "epione.grn.pando (Epione)",
+    "since": null
+   },
+   "parity": {
+    "status": "partial",
+    "algorithm_class": "mixed",
+    "metric": "per-output gates (data/manifest.yaml)",
+    "threshold": "see RECONSTRUCTION_REPORT.md §3.1",
+    "value": "13/14 gates pass vs installed R; xgb_gain fails because R xgboost>=3 drops Pando's params (passes 1.0/1.0 with them honoured)",
+    "fixture": "10x Multiome PBMC 10k: 2,000 cells, 150 targets, 7,141 peaks",
+    "test": "tests/test_exact_match.py"
+   },
+   "functions": [
+    {
+     "r": "DefaultNetwork",
+     "py": "pypando.DefaultNetwork",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "GRNData",
+     "py": "pypando.GRNData",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": "dataclass",
+     "test": null
+    },
+    {
+     "r": "GetAssay",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "Seurat accessor; use the AnnData objects",
+     "test": null
+    },
+    {
+     "r": "GetAssaySummary",
+     "py": "pypando.GetAssaySummary",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "GetGRN",
+     "py": "pypando.GetGRN",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "GetNetwork",
+     "py": "pypando.GetNetwork",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "LayerData",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "Seurat accessor; use AnnData X/layers",
+     "test": null
+    },
+    {
+     "r": "Network",
+     "py": "pypando.Network",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": "dataclass",
+     "test": null
+    },
+    {
+     "r": "NetworkFeatures",
+     "py": "pypando.NetworkFeatures",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "NetworkGraph",
+     "py": "pypando.NetworkGraph",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "NetworkModules",
+     "py": "pypando.NetworkModules",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "NetworkParams",
+     "py": "pypando.NetworkParams",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "NetworkRegions",
+     "py": "pypando.NetworkRegions",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "NetworkTFs",
+     "py": "pypando.NetworkTFs",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "Params",
+     "py": "pypando.Params",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "Regions",
+     "py": "pypando.Regions",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": "dataclass",
+     "test": null
+    },
+    {
+     "r": "RegulatoryNetwork",
+     "py": "pypando.RegulatoryNetwork",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": "dataclass",
+     "test": null
+    },
+    {
+     "r": "VariableFeatures",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "Seurat accessor; pass variable_features=",
+     "test": null
+    },
+    {
+     "r": "aggregate_assay",
+     "py": "pypando.aggregate_assay",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "aggregate_matrix",
+     "py": "pypando.aggregate_matrix",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "coef",
+     "py": "pypando.coef",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "create_GRNData",
+     "py": "pypando.create_GRNData",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "find_modules",
+     "py": "pypando.find_modules",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "find_motifs",
+     "py": "pypando.find_motifs",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "find_peaks_near_genes",
+     "py": "pypando.find_peaks_near_genes",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "fit_bagging_ridge",
+     "py": "pypando.fit_bagging_ridge",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "fit_bayesian_ridge",
+     "py": "pypando.fit_bayesian_ridge",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "fit_brms",
+     "py": "pypando.fit_brms",
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "Stan/brms not ported; raises NotImplementedError",
+     "test": null
+    },
+    {
+     "r": "fit_cvglmnet",
+     "py": "pypando.fit_cvglmnet",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "fit_glm",
+     "py": "pypando.fit_glm",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "fit_glmnet",
+     "py": "pypando.fit_glmnet",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": "character family (as infer_grn passes it); R function-family default not ported",
+     "test": null
+    },
+    {
+     "r": "fit_grn_models",
+     "py": "pypando.fit_grn_models",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "fit_model",
+     "py": "pypando.fit_model",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "fit_xgb",
+     "py": "pypando.fit_xgb",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": "uses Pando's params; R xgboost>=3 drops them (see report)",
+     "test": null
+    },
+    {
+     "r": "format_coefs",
+     "py": "pypando.format_coefs",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "get_network_graph",
+     "py": "pypando.get_network_graph",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "get_tf_network",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "errors in R for glm networks at default keep_all_edges=FALSE (filters a column it never creates)",
+     "test": null
+    },
+    {
+     "r": "gof",
+     "py": "pypando.gof",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "infer_grn",
+     "py": "pypando.infer_grn",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "initiate_grn",
+     "py": "pypando.initiate_grn",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    },
+    {
+     "r": "map_par",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "R parallelism helper",
+     "test": null
+    },
+    {
+     "r": "no_legend",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "ggplot2 theme helper",
+     "test": null
+    },
+    {
+     "r": "no_margin",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "ggplot2 theme helper",
+     "test": null
+    },
+    {
+     "r": "no_x_text",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "ggplot2 theme helper",
+     "test": null
+    },
+    {
+     "r": "no_y_text",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "ggplot2 theme helper",
+     "test": null
+    },
+    {
+     "r": "plot_gof",
+     "py": "pypando.plot_gof",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": "matplotlib",
+     "test": null
+    },
+    {
+     "r": "plot_module_metrics",
+     "py": "pypando.plot_module_metrics",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": "matplotlib",
+     "test": null
+    },
+    {
+     "r": "plot_network_graph",
+     "py": "pypando.plot_network_graph",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": "matplotlib",
+     "test": null
+    },
+    {
+     "r": "plot_tf_network",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "depends on get_tf_network",
+     "test": null
+    },
+    {
+     "r": "print",
+     "py": null,
+     "aliases": [],
+     "status": "skipped",
+     "parity": null,
+     "note": "print methods; classes have __repr__",
+     "test": null
+    },
+    {
+     "r": "sparse_cor",
+     "py": "pypando.sparse_cor",
+     "aliases": [],
+     "status": "ported",
+     "parity": null,
+     "note": null,
+     "test": null
+    }
+   ],
+   "mapping_quality": "curated",
+   "classes": [],
+   "coverage": {
+    "ported": 39,
+    "partial": 0,
+    "planned": 0,
+    "skipped": 12,
+    "total": 51,
+    "r_functions": 51
+   }
+  },
+  {
    "repo": "py-proDA",
    "full_name": "omicverse/py-proDA",
    "html_url": "https://github.com/omicverse/py-proDA",
@@ -11336,7 +11879,7 @@
    "pypi": "pyproda",
    "import_name": "pyproda",
    "version": "0.1.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -11508,7 +12051,7 @@
    "pypi": "pysccdc",
    "import_name": "pysccdc",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -11634,7 +12177,7 @@
    "description": "Pure-Python port of R scDblFinder for fast doublet detection in scRNA-seq",
    "lang": "python",
    "stars": 7,
-   "pushed_at": "2026-10-13T12:42:03Z",
+   "pushed_at": "2026-10-13T20:02:03Z",
    "default_branch": "main",
    "logo_url": "https://raw.githubusercontent.com/omicverse/py-scDblFinder/main/logo/logo.svg",
    "warnings": [],
@@ -11650,14 +12193,14 @@
       "url": "https://github.com/omicverse/py-scDblFinder/blob/main/examples/compare_py_vs_R.ipynb"
      }
     ],
-    "tests_count": 2,
+    "tests_count": 3,
     "r_reference_driver": true,
     "compare_notebook": "https://github.com/omicverse/py-scDblFinder/blob/main/examples/compare_py_vs_R.ipynb"
    },
    "pypi": "pyscdblfinder",
    "import_name": "pyscdblfinder",
-   "version": "0.2.1",
-   "license": null,
+   "version": "0.3.0",
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -11666,10 +12209,10 @@
     "name": "scDblFinder",
     "language": "R",
     "source": "Bioconductor",
-    "version": null,
+    "version": "1.16.0",
     "url": "https://bioconductor.org/packages/scDblFinder",
     "citation": "F1000Research 10:979 (2022).",
-    "license": null
+    "license": "GPL-3"
    },
    "domain": "single-cell",
    "omicverse": {
@@ -11677,13 +12220,13 @@
     "since": null
    },
    "parity": {
-    "status": "unverified",
-    "algorithm_class": null,
-    "metric": null,
-    "threshold": null,
-    "value": null,
-    "fixture": null,
-    "test": null
+    "status": "partial",
+    "algorithm_class": "mixed",
+    "metric": "max_rel_diff (amulet p/q); spearman (scDblFinder ATAC scores)",
+    "threshold": "1e-10 (amulet); >= 0.9 x R-vs-R spearman (scDblFinder ATAC)",
+    "value": "6.5e-15 (amulet); 0.724 vs R-R 0.729 (scDblFinder ATAC)",
+    "fixture": "GEO GSE162690 CellLine LowLoading, 3,000 cells (336 demuxlet doublets), chr1/19-22/X fragments",
+    "test": "examples/parity_atac.py + tests/r_reference_driver_atac.R; tests/test_atac.py (no R needed)"
    },
    "functions": [
     {
@@ -11845,7 +12388,7 @@
    "pypi": "pyscdrs",
    "import_name": "pyscdrs",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -12240,7 +12783,7 @@
    "pypi": "py-scmetabolism",
    "import_name": "py_scmetabolism",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -12356,7 +12899,7 @@
    "pypi": "pyscoper",
    "import_name": "pyscoper",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -12480,7 +13023,7 @@
    "pypi": "pyscorpius",
    "import_name": "pyscorpius",
    "version": "0.2.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -12695,7 +13238,7 @@
    "pypi": "pyshazam",
    "import_name": "pyshazam",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -12921,7 +13464,7 @@
    "pypi": "pyslingshot-bio",
    "import_name": "pyslingshot",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -13253,7 +13796,7 @@
    "pypi": "pysoupx",
    "import_name": "pysoupx",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -15530,7 +16073,7 @@
    "pypi": "pysusie",
    "import_name": "pysusie",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -15889,7 +16432,7 @@
    "pypi": "pytigger",
    "import_name": "pytigger",
    "version": "0.1.1",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -16049,7 +16592,7 @@
    "pypi": "pytradeseq",
    "import_name": "pytradeseq",
    "version": "0.2.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -16948,7 +17491,7 @@
    "pypi": "pytwas",
    "import_name": "pytwas",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -17190,7 +17733,7 @@
    "pypi": "pytwosamplemr",
    "import_name": "pytwosamplemr",
    "version": "0.1.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
@@ -17386,7 +17929,7 @@
    "pypi": "pyurd-bio",
    "import_name": "pyurd",
    "version": "0.2.0",
-   "license": null,
+   "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
     "port.yaml"
