@@ -1,6 +1,6 @@
 {
  "schema": "omicverse-ports/v1",
- "generated_at": "2026-10-14T08:42:09Z",
+ "generated_at": "2026-10-16T08:09:50Z",
  "org": "omicverse",
  "domains": {
   "single-cell": "Single-cell",
@@ -23,10 +23,10 @@
   "rust": 3,
   "with_port_yaml": 71,
   "functions_total": 1541,
-  "functions_ported": 1285,
+  "functions_ported": 1287,
   "functions_partial": 4,
   "functions_planned": 238,
-  "functions_skipped": 14,
+  "functions_skipped": 12,
   "with_parity_gate": 16,
   "with_audit": 19,
   "domains": {
@@ -11312,8 +11312,8 @@
    "html_url": "https://github.com/omicverse/py-Pando",
    "description": "Pure-Python port of Pando (Fleck et al., Nature 2023): gene regulatory networks from paired scRNA + scATAC, parity-tested against R Pando 1.1.1",
    "lang": "python",
-   "stars": 0,
-   "pushed_at": "2026-10-14T07:33:01Z",
+   "stars": 1,
+   "pushed_at": "2026-10-14T23:15:47Z",
    "default_branch": "main",
    "logo_url": null,
    "warnings": [],
@@ -11348,7 +11348,7 @@
    },
    "pypi": "pypando",
    "import_name": "pypando",
-   "version": "0.1.0",
+   "version": "0.1.2",
    "license": "LICENSE",
    "source": "port.yaml",
    "source_detail": [
@@ -11373,7 +11373,7 @@
     "algorithm_class": "mixed",
     "metric": "per-output gates (data/manifest.yaml)",
     "threshold": "see RECONSTRUCTION_REPORT.md §3.1",
-    "value": "13/14 gates pass vs installed R; xgb_gain fails because R xgboost>=3 drops Pando's params (passes 1.0/1.0 with them honoured)",
+    "value": "15/16 gates pass (13/14 pipeline + 2/2 get_tf_network) vs installed or intent-patched R; xgb_gain fails because R xgboost>=3 drops Pando's params (passes 1.0/1.0 with them honoured)",
     "fixture": "10x Multiome PBMC 10k: 2,000 cells, 150 targets, 7,141 peaks",
     "test": "tests/test_exact_match.py"
    },
@@ -11704,11 +11704,11 @@
     },
     {
      "r": "get_tf_network",
-     "py": null,
+     "py": "pypando.get_tf_network",
      "aliases": [],
-     "status": "skipped",
+     "status": "ported",
      "parity": null,
-     "note": "errors in R for glm networks at default keep_all_edges=FALSE (filters a column it never creates)",
+     "note": "ported with a fix: the default pruning (keep_all_edges=FALSE) uses the per-path mean -log10(padj) it computes, and `order` is honoured; R tests a column name that never exists and silently prunes on the mean estimate, and its filter(order <= order) compares the column with itself. keep_all_edges=True with order=inf equals R (gate tf_network_all_edges).",
      "test": null
     },
     {
@@ -11812,11 +11812,11 @@
     },
     {
      "r": "plot_tf_network",
-     "py": null,
+     "py": "pypando.plot_tf_network",
      "aliases": [],
-     "status": "skipped",
+     "status": "ported",
      "parity": null,
-     "note": "depends on get_tf_network",
+     "note": "matplotlib tree / circular layout (ggraph layout='tree'); coordinates are not ggraph's",
      "test": null
     },
     {
@@ -11841,10 +11841,10 @@
    "mapping_quality": "curated",
    "classes": [],
    "coverage": {
-    "ported": 39,
+    "ported": 41,
     "partial": 0,
     "planned": 0,
-    "skipped": 12,
+    "skipped": 10,
     "total": 51,
     "r_functions": 51
    }
