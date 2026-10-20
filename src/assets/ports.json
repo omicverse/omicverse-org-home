@@ -1,6 +1,6 @@
 {
  "schema": "omicverse-ports/v1",
- "generated_at": "2026-10-19T08:51:05Z",
+ "generated_at": "2026-10-20T08:32:05Z",
  "org": "omicverse",
  "domains": {
   "single-cell": "Single-cell",
@@ -19277,7 +19277,7 @@
    "html_url": "https://github.com/omicverse/rust-NMF",
    "description": "Rust port of R NMF package — bit-equivalent to brunet/lee/offset/nsNMF, plus HALS+NNDSVD shortcut. ~76× R Lee at 16 threads, ~218× with HALS+NNDSVD on pbmc8k.",
    "lang": "rust",
-   "stars": 3,
+   "stars": 4,
    "pushed_at": "2026-10-13T12:43:57Z",
    "default_branch": "main",
    "logo_url": "https://raw.githubusercontent.com/omicverse/rust-NMF/main/logo/logo.svg",
