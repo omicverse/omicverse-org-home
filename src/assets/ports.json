@@ -1,6 +1,6 @@
 {
  "schema": "omicverse-ports/v1",
- "generated_at": "2026-10-20T08:32:05Z",
+ "generated_at": "2026-10-21T08:33:38Z",
  "org": "omicverse",
  "domains": {
   "single-cell": "Single-cell",
@@ -12027,7 +12027,7 @@
    "html_url": "https://github.com/omicverse/py-sccdc",
    "description": "Pure-Python port of R scCDC — entropy-based gene-specific ambient-RNA contamination detection and correction for scRNA-seq/snRNA-seq",
    "lang": "python",
-   "stars": 1,
+   "stars": 2,
    "pushed_at": "2026-10-13T12:42:08Z",
    "default_branch": "master",
    "logo_url": "https://raw.githubusercontent.com/omicverse/py-sccdc/master/logo/logo.svg",
@@ -12176,7 +12176,7 @@
    "html_url": "https://github.com/omicverse/py-scDblFinder",
    "description": "Pure-Python port of R scDblFinder for fast doublet detection in scRNA-seq",
    "lang": "python",
-   "stars": 7,
+   "stars": 9,
    "pushed_at": "2026-10-13T20:02:03Z",
    "default_branch": "main",
    "logo_url": "https://raw.githubusercontent.com/omicverse/py-scDblFinder/main/logo/logo.svg",
