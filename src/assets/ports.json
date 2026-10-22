@@ -1,6 +1,6 @@
 {
  "schema": "omicverse-ports/v1",
- "generated_at": "2026-10-21T08:33:38Z",
+ "generated_at": "2026-10-22T08:35:54Z",
  "org": "omicverse",
  "domains": {
   "single-cell": "Single-cell",
@@ -5628,7 +5628,7 @@
    "html_url": "https://github.com/omicverse/py-hdWGCNA",
    "description": "A pure-Python re-implementation of hdWGCNA for weighted gene co-expression network analysis in single-cell RNA-seq data.",
    "lang": "python",
-   "stars": 4,
+   "stars": 5,
    "pushed_at": "2026-10-13T12:39:00Z",
    "default_branch": "main",
    "logo_url": "https://raw.githubusercontent.com/omicverse/py-hdWGCNA/main/logo/logo.svg",
