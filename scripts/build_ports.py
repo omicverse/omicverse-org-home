@@ -501,7 +501,9 @@ def parse_pyproject(text: str | None) -> dict:
         info["version"] = proj.get("version") if isinstance(proj.get("version"), str) else None
         lic = proj.get("license")
         if isinstance(lic, dict):
-            lic = lic.get("text") or lic.get("file")
+            # {file = "LICENSE"} names a file, not a license; leave it unset so
+            # callers fall back to GitHub's spdx_id / the upstream license.
+            lic = lic.get("text")
         info["license"] = lic if isinstance(lic, str) else None
         st = data.get("tool", {}).get("setuptools", {})
         pk = st.get("packages")
@@ -705,7 +707,8 @@ def build_record(gh: GitHub, repo: dict, overrides: dict, verbose: bool = False)
     record["pypi"] = pyproject.get("pypi")
     record["import_name"] = pyproject.get("import_name")
     record["version"] = pyproject.get("version")
-    record["license"] = pyproject.get("license")
+    gh_spdx = (repo.get("license") or {}).get("spdx_id") if isinstance(repo.get("license"), dict) else None
+    record["license"] = pyproject.get("license") or (gh_spdx if gh_spdx and gh_spdx.upper() not in ("NOASSERTION", "NONE", "OTHER") else None)
     if cargo:
         m = re.search(r"^\s*name\s*=\s*\"([^\"]+)\"", cargo, re.M)
         record["crate"] = m.group(1) if m else None

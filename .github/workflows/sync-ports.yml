@@ -27,7 +27,7 @@ jobs:
       - name: Install deps
         run: pip install pyyaml
 
-      - name: Build src/assets/ports.json
+      - name: Build src/assets/ports.json + catalog.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/build_ports.py --out src/assets/ports.json
@@ -39,11 +39,12 @@ jobs:
 
       - name: Commit when changed
         run: |
-          if git diff --quiet -- src/assets/ports.json src/assets/github.json; then
-            echo "ports.json and github.json unchanged"; exit 0
+          FILES="src/assets/ports.json src/assets/catalog.json src/assets/github.json"
+          if git diff --quiet -- $FILES; then
+            echo "ports.json, catalog.json and github.json unchanged"; exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/assets/ports.json src/assets/github.json
-          git commit -m "chore(data): refresh R-port catalog and GitHub stats"
+          git add $FILES
+          git commit -m "chore(data): refresh R-port catalog, package catalog and GitHub stats"
           git push

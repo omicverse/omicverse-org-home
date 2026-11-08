@@ -126,6 +126,8 @@ catalog:
                             description: "Post-publish six-platform end-to-end test for the @omicverse/omicos npm package."}
   omicverse-data:          {category: tools, domain: data, lang: other,
                             description: "Dataset release assets used by omicverse tutorials and tests."}
+  omicverse-latex-template: {category: tools, lang: other,
+                            description: "LaTeX class for OmicVerse papers and preprints: single- or two-column layouts, four page designs, Chinese support"}
   omicverse-tutorials:     {category: learn, domain: multi-omics, docs: https://omicverse.readthedocs.io/,
                             description: "OmicVerse and OmicClaw tutorials as executable notebooks: spatial, single-cell, bulk and agent workflows."}
   single_cell_tutorial:    {category: learn, domain: single-cell, docs: https://single-cell-tutorial.readthedocs.io, lang: other,
