@@ -1777,7 +1777,7 @@ a.tile:hover { background: var(--tile-hover); }
 .bench-val { color: #fff; font-weight: 600; }
 .bench-na { color: rgba(232, 230, 212, 0.45); }
 .bench-group { margin-bottom: -6px; }
-.bench-group .bench-name { font-size: 11px; letter-spacing: 0.08em; color: rgba(232, 230, 212, 0.5); }
+.bench-group .bench-name { font-size: 11px; letter-spacing: 0.04em; white-space: nowrap; color: rgba(232, 230, 212, 0.5); }
 .bench-divider { border-top: 1px dashed rgba(232, 230, 212, 0.22); margin: 4px 0; }
 .bench-tag { font-style: normal; color: #f2a07b; }
 .bench-bar { display: block; flex: none; height: 100%; width: calc((100% - 76px) * var(--f)); min-width: 4px; background: var(--c); border-radius: 0 4px 4px 0; }
