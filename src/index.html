@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=2026-11-09b" />
-  <script src="script.js?v=2026-11-09b" defer></script>
+  <script src="script.js?v=2026-11-12a" defer></script>
   <script src="ports.js?v=2026-11-09b" defer></script>
 </head>
 <body>
@@ -106,7 +106,14 @@
           <h2 id="bench-title">1.4M cells in about a minute, <em>from disk</em>.</h2>
           <p>Full scRNA-seq workflow on SEA-AD: 67 s and 13.5 GB of memory.</p>
         </div>
-        <img class="bench-fig" src="assets/bench/seaad-1.4M-dark.png" alt="Runtime and peak memory on SEA-AD (1.38M cells): omicverse 67 s / 13.5 GB, brisc 61 s / 114 GB, Scanpy 1.4 h / 256 GB, Seurat 2.9 h / 15 GB" width="1480" height="560" loading="lazy" />
+        <div class="bench-chart" data-bench role="table" aria-label="Runtime and peak memory on SEA-AD, 1.38M cells">
+          <div class="bench-row bench-head" role="row"><span role="columnheader"></span><span role="columnheader">Runtime <i>log</i></span><span role="columnheader">Peak memory</span></div>
+          <div class="bench-row" role="row" style="--i:0"><span class="bench-name" role="rowheader">omicverse</span><span role="cell"><span class="bench-track"><span class="bench-bar" style="--f:0.2725;--c:#7058be"></span><span class="bench-num"><b class="bench-val" data-v="67" data-d="0">67</b>&nbsp;s</span></span></span><span role="cell"><span class="bench-track"><span class="bench-bar" style="--f:0.0525;--c:#7058be"></span><span class="bench-num"><b class="bench-val" data-v="13.5" data-d="1">13.5</b>&nbsp;GB</span></span></span></div>
+          <div class="bench-row" role="row" style="--i:1"><span class="bench-name" role="rowheader">brisc</span><span role="cell"><span class="bench-track"><span class="bench-bar" style="--f:0.26;--c:#e16032"></span><span class="bench-num"><b class="bench-val" data-v="61" data-d="0">61</b>&nbsp;s</span></span></span><span role="cell"><span class="bench-track"><span class="bench-bar" style="--f:0.445;--c:#e16032"></span><span class="bench-num"><b class="bench-val" data-v="114" data-d="0">114</b>&nbsp;GB</span></span></span></div>
+          <div class="bench-row" role="row" style="--i:2"><span class="bench-name" role="rowheader">Scanpy</span><span role="cell"><span class="bench-track"><span class="bench-bar" style="--f:0.8912;--c:#269d69"></span><span class="bench-num"><b class="bench-val" data-v="1.4" data-d="1">1.4</b>&nbsp;h</span></span></span><span role="cell"><span class="bench-track"><span class="bench-bar" style="--f:1;--c:#269d69"></span><span class="bench-num"><b class="bench-val" data-v="256" data-d="0">256</b>&nbsp;GB</span></span></span></div>
+          <div class="bench-row" role="row" style="--i:3"><span class="bench-name" role="rowheader">Seurat</span><span role="cell"><span class="bench-track"><span class="bench-bar" style="--f:1;--c:#4698cc"></span><span class="bench-num"><b class="bench-val" data-v="2.9" data-d="1">2.9</b>&nbsp;h</span></span></span><span role="cell"><span class="bench-track"><span class="bench-bar" style="--f:0.05875;--c:#4698cc"></span><span class="bench-num"><b class="bench-val" data-v="15" data-d="0">15</b>&nbsp;GB</span></span></span></div>
+          <p class="bench-note">SEA-AD · 1.38M cells × 36,601 genes</p>
+        </div>
       </section>
 
       <!-- Modules -->

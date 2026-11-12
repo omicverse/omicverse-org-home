@@ -1764,7 +1764,22 @@ a.tile:hover { background: var(--tile-hover); }
 .tile-ports .ports-logo-wall { margin: 0; width: 100%; min-width: 0; }
 .tile-ports .hero-actions { margin-top: 0; padding-top: 18px; }
 .tile-bench { display: grid; grid-template-columns: minmax(250px, 340px) minmax(0, 1fr); gap: 24px 40px; align-items: center; padding: 34px 36px; }
-.tile-bench .bench-fig { width: 100%; height: auto; border-radius: 8px; }
+.tile-bench h2 { color: #fff; }
+.tile-bench h2 em { color: #9fd3a8; }
+.tile-bench p { color: rgba(232, 230, 212, 0.74); }
+.bench-chart { display: grid; gap: 14px; min-width: 0; }
+.bench-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: center; }
+.bench-head { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(232, 230, 212, 0.62); }
+.bench-head i { font-style: normal; text-transform: none; opacity: 0.7; }
+.bench-name { color: var(--terminal-text); font-size: 15px; font-weight: 600; text-align: right; }
+.bench-track { display: flex; align-items: center; gap: 8px; height: 26px; white-space: nowrap;
+  font-family: var(--mono); font-size: 13px; color: rgba(232, 230, 212, 0.74); }
+.bench-val { color: #fff; font-weight: 600; }
+.bench-bar { display: block; flex: none; height: 100%; width: calc((100% - 76px) * var(--f)); min-width: 4px; background: var(--c); border-radius: 0 4px 4px 0; }
+.bench-chart.is-pending .bench-bar { width: 0; min-width: 0; }
+.bench-chart.is-pending .bench-val { opacity: 0.35; }
+.bench-chart.is-animating .bench-bar { transition: width 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i) * 0.12s); }
+.bench-chart .bench-note { font-size: 12px; margin: 4px 0 0 114px; color: rgba(232, 230, 212, 0.5); }
 .mini-stats { display: flex; flex-wrap: wrap; gap: 14px 28px; margin: 20px 0 0; }
 .mini-stats div { display: flex; flex-direction: column; }
 .mini-stats b { font-size: 24px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
@@ -1852,6 +1867,11 @@ a.tile:hover { background: var(--tile-hover); }
   .tile-hero .hero-copy { padding: 36px 32px 28px; max-width: 560px; }
   .tile-ports { grid-template-columns: 1fr; padding: 28px; }
   .tile-bench { grid-template-columns: 1fr; padding: 28px; }
+  .bench-row { grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .bench-track { font-size: 11.5px; gap: 5px; }
+  .bench-bar { width: calc((100% - 60px) * var(--f)); }
+  .bench-name { font-size: 13px; }
+  .bench-chart .bench-note { margin-left: 0; }
 }
 @media (max-width: 640px) {
   :root { --bento-row: 150px; --tile-radius: 20px; --bento-gap: 10px; }

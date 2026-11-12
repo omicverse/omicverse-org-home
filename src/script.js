@@ -274,3 +274,26 @@ document.querySelectorAll("[data-copy]").forEach((btn) => {
     } catch (_) { /* clipboard unavailable: leave the button as is */ }
   });
 });
+
+// ─── Benchmark bars: grow and count up once in view ─────────────────────
+document.querySelectorAll("[data-bench]").forEach((chart) => {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+  const vals = [...chart.querySelectorAll(".bench-val")];
+  chart.classList.add("is-pending");
+  const run = () => {
+    chart.classList.add("is-animating");
+    requestAnimationFrame(() => chart.classList.remove("is-pending"));
+    const t0 = performance.now();
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / 1500);
+      const e = 1 - Math.pow(1 - k, 3);
+      vals.forEach((el) => { el.textContent = (Number(el.dataset.v) * e).toFixed(Number(el.dataset.d)); });
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  const io = new IntersectionObserver((entries) => {
+    if (entries.some((en) => en.isIntersecting)) { io.disconnect(); run(); }
+  }, { threshold: 0.35 });
+  io.observe(chart);
+});
