@@ -100,17 +100,13 @@
       </section>
 
       <!-- Benchmark -->
-      <section class="tile tile-bench s-12" aria-labelledby="bench-title">
+      <section class="tile tile-dark tile-bench s-12" aria-labelledby="bench-title">
         <div class="tile-bench-copy">
           <span class="tile-kicker">Benchmark</span>
           <h2 id="bench-title">1.4M cells in about a minute, <em>from disk</em>.</h2>
-          <p>The full single-cell workflow — QC, normalization + HVG, PCA, kNN, Leiden at five resolutions, embedding and markers — on SEA-AD (1.38M cells). omicverse 2.4.2 streams the matrix with <code>storage='disk'</code>: 66.8 s and 13.5 GB, next to brisc's 61.0 s with the whole matrix in RAM (114 GB).</p>
-          <p class="bench-note">omicverse and brisc measured on the same AMD EPYC 9754 node, fastest of 32/64/128 threads. Scanpy and Seurat + BPCells as reported in the brisc paper (192-core node).</p>
-          <div class="hero-actions">
-            <a class="btn btn-link" href="https://github.com/omicverse/anndataoom-fast/tree/main/benchmarks/fig4" target="_blank" rel="noopener">Benchmark scripts</a>
-          </div>
+          <p>Full scRNA-seq workflow on SEA-AD: 67 s and 13.5 GB of memory.</p>
         </div>
-        <img class="bench-fig" src="assets/bench/seaad-1.4M.png" alt="Total runtime and peak memory on SEA-AD: omicverse 66.8 s / 13.5 GB, brisc 61.0 s / 114 GB, Scanpy 1.4 h / 256 GB, Seurat + BPCells 2.9 h / 15 GB" width="1873" height="684" loading="lazy" />
+        <img class="bench-fig" src="assets/bench/seaad-1.4M-dark.png" alt="Runtime and peak memory on SEA-AD (1.38M cells): omicverse 67 s / 13.5 GB, brisc 61 s / 114 GB, Scanpy 1.4 h / 256 GB, Seurat 2.9 h / 15 GB" width="1480" height="560" loading="lazy" />
       </section>
 
       <!-- Modules -->
