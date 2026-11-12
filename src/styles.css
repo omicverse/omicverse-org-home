@@ -1763,6 +1763,10 @@ a.tile:hover { background: var(--tile-hover); }
 .tile-ports { display: grid; grid-template-columns: minmax(250px, 340px) minmax(0, 1fr); gap: 28px 44px; align-items: center; padding: 34px 36px; }
 .tile-ports .ports-logo-wall { margin: 0; width: 100%; min-width: 0; }
 .tile-ports .hero-actions { margin-top: 0; padding-top: 18px; }
+.tile-bench { display: grid; grid-template-columns: minmax(250px, 340px) minmax(0, 1fr); gap: 24px 40px; align-items: center; padding: 34px 36px; }
+.tile-bench .bench-fig { width: 100%; height: auto; border-radius: 8px; background: #fff; }
+.tile-bench .bench-note { font-size: 12.5px; margin-top: 10px; }
+.tile-bench .hero-actions { margin-top: 0; padding-top: 14px; }
 .mini-stats { display: flex; flex-wrap: wrap; gap: 14px 28px; margin: 20px 0 0; }
 .mini-stats div { display: flex; flex-direction: column; }
 .mini-stats b { font-size: 24px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
@@ -1849,6 +1853,7 @@ a.tile:hover { background: var(--tile-hover); }
   .tile-hero .hero-art { position: static; order: 2; width: 100%; height: auto; aspect-ratio: 16 / 7; object-fit: cover; object-position: right center; }
   .tile-hero .hero-copy { padding: 36px 32px 28px; max-width: 560px; }
   .tile-ports { grid-template-columns: 1fr; padding: 28px; }
+  .tile-bench { grid-template-columns: 1fr; padding: 28px; }
 }
 @media (max-width: 640px) {
   :root { --bento-row: 150px; --tile-radius: 20px; --bento-gap: 10px; }
