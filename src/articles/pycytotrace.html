@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Same-input R validation of the CytoTRACE Python core — OmicVerse Articles</title>
+  <meta name="description" content="We evaluate the supported single-batch CytoTRACE Python core against original R on two real marrow datasets at 100, 200 and 400 cells. All six comparisons have identical ranks and detected-gene counts, with maximum score difference 5.55e-16. Restricting inputs to 3,000 high-variance genes changes ra" />
+  <meta property="og:title" content="Same-input R validation of the CytoTRACE Python core" />
+  <meta property="og:description" content="We evaluate the supported single-batch CytoTRACE Python core against original R on two real marrow datasets at 100, 200 and 400 cells. All six comparisons have identical ranks and detected-gene counts, with maximum score difference 5.55e-16. Restricting inputs to 3,000 high-variance genes changes ra" />
+  <meta name="citation_title" content="Same-input R validation of the CytoTRACE Python core" />
+  <meta name="citation_author" content="Haoliang Zhu" />
+  <meta name="citation_author" content="Zehua Zeng" />
+  <meta name="citation_publication_date" content="2026/11/14" />
+  <meta name="citation_journal_title" content="OmicVerse Technical Reports" />
+  <meta name="citation_pdf_url" content="https://omicverse.org/assets/articles/pycytotrace/pycytotrace.pdf" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/brand/favicon-32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <link rel="stylesheet" href="../styles.css?v=2026-11-12b" />
+  <script src="../script.js?v=2026-11-12b" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" defer></script>
+  <script src="../articles.js?v=2026-11-12b" defer></script>
+</head>
+<body class="paper-page">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/brand/mark.svg" alt="" width="28" height="28" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../ports.html">Ports</a>
+      <a aria-current="page" href="../articles.html">Articles</a>
+      <a href="https://omicverse.readthedocs.io/">Learn</a>
+      <a href="../blog.html">Blog</a>
+      <a href="../people.html">People</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener"><svg class="nav-gh" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+    </nav>
+  </header>
+
+  <main class="paper page-width wide">
+    <nav class="paper-crumbs" aria-label="Breadcrumb"><a href="../index.html">OmicVerse</a><span aria-hidden="true">›</span><a href="../articles.html">Articles</a><span aria-hidden="true">›</span><span>Technical Report</span></nav>
+    <div class="paper-grid">
+      <article class="paper-main">
+        <p class="paper-meta"><span>Technical Report</span><span>Published: <time datetime="2026-11-14">14 November 2026</time></span><span>Version 2</span></p>
+        <h1 class="paper-title">Same-input R validation of the CytoTRACE Python core</h1>
+        <ul class="paper-authors"><li><span class="au-name">Haoliang Zhu</span><sup>1,3</sup></li><li><span class="au-name">Zehua Zeng</span><sup>2,3</sup> <a class="au-mail" href="mailto:starlitnightly@gmail.com" aria-label="Email Zehua Zeng"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 6h18v12H3z M3 6l9 7 9-7"/></svg></a></li></ul>
+        <details class="paper-affil"><summary>Affiliations</summary><ol><li><sup>1</sup> School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou 325000, China</li><li><sup>2</sup> Department of Genetics, Stanford University, Stanford, CA 94305, USA</li><li><sup>3</sup> OmicVerse, Inc., San Francisco, CA 94114, USA</li></ol></details>
+        <p class="paper-journal"><i>OmicVerse Technical Reports</i> (2026)<span class="sep" aria-hidden="true">|</span><a href="#cite">Cite this article</a></p>
+
+        <a class="paper-pdf-inline btn btn-primary" href="../assets/articles/pycytotrace/pycytotrace.pdf" download><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>Download PDF</a>
+
+        <section class="paper-section" id="abstract" aria-labelledby="abstract-h">
+          <h2 id="abstract-h">Abstract</h2>
+          <p class="paper-abstract">We evaluate the supported single-batch CytoTRACE Python core against original R on two real marrow datasets at 100, 200 and 400 cells. All six comparisons have identical ranks and detected-gene counts, with maximum score difference 5.55e-16. Restricting inputs to 3,000 high-variance genes changes rankings substantially more than cross-language numerical error. Three multi-panel figures separate real-data displays, stage-level numerical agreement, input sensitivity and descriptive execution times. Fast mode, batch correction and broader biological validation remain outside the measured scope.</p>
+          <ul class="paper-keywords" aria-label="Keywords"><li>Python</li><li>R</li><li>reproducibility</li><li>validation</li></ul>
+        </section>
+
+<section class="paper-section is-body" id="sec-introduction" aria-labelledby="sec-introduction-h">
+<h2 id="sec-introduction-h">Introduction</h2>
+<p>CytoTRACE estimates relative differentiation potential by combining detected-gene counts with a correlated expression signature and smoothing across transcriptionally similar cells<sup class="cite"><a href="#ref-1">1</a></sup>. Its output is an ordering within the analyzed population, not calibrated developmental time. A native Python implementation is useful when counts and downstream analyses already reside in AnnData: scoring can run without an R process or cross-language object conversion. Removing that runtime dependency does not remove the need to validate the translation.</p>
+<p>This report evaluates the single-batch, non-subsampled core of <code>pycytotrace-bio</code>. ComBat, fast subsampling and iCytoTRACE are outside its implemented scope. We compare the Python core with original R on two real expression datasets at three cell-subset sizes. We separately examine gene-input restriction, because a faithful translation can still give a different answer when supplied with a different matrix. Embeddings are used only for display and never enter the score.</p>
+</section>
+<section class="paper-section is-body" id="sec-implementation" aria-labelledby="sec-implementation-h">
+<h2 id="sec-implementation-h">Implementation</h2>
+<h3 id="matrix-contract-and-preprocessing">Matrix contract and preprocessing</h3>
+<p>The entry point accepts genes by cells and optional identifiers. OmicVerse transposes its cells-by-genes matrix at the backend boundary and now forwards both sets of identifiers. Gene names are necessary for ERCC filtering. The complete measured gene axis should remain available until the algorithm performs its own selection: a counts layer is subset together with AnnData and cannot recover previously removed genes.</p>
+<p>The Python default explicitly interprets counts. <code>input_scale=&#x27;auto&#x27;</code> reproduces the R heuristic that exponentiates an input whose maximum is below 50; an explicit log2 option is also available. These interpretations are not interchangeable for low-depth count matrices. The benchmark uses the R-compatible option and records maxima. All six matrices have maxima above 50, so this heuristic does not exponentiate them. This benchmark restriction does not validate the heuristic for every input.</p>
+<p>Zero-variance genes and ERCC rows are removed. Cells with at most ten detected genes are filtered and later restored as missing outputs in their original positions. Sequencing-depth normalization scales each retained cell to one million counts before log2 transformation. Census normalization rescales inverse-log relative abundances to the number of detected genes and reapplies log2 transformation. Detected-gene counts therefore affect both the signature and normalization.</p>
+<h3 id="signature-and-smoothing">Signature and smoothing</h3>
+<p>Genes expressed in at least 5% of retained cells are eligible for variable-gene selection. Dispersion is variance divided by mean; genes at or above the top-1,000 cutoff are retained, including ties. The prevalence threshold is not rounded down. Cell-cell Pearson correlations define a similarity matrix whose mean is computed before zeroing its diagonal. Negative and below-cutoff correlations are zeroed, then rows are normalized; empty rows remain zero.</p>
+<p>The gene-count signature, GCS, averages normalized expression of the 200 genes most correlated with detected-gene counts. Nonnegative least squares fits GCS using the cleaned similarity matrix. The fitted signature is diffused with 0.9 weight on propagation and 0.1 on the initial fit, stopping at mean absolute update below 1e-6 or 10,000 iterations. Values are ranked and rescaled to [0,1]. NumPy and SciPy supply the numerical operations<sup class="cite"><a href="#ref-2">2</a>,<a href="#ref-3">3</a></sup>. A shared mathematical objective does not imply bit-identical results across solvers or BLAS implementations.</p>
+<p>Implementation review corrected ERCC and low-quality-cell handling, prevalence rounding and tied dispersions. Plotting imports were made lazy so numerical scoring does not require a plotting extra. The former synthetic “exact match” test was renamed: association with gene detection is a sanity check, not an independently executed R comparison.</p>
+</section>
+<section class="paper-section is-body" id="sec-benchmark-design" aria-labelledby="sec-benchmark-design-h">
+<h2 id="sec-benchmark-design-h">Benchmark design</h2>
+<p>The original R function is pinned to <code>gunsagargulati/CytoTRACE@f4ff6c0ab93cc704eef44e17adcd5c6baf09703a</code>. We used its <code>marrow_10x_expr</code> and <code>marrow_plate_expr</code> datasets, with 13,526 and 17,479 input genes. R seed 17 selected 100, 200 and 400 cells without replacement, sorting selected indices back into source order. Every input gene was preserved before algorithmic filtering. The exact matrices were exported for Python, avoiding cross-language sampling differences.</p>
+<p>R ran with <code>enableFast=FALSE</code>, one core and no batch labels. Outputs compared were detected counts, GCS, scores, ranks and gene-score correlations. Six subsets from two datasets are not six independent biological cohorts; repeated sizes must not be counted as independent replicates. Separate existing controls append an ERCC row and a five-detected-gene cell to a 120-cell real fixture, testing filtering and output alignment rather than biological accuracy.</p>
+<figure class="paper-fig" id="fig-1"><figcaption class="fig-title"><b>Fig. 1:</b> Real expression inputs and relative differentiation scores.</figcaption><a class="fig-img" href="../assets/articles/pycytotrace/fig1.jpg" target="_blank" rel="noopener"><img src="../assets/articles/pycytotrace/fig1.jpg" alt="Fig. 1: Real expression inputs and relative differentiation scores." loading="lazy" /></a><div class="fig-legend"><strong>(a, b)</strong> Display-only PCs of 400 sampled cells from 10x and plate datasets, colored by full-gene Python scores. PCA uses log library-normalized expression and 1,000 high-variance genes solely to draw the display. <strong>(c, d)</strong> Scores against detected-gene counts. This association is a signal diagnostic, not an R comparison or cell-identity validation. Scores are relative within each subset.</div><a class="fig-full" href="../assets/articles/pycytotrace/fig1.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+</section>
+<section class="paper-section is-body" id="sec-results" aria-labelledby="sec-results-h">
+<h2 id="sec-results-h">Results</h2>
+<h3 id="direct-agreement-at-three-sizes">Direct agreement at three sizes</h3>
+<p>All six comparisons returned identical ranks and detected counts. Maximum score differences ranged from 4.72e-16 to 5.55e-16; the maximum GCS difference was 8.22e-15. Gene-score correlations differed by at most 3.89e-15. Score Spearman agreement was one within floating-point precision. These results support the specified single-batch cases rather than universal bit equivalence.</p>
+<figure class="paper-table" id="table-1"><figcaption class="fig-title"><b>Table 1:</b> Largest absolute differences across six real-data comparisons.</figcaption><div class="table-scroll"><table><thead><tr><th>Output</th><th>Maximum difference</th><th>Evaluation scope</th></tr></thead><tbody><tr><td>Detected counts</td><td>0</td><td>Both datasets, all sizes</td></tr><tr><td>Ranks</td><td>0</td><td>Both datasets, all sizes</td></tr><tr><td>Normalized score</td><td>5.55e-16</td><td>All finite scores</td></tr><tr><td>GCS</td><td>8.22e-15</td><td>All retained cells</td></tr><tr><td>Gene-score correlation</td><td>3.89e-15</td><td>Shared finite gene correlations</td></tr></tbody></table></div></figure>
+<figure class="paper-fig" id="fig-2"><figcaption class="fig-title"><b>Fig. 2:</b> Original-R numerical comparison.</figcaption><a class="fig-img" href="../assets/articles/pycytotrace/fig2.jpg" target="_blank" rel="noopener"><img src="../assets/articles/pycytotrace/fig2.jpg" alt="Fig. 2: Original-R numerical comparison." loading="lazy" /></a><div class="fig-legend"><strong>(a, b)</strong> R and Python scores for the 400-cell subsets. <strong>(c, d)</strong> Cumulative distributions of absolute GCS differences at 100, 200 and 400 cells. Zeros are displayed at 1e-18 solely for the logarithmic axis. Stage metrics also cover counts, ranks and gene correlations, so the identity scatter is not the only evidence.</div><a class="fig-full" href="../assets/articles/pycytotrace/fig2.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+<h3 id="restricting-input-genes-changes-the-result">Restricting input genes changes the result</h3>
+<p>Repeating Python scoring with only the 3,000 genes of highest sample variance gave Spearman agreement with full-gene scores of 0.9546–0.9868. This is a deliberately simple restriction diagnostic, not a reproduction of every HVG implementation. Its effects are much larger than the R/Python numerical differences. It demonstrates why the tutorial input must be explicit, but does not identify which individual score changes are biologically correct.</p>
+<p>The corrected OmicVerse pancreas tutorial retains all 27,998 genes for a deterministic 300-cell teaching subset and uses supplied PCA/UMAP only for display. This establishes integration execution; it is not counted among the direct R benchmarks. Subset-relative scores should not be presented as results for the whole cohort, and changing a cell population can change its relative ordering even with unchanged code.</p>
+<h3 id="observed-execution-cost">Observed execution cost</h3>
+<p>Python calls took approximately 0.08–0.44 seconds and R calls 0.91–4.51 seconds. Calls exclude CSV reading and writing; Python BLAS/OpenMP limits were set to one. These are single observations, not repeated randomized timing trials. Initial library effects, timer granularity and BLAS differences limit interpretation. We show the observations without asserting a portable speedup. Dense cell-cell similarities and the NNLS solve remain scaling concerns well beyond the 400-cell maximum examined here.</p>
+<figure class="paper-fig" id="fig-3"><figcaption class="fig-title"><b>Fig. 3:</b> Input sensitivity and observed scaling.</figcaption><a class="fig-img" href="../assets/articles/pycytotrace/fig3.jpg" target="_blank" rel="noopener"><img src="../assets/articles/pycytotrace/fig3.jpg" alt="Fig. 3: Input sensitivity and observed scaling." loading="lazy" /></a><div class="fig-legend"><strong>(a, b)</strong> Full-gene versus 3,000-high-variance-gene scores at 400 cells. <strong>(c)</strong> Spearman agreement across sizes. <strong>(d)</strong> Single-call elapsed times for R and Python. Lines are not confidence intervals or a general speed guarantee; R fast mode is disabled.</div><a class="fig-full" href="../assets/articles/pycytotrace/fig3.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+</section>
+<section class="paper-section is-body" id="sec-limitations-and-practical-use" aria-labelledby="sec-limitations-and-practical-use-h">
+<h2 id="sec-limitations-and-practical-use-h">Limitations and practical use</h2>
+<p>The matrices come from the same upstream project's marrow examples and do not represent all tissues, platforms or normalization choices. No experiment validates batch correction, iCytoTRACE or fast subsampling. Degenerate constant scores, unusual missing values and extreme input ranges require separate contracts. The tests cannot establish biological ground truth for differentiation, nor can they convert gene-count association into an independent developmental annotation.</p>
+<p>The supported conclusion is specific: the implemented core agrees with original R on shared real matrices at the examined sizes, while gene restriction changes scores materially. Users should preserve the full measured input, choose its scale explicitly, retain identifiers and document whether scoring concerns the full cohort or a subset. Releases should keep the numerical fixtures and integration tests, and name unsupported modes instead of claiming unrestricted replacement of the R package.</p>
+</section>
+<section class="paper-section is-back" id="sec-data-and-code-availability" aria-labelledby="sec-data-and-code-availability-h">
+<h2 id="sec-data-and-code-availability-h">Data and code availability</h2>
+<p>The <a href="https://github.com/omicverse/omicverse-org-home/raw/refs/heads/main/articles/_evidence/rewrite-validation/evidence.zip" target="_blank" rel="noopener">reproduction bundle</a> contains the recorded inputs, reference outputs, scripts and environment details.</p>
+<p>The evaluated Python implementation is preserved at <a href="https://github.com/hurry060215-tech/py-CytoTRACE/commit/62b59509dee90147a24073ede4f17cd5883ac58f" target="_blank" rel="noopener">the pinned repair revision</a>. The benchmark source hashes identify the exact tested files; inclusion in an upstream release is a separate status.</p>
+<p>Inputs and original R code are available at <a href="https://github.com/gunsagargulati/CytoTRACE" target="_blank" rel="noopener">https://github.com/gunsagargulati/CytoTRACE</a>; Python code is at <a href="https://github.com/omicverse/py-CytoTRACE" target="_blank" rel="noopener">https://github.com/omicverse/py-CytoTRACE</a>. This report evaluates the pinned source revision rather than a released backend version. <code>cyto_reference.R</code>, <code>cyto_compare.py</code> and <code>figures.py</code> in the attached experiment bundle generate the input exports, score tables, metrics and figures. Input matrices, timings and R session information are retained. Experiments used an Intel Core Ultra 9 285K Windows workstation. Each plot is saved as a raster preview and vector PDF.</p>
+</section>
+<section class="paper-section is-back" id="sec-conflicts-of-interest" aria-labelledby="sec-conflicts-of-interest-h">
+<h2 id="sec-conflicts-of-interest-h">Conflicts of interest</h2>
+<p>H.Z. and Z.Z. are affiliated with OmicVerse, Inc.</p>
+</section>
+<section class="paper-section is-back" id="sec-use-of-ai-tools" aria-labelledby="sec-use-of-ai-tools-h">
+<h2 id="sec-use-of-ai-tools-h">Use of AI tools</h2>
+<p>AI assistance was used for code inspection, experiment scripting, visualization and drafting. The authors approved submission of this scoped technical report.</p>
+</section>
+<section class="paper-section is-refs" id="references" aria-labelledby="references-h">
+<h2 id="references-h">References</h2>
+<ol class="paper-refs"><li id="ref-1"><span class="ref-n">1.</span><span class="ref-text">Gulati GS et al. (2020). Single-cell transcriptional diversity is a hallmark of developmental potential. Science 367, 405–411. <a href="https://doi.org/10.1126/science.aax0249" target="_blank" rel="noopener">10.1126/science.aax0249</a></span></li><li id="ref-2"><span class="ref-n">2.</span><span class="ref-text">Harris CR et al. (2020). Array programming with NumPy. Nature 585, 357–362. <a href="https://doi.org/10.1038/s41586-020-2649-2" target="_blank" rel="noopener">10.1038/s41586-020-2649-2</a></span></li><li id="ref-3"><span class="ref-n">3.</span><span class="ref-text">Virtanen P et al. (2020). SciPy 1.0: fundamental algorithms for scientific computing in Python. Nature Methods 17, 261–272. <a href="https://doi.org/10.1038/s41592-019-0686-2" target="_blank" rel="noopener">10.1038/s41592-019-0686-2</a></span></li><li id="ref-4"><span class="ref-n">4.</span><span class="ref-text">Zeng Z et al. (2024). OmicVerse: a framework for bridging and deepening insights across bulk and single-cell sequencing. Nature Communications 15, 5983. <a href="https://doi.org/10.1038/s41467-024-50194-3" target="_blank" rel="noopener">10.1038/s41467-024-50194-3</a></span></li></ol>
+</section>
+<section class="paper-section is-supp" id="supplementary" aria-labelledby="supplementary-h">
+<h2 id="supplementary-h">Supplementary information</h2>
+<h3 id="reproduction-and-interpretation-of-diagnostics">Reproduction and interpretation of diagnostics</h3>
+<p>Run the reference script with the repository checkout and the separate validation R library containing HiClimR and ccaPP. It calls the original R function rather than replacing its correlations or solver. Run the Python comparison on the exported input matrices, then the figure generator. The <code>metrics.csv</code> table records errors separately for each dataset and size; readers can inspect any apparent aggregation benefit by returning to individual rows.</p>
+<p>Missing-output patterns and cell identifiers must be checked before calculating an error. Shared finite gene correlations are compared after identifier alignment. A rank agreement of one does not imply equality of GCS, so those quantities are tested separately. The optional inverse-log heuristic is part of input semantics, and cannot be silently toggled to improve a comparison. Runtime claims would require repeated matched-load measurements and memory profiling; the current observations remain descriptive.</p>
+</section>
+
+        <section class="paper-section" id="author-information" aria-labelledby="author-information-h">
+          <h2 id="author-information-h">Author information</h2>
+          <h3>Affiliations</h3>
+          <ol class="paper-affil-list"><li><sup>1</sup> School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou 325000, China</li><li><sup>2</sup> Department of Genetics, Stanford University, Stanford, CA 94305, USA</li><li><sup>3</sup> OmicVerse, Inc., San Francisco, CA 94114, USA</li></ol>
+          <h3>Corresponding authors</h3>
+          <p>Correspondence to <a href="mailto:starlitnightly@gmail.com">Zehua Zeng</a>.</p>
+        </section>
+
+        <section class="paper-section" id="cite" aria-labelledby="cite-h">
+          <h2 id="cite-h">Cite this article</h2>
+          <p class="cite-text" id="cite-text">Zhu, H. &amp; Zeng, Z. Same-input R validation of the CytoTRACE Python core. OmicVerse Technical Reports (2026). https://omicverse.org/articles/pycytotrace</p>
+          <dl class="cite-meta"><div><dt>Published</dt><dd>14 November 2026</dd></div></dl>
+          <div class="cite-actions"><button class="btn btn-ghost" type="button" data-copy-target="#cite-text">Copy citation</button><button class="btn btn-ghost" type="button" data-copy-target="#cite-bib">Copy BibTeX</button></div>
+          <pre class="cite-bib" id="cite-bib">@techreport{zhu2026pycytotrace,
+  title       = {Same-input R validation of the CytoTRACE Python core},
+  author      = {Zhu, Haoliang and Zeng, Zehua},
+  institution = {OmicVerse},
+  type        = {Technical Report},
+  year        = {2026},
+  url         = {https://omicverse.org/articles/pycytotrace}
+}</pre>
+        </section>
+      </article>
+
+      <aside class="paper-side" aria-label="Article tools">
+        <div class="side-card side-pdf">
+          <a class="btn-pdf" href="../assets/articles/pycytotrace/pycytotrace.pdf" download>Download PDF <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg></a>
+          <p>Two-column PDF · 6 pages · 1.1 MB · <a href="../assets/articles/pycytotrace/pycytotrace.pdf" target="_blank" rel="noopener">open in browser</a></p>
+        </div>
+        <div class="side-tabs" data-side-tabs>
+          <div class="side-tablist" role="tablist">
+            <button type="button" role="tab" aria-selected="true" data-tab="sections">Sections</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="figures">Figures</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="references">References</button>
+          </div>
+          <ol class="side-panel side-toc" data-panel="sections"><li><a href="#abstract">Abstract</a></li><li><a href="#sec-introduction">Introduction</a></li><li><a href="#sec-implementation">Implementation</a></li><li><a href="#sec-benchmark-design">Benchmark design</a></li><li><a href="#sec-results">Results</a></li><li><a href="#sec-limitations-and-practical-use">Limitations and practical use</a></li><li><a href="#references">References</a></li><li><a href="#supplementary">Supplementary information</a></li><li><a href="#cite">Cite this article</a></li></ol>
+          <ul class="side-panel side-figs" data-panel="figures" hidden><li><a href="#fig-1"><img src="../assets/articles/pycytotrace/fig1-thumb.jpg" alt="" loading="lazy" /><span>Fig. 1</span></a></li><li><a href="#fig-2"><img src="../assets/articles/pycytotrace/fig2-thumb.jpg" alt="" loading="lazy" /><span>Fig. 2</span></a></li><li><a href="#fig-3"><img src="../assets/articles/pycytotrace/fig3-thumb.jpg" alt="" loading="lazy" /><span>Fig. 3</span></a></li></ul>
+          <div class="side-panel" data-panel="references" hidden><p>4 references, numbered in order of citation.</p><a href="#references">Go to references</a></div>
+        </div>
+        <ul class="side-card side-links"><li><span>Code</span><a href="https://github.com/omicverse/py-CytoTRACE" target="_blank" rel="noopener">github.com/omicverse/py-CytoTRACE</a></li></ul>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner page-width wide">
+      <div class="footer-brand-col">
+        <span class="footer-brand"><img src="../assets/brand/mark.svg" alt="" width="20" height="20" /> OmicVerse</span>
+        <p>Open-source multi-omics in Python, with Rust and Torch underneath. Trusted R methods, rebuilt and verified.</p>
+        <p class="footer-install"><code>pip install omicverse</code></p>
+      </div>
+      <div class="footer-col"><span class="footer-col-title">Project</span><ul><li><a href="../packages.html">Packages</a></li><li><a href="../ports.html">R-port catalog</a></li><li><a href="../articles.html">Articles</a></li><li><a href="https://omicverse.readthedocs.io/" target="_blank" rel="noopener">Documentation</a></li><li><a href="../blog.html">Blog</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Community</span><ul><li><a href="../people.html">People</a></li><li><a href="../events.html">Events</a></li><li><a href="../join.html">Join</a></li><li><a href="https://github.com/omicverse/omicverse/discussions" target="_blank" rel="noopener">Discussions ↗</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Resources</span><ul><li><a href="../about.html">About & citation</a></li><li><a href="https://github.com/omicverse/omicverse-rebuildr" target="_blank" rel="noopener">Porting protocol ↗</a></li><li><a href="https://github.com/omicverse/omicverse-tutorials" target="_blank" rel="noopener">Tutorials ↗</a></li><li><a href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a></li></ul></div>
+    </div>
+    <div class="footer-bottom page-width wide">
+      <span>© OmicVerse contributors · Apache-2.0</span>
+      <span>Built with <a href="https://github.com/omicverse/omicverse-org-home" target="_blank" rel="noopener">omicverse-org-home</a></span>
+    </div>
+  </footer>
+</body>
+</html>

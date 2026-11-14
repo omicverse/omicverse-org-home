@@ -6,7 +6,6 @@
   <title>Articles — OmicVerse</title>
   <meta name="description" content="Technical reports for OmicVerse methods and rebuilt R packages: full methods, benchmarks and figures, typeset as papers." />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/brand/favicon-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
@@ -44,6 +43,42 @@
       <label><span>Year</span><select name="year"><option value="">All</option><option value="2026">2026</option></select></label>
     </form>
     <ol class="ar-list" data-articles-list>
+      <li class="ar-row" data-type="Technical Report" data-year="2026">
+        <div class="ar-meta"><span class="ar-type">Technical Report</span><time datetime="2026-11-14">14 Nov 2026</time></div>
+        <div class="ar-body">
+          <h2 class="ar-title"><a href="articles/pycytotrace.html">Same-input R validation of the CytoTRACE Python core</a></h2>
+          <p class="ar-authors">Haoliang Zhu, Zehua Zeng</p>
+          <p class="ar-abstract">We evaluate the supported single-batch CytoTRACE Python core against original R on two real marrow datasets at 100, 200 and 400 cells. All six comparisons have identical ranks and detected-gene counts, with maximum score difference 5.55e-16. …</p>
+        </div>
+        <a class="ar-thumb" href="articles/pycytotrace.html" tabindex="-1" aria-hidden="true"><img src="assets/articles/pycytotrace/fig1-thumb.jpg" alt="" loading="lazy" /></a>
+      </li>
+      <li class="ar-row" data-type="Technical Report" data-year="2026">
+        <div class="ar-meta"><span class="ar-type">Technical Report</span><time datetime="2026-11-14">14 Nov 2026</time></div>
+        <div class="ar-body">
+          <h2 class="ar-title"><a href="articles/scissor-validation.html">Scissor: matched-input validation and native-workflow boundaries</a></h2>
+          <p class="ar-authors">Haoliang Zhu, Zehua Zeng</p>
+          <p class="ar-abstract">We compare real LUAD Scissor results under fixed inputs and distinguish official binomial from corrected Cox semantics. Selected models agree, while the original full Cox path exceeds its coefficient tolerance at 3,092 entries. Tightening the solver …</p>
+        </div>
+        <a class="ar-thumb" href="articles/scissor-validation.html" tabindex="-1" aria-hidden="true"><img src="assets/articles/scissor-validation/fig1-thumb.jpg" alt="" loading="lazy" /></a>
+      </li>
+      <li class="ar-row" data-type="Technical Report" data-year="2026">
+        <div class="ar-meta"><span class="ar-type">Technical Report</span><time datetime="2026-11-14">14 Nov 2026</time></div>
+        <div class="ar-body">
+          <h2 class="ar-title"><a href="articles/spata2py.html">Scoped spatial outlier validation for SPATA2-inspired AnnData utilities</a></h2>
+          <p class="ar-authors">Haoliang Zhu, Zehua Zeng</p>
+          <p class="ar-abstract">We assess selected SPATA2-inspired AnnData utilities using original SPATA2 3.1.4 on 3,639 real retained DLPFC coordinates and five planted controls. Density labels agree under matched parameters, but the Python convex outline has about 14.3 percent …</p>
+        </div>
+        <a class="ar-thumb" href="articles/spata2py.html" tabindex="-1" aria-hidden="true"><img src="assets/articles/spata2py/fig1-thumb.jpg" alt="" loading="lazy" /></a>
+      </li>
+      <li class="ar-row" data-type="Technical Report" data-year="2026">
+        <div class="ar-meta"><span class="ar-type">Technical Report</span><time datetime="2026-11-14">14 Nov 2026</time></div>
+        <div class="ar-body">
+          <h2 class="ar-title"><a href="articles/splitst.html">SPLIT purification and residual redistribution on real spatial counts</a></h2>
+          <p class="ar-authors">Haoliang Zhu, Zehua Zeng</p>
+          <p class="ar-abstract">We evaluate selected SPLIT operations on real DLPFC counts with explicitly constructed layer references. Original R neighborhood scoring and Seurat balancing are executed at four thresholds, with and without label exchange. The experiments expose …</p>
+        </div>
+        <a class="ar-thumb" href="articles/splitst.html" tabindex="-1" aria-hidden="true"><img src="assets/articles/splitst/fig1-thumb.jpg" alt="" loading="lazy" /></a>
+      </li>
       <li class="ar-row" data-type="Technical Report" data-year="2026">
         <div class="ar-meta"><span class="ar-type">Technical Report</span><time datetime="2026-11-13">13 Nov 2026</time></div>
         <div class="ar-body">

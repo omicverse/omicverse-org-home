@@ -1,0 +1,149 @@
+[
+  {
+    "doi": "10.1038/s41467-024-50194-3",
+    "status": "verified from publisher search result",
+    "error": "HTTP Error 429: Too Many Requests",
+    "title": [
+      "OmicVerse: a framework for bridging and deepening insights across bulk and single-cell sequencing"
+    ],
+    "journal": [
+      "Nature Communications"
+    ],
+    "volume": "15",
+    "article_number": "5983",
+    "source": "https://www.nature.com/articles/s41467-024-50194-3"
+  },
+  {
+    "doi": "10.1038/s41467-024-50904-x",
+    "title": [
+      "Inferring histology-associated gene expression gradients in spatial transcriptomic studies"
+    ],
+    "journal": [
+      "Nature Communications"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          2024,
+          8,
+          23
+        ]
+      ]
+    },
+    "status": "verified"
+  },
+  {
+    "doi": "10.1038/s41586-020-2649-2",
+    "title": [
+      "Array programming with NumPy"
+    ],
+    "journal": [
+      "Nature"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          2020,
+          9,
+          16
+        ]
+      ]
+    },
+    "status": "verified"
+  },
+  {
+    "doi": "10.1038/s41587-021-01091-3",
+    "title": [
+      "Identifying phenotype-associated subpopulations by integrating bulk and single-cell sequencing data"
+    ],
+    "journal": [
+      "Nature Biotechnology"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          2021,
+          11,
+          11
+        ]
+      ]
+    },
+    "status": "verified"
+  },
+  {
+    "doi": "10.1038/s41592-019-0686-2",
+    "title": [
+      "SciPy 1.0: fundamental algorithms for scientific computing in Python"
+    ],
+    "journal": [
+      "Nature Methods"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          2020,
+          2,
+          3
+        ]
+      ]
+    },
+    "status": "verified"
+  },
+  {
+    "doi": "10.1038/s41592-026-03089-8",
+    "title": [
+      "Resolving sensitivity, specificity and signal contamination in Xenium spatial transcriptomics"
+    ],
+    "journal": [
+      "Nature Methods"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          2026,
+          4,
+          30
+        ]
+      ]
+    },
+    "status": "verified"
+  },
+  {
+    "doi": "10.1038/s41593-020-00787-0",
+    "title": [
+      "Transcriptome-scale spatial gene expression in the human dorsolateral prefrontal cortex"
+    ],
+    "journal": [
+      "Nature Neuroscience"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          2021,
+          2,
+          8
+        ]
+      ]
+    },
+    "status": "verified"
+  },
+  {
+    "doi": "10.1126/science.aax0249",
+    "title": [
+      "Single-cell transcriptional diversity is a hallmark of developmental potential"
+    ],
+    "journal": [
+      "Science"
+    ],
+    "year": {
+      "date-parts": [
+        [
+          2020,
+          1,
+          24
+        ]
+      ]
+    },
+    "status": "verified"
+  }
+]

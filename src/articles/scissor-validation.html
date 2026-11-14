@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scissor: matched-input validation and native-workflow boundaries — OmicVerse Articles</title>
+  <meta name="description" content="We compare real LUAD Scissor results under fixed inputs and distinguish official binomial from corrected Cox semantics. Selected models agree, while the original full Cox path exceeds its coefficient tolerance at 3,092 entries. Tightening the solver threshold from 1e-7 to 1e-9, without changing the " />
+  <meta property="og:title" content="Scissor: matched-input validation and native-workflow boundaries" />
+  <meta property="og:description" content="We compare real LUAD Scissor results under fixed inputs and distinguish official binomial from corrected Cox semantics. Selected models agree, while the original full Cox path exceeds its coefficient tolerance at 3,092 entries. Tightening the solver threshold from 1e-7 to 1e-9, without changing the " />
+  <meta name="citation_title" content="Scissor: matched-input validation and native-workflow boundaries" />
+  <meta name="citation_author" content="Haoliang Zhu" />
+  <meta name="citation_author" content="Zehua Zeng" />
+  <meta name="citation_publication_date" content="2026/11/14" />
+  <meta name="citation_journal_title" content="OmicVerse Technical Reports" />
+  <meta name="citation_pdf_url" content="https://omicverse.org/assets/articles/scissor-validation/scissor-validation.pdf" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/brand/favicon-32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <link rel="stylesheet" href="../styles.css?v=2026-11-12b" />
+  <script src="../script.js?v=2026-11-12b" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" defer></script>
+  <script src="../articles.js?v=2026-11-12b" defer></script>
+</head>
+<body class="paper-page">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/brand/mark.svg" alt="" width="28" height="28" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../ports.html">Ports</a>
+      <a aria-current="page" href="../articles.html">Articles</a>
+      <a href="https://omicverse.readthedocs.io/">Learn</a>
+      <a href="../blog.html">Blog</a>
+      <a href="../people.html">People</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener"><svg class="nav-gh" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+    </nav>
+  </header>
+
+  <main class="paper page-width wide">
+    <nav class="paper-crumbs" aria-label="Breadcrumb"><a href="../index.html">OmicVerse</a><span aria-hidden="true">›</span><a href="../articles.html">Articles</a><span aria-hidden="true">›</span><span>Technical Report</span></nav>
+    <div class="paper-grid">
+      <article class="paper-main">
+        <p class="paper-meta"><span>Technical Report</span><span>Published: <time datetime="2026-11-14">14 November 2026</time></span><span>Version 2</span></p>
+        <h1 class="paper-title">Scissor: matched-input validation and native-workflow boundaries</h1>
+        <ul class="paper-authors"><li><span class="au-name">Haoliang Zhu</span><sup>1,3</sup></li><li><span class="au-name">Zehua Zeng</span><sup>2,3</sup> <a class="au-mail" href="mailto:starlitnightly@gmail.com" aria-label="Email Zehua Zeng"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 6h18v12H3z M3 6l9 7 9-7"/></svg></a></li></ul>
+        <details class="paper-affil"><summary>Affiliations</summary><ol><li><sup>1</sup> School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou 325000, China</li><li><sup>2</sup> Department of Genetics, Stanford University, Stanford, CA 94305, USA</li><li><sup>3</sup> OmicVerse, Inc., San Francisco, CA 94114, USA</li></ol></details>
+        <p class="paper-journal"><i>OmicVerse Technical Reports</i> (2026)<span class="sep" aria-hidden="true">|</span><a href="#cite">Cite this article</a></p>
+
+        <a class="paper-pdf-inline btn btn-primary" href="../assets/articles/scissor-validation/scissor-validation.pdf" download><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>Download PDF</a>
+
+        <section class="paper-section" id="abstract" aria-labelledby="abstract-h">
+          <h2 id="abstract-h">Abstract</h2>
+          <p class="paper-abstract">We compare real LUAD Scissor results under fixed inputs and distinguish official binomial from corrected Cox semantics. Selected models agree, while the original full Cox path exceeds its coefficient tolerance at 3,092 entries. Tightening the solver threshold from 1e-7 to 1e-9, without changing the comparison tolerance, reduces whole-path failures to zero and maximum coefficient difference to 5.64e-7. Independent R KKT certificates support convergence. Native-graph results and original cross-validation are reported separately; tighter-threshold CV was not rerun.</p>
+          <ul class="paper-keywords" aria-label="Keywords"><li>Scissor</li><li>LUAD</li><li>R</li><li>Python</li><li>validation</li></ul>
+        </section>
+
+<section class="paper-section is-body" id="sec-introduction" aria-labelledby="sec-introduction-h">
+<h2 id="sec-introduction-h">Introduction</h2>
+<p>Scissor connects a bulk phenotype to single-cell expression by fitting a sparse, network-regularized model of cell-to-bulk similarities<sup class="cite"><a href="#ref-1">1</a></sup>. Positive and negative coefficients identify cells associated with opposite directions of the modeled phenotype. The method therefore depends on more than a solver: expression preprocessing, shared genes, cell/sample alignment, graph construction, phenotype encoding and cross-validation all define the numerical problem.</p>
+<p>This report examines a native Python implementation on real LUAD inputs used in the accompanying tutorial. It separates three questions. First, do R and Python agree when expression, graph, folds and semantics are fixed? Second, does their full fitted coefficient path agree to the declared tolerance, rather than only the selected model? Third, how different are results from a native Python graph workflow? These questions require different comparisons and should not be conflated in a single successful coefficient scatter.</p>
+<p>The report also distinguishes official binomial behavior from corrected Cox semantics. The latter is checked against a corrected reference oracle, not presented as agreement with every behavior of unmodified historical R code. This distinction is necessary for reproducibility and for interpreting what a validation actually certifies.</p>
+</section>
+<section class="paper-section is-body" id="sec-numerical-problem-and-implementation-boundary" aria-labelledby="sec-numerical-problem-and-implementation-boundary-h">
+<h2 id="sec-numerical-problem-and-implementation-boundary-h">Numerical problem and implementation boundary</h2>
+<h3 id="input-preparation-and-graph-penalty">Input preparation and graph penalty</h3>
+<p>Bulk and single-cell expression are matched on shared genes before calculating sample-by-cell similarities. The LUAD single-cell input contains 4,102 cells. Filtering and normalization order matters because changes to retained genes can change both normalized expression and correlations. A counts layer or familiar object name does not guarantee that two pipelines received the same matrix. The matched comparison therefore exports and verifies numerical inputs rather than relying on equivalent-looking preprocessing calls.</p>
+<p>The cell graph couples coefficients through a normalized adjacency matrix. Diagonal entries are removed, edges are made binary under the tested convention, and normalization uses inverse square-root degrees. In the corrected objective, the graph contribution is proportional to the quadratic form involving the identity minus normalized adjacency. A sparse penalty promotes cell selection. Gaussian, binomial and Cox losses have distinct conventions; results from one family do not automatically validate the others.</p>
+<p>For Cox fitting, the reference explicitly evaluates risk sets, event times and gradients. Its independent certificate computes the objective and maximum KKT residual from the returned coefficients rather than trusting solver-internal convergence flags alone. The Python numerical kernel and the R/C++ oracle are separate implementations of the corrected problem. Their agreement supports that specified problem, not an unrestricted claim that every historical bug or default is reproduced.</p>
+<h3 id="cross-validation-versus-a-fitted-path">Cross-validation versus a fitted path</h3>
+<p>The matched LUAD experiments share fold identifiers and a regularization sequence, then compare CV means, selected lambda and refitted coefficients. A full-data path contains coefficients at every tested lambda, including models that are never selected. Passing a selected refit does not prove that all of these unused models pass the same coefficient tolerance.</p>
+<p>Conversely, a discrepancy in coefficients can depend on solve accuracy even when prediction or selection changes little. We therefore keep the original solver-threshold comparison and add a tighter-solve experiment. The acceptance rule remains fixed: absolute tolerance 1e-5 plus relative tolerance 1e-4 for coefficients. Tightening the solver is different from relaxing this comparison rule. The new experiment refits the full-data path; it does not rerun every CV fold at the tighter threshold.</p>
+</section>
+<section class="paper-section is-body" id="sec-data-and-reference-protocol" aria-labelledby="sec-data-and-reference-protocol-h">
+<h2 id="sec-data-and-reference-protocol-h">Data and reference protocol</h2>
+<p>The real LUAD inputs comprise single-cell expression, bulk TP53 status and bulk survival. The reference archive pins historical Scissor source at <code>311560a1f160f665917e7da0fcf289914ee99773</code> and the separate development reference archive at <code>2cb65ba5af3e1ffac05226f66d0e0ddf1eb7dc50</code>. File hashes cover input H5AD objects, the exported R graph and numerical similarity matrices. The survival similarity matrix has 471 samples by 4,102 cells; the full path contains 100 lambda values.</p>
+<p>TP53 uses official binomial semantics with alpha 0.2. Survival uses corrected Cox semantics with alpha 0.05. Graph and folds are fixed for the R/Python replication. The existing ten-fold CV results use solver threshold 1e-7. Preprocessing maximum absolute differences were approximately 2.78e-15 for TP53 and 2.66e-15 for survival, supporting equality of the exported numerical inputs to floating-point precision.</p>
+<p>For the additional experiment, both implementations fit the same full-data Cox path at solver threshold 1e-9, using the previously specified lambda sequence and graph. The R reference independently recalculates convergence certificates. Results are saved separately from the original threshold outputs so that failure at the original setting remains visible. No new biological data or outcome-derived tuning was introduced to make the comparison pass.</p>
+<figure class="paper-fig" id="fig-1"><figcaption class="fig-title"><b>Fig. 1:</b> Matched-input LUAD cross-validation and selected models.</figcaption><a class="fig-img" href="../assets/articles/scissor-validation/fig1.jpg" target="_blank" rel="noopener"><img src="../assets/articles/scissor-validation/fig1.jpg" alt="Fig. 1: Matched-input LUAD cross-validation and selected models." loading="lazy" /></a><div class="fig-legend"><strong>(a, b)</strong> R and Python CV mean-loss curves for official binomial and corrected Cox semantics, using the fixed graph and folds at the original solver setting. <strong>(c, d)</strong> Selected-model cell coefficients. A diagonal line indicates identity. These panels establish selected-model agreement and must not be read as a complete-path certificate.</div><a class="fig-full" href="../assets/articles/scissor-validation/fig1.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+</section>
+<section class="paper-section is-body" id="sec-results" aria-labelledby="sec-results-h">
+<h2 id="sec-results-h">Results</h2>
+<h3 id="selected-models-under-the-original-comparison">Selected models under the original comparison</h3>
+<p>The matched TP53 analysis selected 414 positive and 320 negative cells in both languages, with no signed-label disagreements. Maximum coefficient difference was 1.07e-14 and maximum CV mean difference 4.88e-15. The selected lambda was 0.0014298594846270164 in both outputs. Positive- and negative-set Jaccard indices were one.</p>
+<p>The matched corrected-Cox analysis selected 205 positive and five negative cells in both languages. Maximum selected-coefficient difference was 1.21e-6 and maximum CV mean difference 6.14e-6. The selected lambda agreed within the declared comparison tolerance at approximately 0.0407557335442673. Selected labels agreed exactly. CV means passed absolute tolerance 1e-6 plus relative tolerance 1e-4; that combined criterion should not be confused with an absolute-only 1e-6 rule.</p>
+<p>These results support the matched selected models, but the original full Cox path had a different outcome. Of 410,200 coefficient entries, 3,092 exceeded the fixed coefficient tolerance at solver threshold 1e-7. Maximum absolute difference was 3.96e-5. This result was retained as a failure rather than hidden behind the selected-model success.</p>
+<h3 id="tighter-solves-resolve-the-measured-full-path-discrepancy">Tighter solves resolve the measured full-path discrepancy</h3>
+<p>At solver threshold 1e-9, all 410,200 coefficient entries passed the same comparison tolerance. Maximum absolute R/Python coefficient difference decreased to 5.64e-7, and coefficient signs agreed at every path position. The maximum independently evaluated R KKT residual was 9.91e-10, with all R fits certified converged. Thus the tested full-path discrepancy was reduced by increasing solve accuracy, without changing the acceptance threshold or the numerical inputs.</p>
+<figure class="paper-table" id="table-1"><figcaption class="fig-title"><b>Table 1:</b> Full-data Cox path comparison at two solver thresholds.</figcaption><div class="table-scroll"><table><thead><tr><th>Quantity</th><th>Threshold 1e-7</th><th>Threshold 1e-9</th></tr></thead><tbody><tr><td>Lambda values</td><td>100</td><td>100</td></tr><tr><td>Coefficient entries</td><td>410,200</td><td>410,200</td></tr><tr><td>Maximum absolute difference</td><td>3.96e-5</td><td>5.64e-7</td></tr><tr><td>Entries beyond atol=1e-5 + rtol=1e-4</td><td>3,092</td><td>0</td></tr><tr><td>Independent R maximum KKT residual</td><td>Not re-summarized here</td><td>9.91e-10</td></tr><tr><td>New ten-fold CV run at this threshold</td><td>Existing original run</td><td>No</td></tr></tbody></table></div></figure>
+<figure class="paper-fig" id="fig-2"><figcaption class="fig-title"><b>Fig. 2:</b> Whole-path error and convergence evidence.</figcaption><a class="fig-img" href="../assets/articles/scissor-validation/fig2.jpg" target="_blank" rel="noopener"><img src="../assets/articles/scissor-validation/fig2.jpg" alt="Fig. 2: Whole-path error and convergence evidence." loading="lazy" /></a><div class="fig-legend"><strong>(a)</strong> Maximum coefficient difference by lambda at the original solver threshold. <strong>(b)</strong> Number of entries exceeding the declared coefficient tolerance at each lambda. <strong>(c)</strong> Cumulative absolute-error distributions for the original and tighter solves; zeros are displayed at 1e-18. <strong>(d)</strong> Independently recalculated R KKT residuals for the tighter path, with the 1e-9 threshold marked. The new result validates the full-data fitted path and does not imply that ten-fold CV was repeated at 1e-9.</div><a class="fig-full" href="../assets/articles/scissor-validation/fig2.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+<p>The R tighter-path run took approximately 639 seconds including its certificate work. That runtime should not be compared directly with a Python timing that excludes equivalent independent certificates, nor should it be presented as a production speed benchmark. It is evidence about the cost of this validation procedure on this workstation. A controlled performance comparison would require aligned workloads and repeated timing.</p>
+<h3 id="native-workflow-sensitivity">Native workflow sensitivity</h3>
+<p>The corrected native tutorial also executes, but it constructs its own graph and is a separate workflow. It uses 5,662 shared genes and selects 415 positive and 324 negative cells for TP53; survival selects 209 positive and 20 negative cells. These numbers differ from the matched-R-graph protocol. A different graph changes the penalty and can legitimately change coefficients, so native counts must not be placed in the same table as if they were another execution of identical inputs.</p>
+<p>Figure 3 compares native and fixed-protocol coefficients and signed labels directly. This is a sensitivity analysis of the complete workflow, not a controlled attribution of every difference to one graph edge or one preprocessing step. To isolate a cause, only that component would need to change while other inputs were held fixed. The current comparison is useful precisely because it makes the practical distinction visible rather than claiming that every tutorial output should match an R figure pixel for pixel.</p>
+<figure class="paper-fig" id="fig-3"><figcaption class="fig-title"><b>Fig. 3:</b> Native workflow and fixed-input protocol produce different selections.</figcaption><a class="fig-img" href="../assets/articles/scissor-validation/fig3.jpg" target="_blank" rel="noopener"><img src="../assets/articles/scissor-validation/fig3.jpg" alt="Fig. 3: Native workflow and fixed-input protocol produce different selections." loading="lazy" /></a><div class="fig-legend"><strong>(a, b)</strong> Coefficients for TP53 and survival under the fixed R-graph protocol versus the native Python workflow. <strong>(c, d)</strong> Counts of negative, zero and positive signed-label transitions after aligning cell identifiers. The panels quantify workflow sensitivity; they do not replace the matched-input numerical tests or establish a biological winner.</div><a class="fig-full" href="../assets/articles/scissor-validation/fig3.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+</section>
+<section class="paper-section is-body" id="sec-interpretation-and-remaining-limitations" aria-labelledby="sec-interpretation-and-remaining-limitations-h">
+<h2 id="sec-interpretation-and-remaining-limitations-h">Interpretation and remaining limitations</h2>
+<p>The added experiment closes the previously observed full-data path tolerance failure for this LUAD case at the tighter solver setting. It does not retroactively turn the 1e-7 path into a pass, nor establish that every dataset or tolerance will behave similarly. Users requiring coefficient-level reproducibility should record the stopping threshold, graph convention, phenotype encoding and input alignment, rather than citing only the package version.</p>
+<p>The analysis covers one real single-cell cohort and two bulk phenotypes. It does not validate Gaussian behavior here, multiple cancer cohorts, arbitrary graph construction or causal biological interpretation of selected cells. Corrected-Cox agreement is with the corrected oracle; it must not be described as unmodified historical-R replication. Full tighter-threshold CV, repeated graph/fold perturbations, systematic memory profiling and independent phenotype validation remain separate extensions.</p>
+<p>The selected populations are associations conditional on the bulk phenotype and model. A signed coefficient does not identify a causal driver, and agreement between implementations is not evidence of clinical utility. The report therefore makes numerical and workflow claims while retaining the distinction between reproducibility and biological validation.</p>
+</section>
+<section class="paper-section is-back" id="sec-data-and-code-availability" aria-labelledby="sec-data-and-code-availability-h">
+<h2 id="sec-data-and-code-availability-h">Data and code availability</h2>
+<p>The <a href="https://github.com/omicverse/omicverse-org-home/raw/refs/heads/main/articles/_evidence/rewrite-validation/evidence.zip" target="_blank" rel="noopener">reproduction bundle</a> contains the recorded inputs, reference outputs, scripts and environment details.</p>
+<p>Python source is available at <a href="https://github.com/omicverse/py-Scissors" target="_blank" rel="noopener">https://github.com/omicverse/py-Scissors</a>, with upstream Scissor at <a href="https://github.com/sunduanchen/Scissor" target="_blank" rel="noopener">https://github.com/sunduanchen/Scissor</a>. The existing audit bundle preserves input hashes, R/Python matrix exports, graph, folds, CV tables, coefficient arrays and executed tutorial. The new <code>cox_tolerance.R</code> and <code>cox_tolerance.py</code> scripts generate separate tighter-path outputs; the figure script combines them with the original evidence. Hardware was an Intel Core Ultra 9 285K Windows workstation. This report does not announce a software release or alter the original comparison tolerances.</p>
+</section>
+<section class="paper-section is-back" id="sec-conflicts-of-interest" aria-labelledby="sec-conflicts-of-interest-h">
+<h2 id="sec-conflicts-of-interest-h">Conflicts of interest</h2>
+<p>H.Z. and Z.Z. are affiliated with OmicVerse, Inc.</p>
+</section>
+<section class="paper-section is-back" id="sec-use-of-ai-tools" aria-labelledby="sec-use-of-ai-tools-h">
+<h2 id="sec-use-of-ai-tools-h">Use of AI tools</h2>
+<p>AI assistance was used for code inspection, experiment scripting, visualization and drafting. The authors approved submission of this scoped technical report.</p>
+</section>
+<section class="paper-section is-refs" id="references" aria-labelledby="references-h">
+<h2 id="references-h">References</h2>
+<ol class="paper-refs"><li id="ref-1"><span class="ref-n">1.</span><span class="ref-text">Sun D et al. (2022). Identifying phenotype-associated subpopulations by integrating bulk and single-cell sequencing data. Nature Biotechnology 40, 527–538. <a href="https://doi.org/10.1038/s41587-021-01091-3" target="_blank" rel="noopener">10.1038/s41587-021-01091-3</a></span></li><li id="ref-2"><span class="ref-n">2.</span><span class="ref-text">Virtanen P et al. (2020). SciPy 1.0: fundamental algorithms for scientific computing in Python. Nature Methods 17, 261–272. <a href="https://doi.org/10.1038/s41592-019-0686-2" target="_blank" rel="noopener">10.1038/s41592-019-0686-2</a></span></li><li id="ref-3"><span class="ref-n">3.</span><span class="ref-text">Harris CR et al. (2020). Array programming with NumPy. Nature 585, 357–362. <a href="https://doi.org/10.1038/s41586-020-2649-2" target="_blank" rel="noopener">10.1038/s41586-020-2649-2</a></span></li><li id="ref-4"><span class="ref-n">4.</span><span class="ref-text">Zeng Z et al. (2024). OmicVerse: a framework for bridging and deepening insights across bulk and single-cell sequencing. Nature Communications 15, 5983. <a href="https://doi.org/10.1038/s41467-024-50194-3" target="_blank" rel="noopener">10.1038/s41467-024-50194-3</a></span></li></ol>
+</section>
+<section class="paper-section is-supp" id="supplementary" aria-labelledby="supplementary-h">
+<h2 id="supplementary-h">Supplementary information</h2>
+<h3 id="numerical-comparison-procedure">Numerical comparison procedure</h3>
+<p>Load binary matrices with the recorded dimensions and column-major order, and assert the expected file size. Compare identifiers before coefficients. Preserve lambda order when loading a path matrix; transposed or permuted paths can produce meaningless aggregate errors even if dimensions match. Compute the tolerance per coefficient as 1e-5 plus 1e-4 times the absolute reference value, and retain both the count of failures and maximum absolute error.</p>
+<p>For the tighter run, reuse the original full-data lambda sequence rather than selecting a new favorable interval. The R oracle normalizes the graph according to the tested convention and independently recomputes objective/KKT quantities. Original CV and native-workflow artifacts are read without overwriting them. The report keeps distinct labels for selected-model, full-data-path and native-workflow evidence so that improvement in one cannot silently be generalized to the others.</p>
+</section>
+
+        <section class="paper-section" id="author-information" aria-labelledby="author-information-h">
+          <h2 id="author-information-h">Author information</h2>
+          <h3>Affiliations</h3>
+          <ol class="paper-affil-list"><li><sup>1</sup> School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou 325000, China</li><li><sup>2</sup> Department of Genetics, Stanford University, Stanford, CA 94305, USA</li><li><sup>3</sup> OmicVerse, Inc., San Francisco, CA 94114, USA</li></ol>
+          <h3>Corresponding authors</h3>
+          <p>Correspondence to <a href="mailto:starlitnightly@gmail.com">Zehua Zeng</a>.</p>
+        </section>
+
+        <section class="paper-section" id="cite" aria-labelledby="cite-h">
+          <h2 id="cite-h">Cite this article</h2>
+          <p class="cite-text" id="cite-text">Zhu, H. &amp; Zeng, Z. Scissor: matched-input validation and native-workflow boundaries. OmicVerse Technical Reports (2026). https://omicverse.org/articles/scissor-validation</p>
+          <dl class="cite-meta"><div><dt>Published</dt><dd>14 November 2026</dd></div></dl>
+          <div class="cite-actions"><button class="btn btn-ghost" type="button" data-copy-target="#cite-text">Copy citation</button><button class="btn btn-ghost" type="button" data-copy-target="#cite-bib">Copy BibTeX</button></div>
+          <pre class="cite-bib" id="cite-bib">@techreport{zhu2026scissorvalidation,
+  title       = {Scissor: matched-input validation and native-workflow boundaries},
+  author      = {Zhu, Haoliang and Zeng, Zehua},
+  institution = {OmicVerse},
+  type        = {Technical Report},
+  year        = {2026},
+  url         = {https://omicverse.org/articles/scissor-validation}
+}</pre>
+        </section>
+      </article>
+
+      <aside class="paper-side" aria-label="Article tools">
+        <div class="side-card side-pdf">
+          <a class="btn-pdf" href="../assets/articles/scissor-validation/scissor-validation.pdf" download>Download PDF <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg></a>
+          <p>Two-column PDF · 6 pages · 0.9 MB · <a href="../assets/articles/scissor-validation/scissor-validation.pdf" target="_blank" rel="noopener">open in browser</a></p>
+        </div>
+        <div class="side-tabs" data-side-tabs>
+          <div class="side-tablist" role="tablist">
+            <button type="button" role="tab" aria-selected="true" data-tab="sections">Sections</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="figures">Figures</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="references">References</button>
+          </div>
+          <ol class="side-panel side-toc" data-panel="sections"><li><a href="#abstract">Abstract</a></li><li><a href="#sec-introduction">Introduction</a></li><li><a href="#sec-numerical-problem-and-implementation-boundary">Numerical problem and implementation boundary</a></li><li><a href="#sec-data-and-reference-protocol">Data and reference protocol</a></li><li><a href="#sec-results">Results</a></li><li><a href="#sec-interpretation-and-remaining-limitations">Interpretation and remaining limitations</a></li><li><a href="#references">References</a></li><li><a href="#supplementary">Supplementary information</a></li><li><a href="#cite">Cite this article</a></li></ol>
+          <ul class="side-panel side-figs" data-panel="figures" hidden><li><a href="#fig-1"><img src="../assets/articles/scissor-validation/fig1-thumb.jpg" alt="" loading="lazy" /><span>Fig. 1</span></a></li><li><a href="#fig-2"><img src="../assets/articles/scissor-validation/fig2-thumb.jpg" alt="" loading="lazy" /><span>Fig. 2</span></a></li><li><a href="#fig-3"><img src="../assets/articles/scissor-validation/fig3-thumb.jpg" alt="" loading="lazy" /><span>Fig. 3</span></a></li></ul>
+          <div class="side-panel" data-panel="references" hidden><p>4 references, numbered in order of citation.</p><a href="#references">Go to references</a></div>
+        </div>
+        <ul class="side-card side-links"><li><span>Code</span><a href="https://github.com/omicverse/py-Scissors" target="_blank" rel="noopener">github.com/omicverse/py-Scissors</a></li></ul>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner page-width wide">
+      <div class="footer-brand-col">
+        <span class="footer-brand"><img src="../assets/brand/mark.svg" alt="" width="20" height="20" /> OmicVerse</span>
+        <p>Open-source multi-omics in Python, with Rust and Torch underneath. Trusted R methods, rebuilt and verified.</p>
+        <p class="footer-install"><code>pip install omicverse</code></p>
+      </div>
+      <div class="footer-col"><span class="footer-col-title">Project</span><ul><li><a href="../packages.html">Packages</a></li><li><a href="../ports.html">R-port catalog</a></li><li><a href="../articles.html">Articles</a></li><li><a href="https://omicverse.readthedocs.io/" target="_blank" rel="noopener">Documentation</a></li><li><a href="../blog.html">Blog</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Community</span><ul><li><a href="../people.html">People</a></li><li><a href="../events.html">Events</a></li><li><a href="../join.html">Join</a></li><li><a href="https://github.com/omicverse/omicverse/discussions" target="_blank" rel="noopener">Discussions ↗</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Resources</span><ul><li><a href="../about.html">About & citation</a></li><li><a href="https://github.com/omicverse/omicverse-rebuildr" target="_blank" rel="noopener">Porting protocol ↗</a></li><li><a href="https://github.com/omicverse/omicverse-tutorials" target="_blank" rel="noopener">Tutorials ↗</a></li><li><a href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a></li></ul></div>
+    </div>
+    <div class="footer-bottom page-width wide">
+      <span>© OmicVerse contributors · Apache-2.0</span>
+      <span>Built with <a href="https://github.com/omicverse/omicverse-org-home" target="_blank" rel="noopener">omicverse-org-home</a></span>
+    </div>
+  </footer>
+</body>
+</html>

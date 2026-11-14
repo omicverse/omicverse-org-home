@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPLIT purification and residual redistribution on real spatial counts — OmicVerse Articles</title>
+  <meta name="description" content="We evaluate selected SPLIT operations on real DLPFC counts with explicitly constructed layer references. Original R neighborhood scoring and Seurat balancing are executed at four thresholds, with and without label exchange. The experiments expose and repair missing expression substitution during lab" />
+  <meta property="og:title" content="SPLIT purification and residual redistribution on real spatial counts" />
+  <meta property="og:description" content="We evaluate selected SPLIT operations on real DLPFC counts with explicitly constructed layer references. Original R neighborhood scoring and Seurat balancing are executed at four thresholds, with and without label exchange. The experiments expose and repair missing expression substitution during lab" />
+  <meta name="citation_title" content="SPLIT purification and residual redistribution on real spatial counts" />
+  <meta name="citation_author" content="Haoliang Zhu" />
+  <meta name="citation_author" content="Zehua Zeng" />
+  <meta name="citation_publication_date" content="2026/11/14" />
+  <meta name="citation_journal_title" content="OmicVerse Technical Reports" />
+  <meta name="citation_pdf_url" content="https://omicverse.org/assets/articles/splitst/splitst.pdf" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/brand/favicon-32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <link rel="stylesheet" href="../styles.css?v=2026-11-12b" />
+  <script src="../script.js?v=2026-11-12b" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" defer></script>
+  <script src="../articles.js?v=2026-11-12b" defer></script>
+</head>
+<body class="paper-page">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/brand/mark.svg" alt="" width="28" height="28" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../ports.html">Ports</a>
+      <a aria-current="page" href="../articles.html">Articles</a>
+      <a href="https://omicverse.readthedocs.io/">Learn</a>
+      <a href="../blog.html">Blog</a>
+      <a href="../people.html">People</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener"><svg class="nav-gh" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+    </nav>
+  </header>
+
+  <main class="paper page-width wide">
+    <nav class="paper-crumbs" aria-label="Breadcrumb"><a href="../index.html">OmicVerse</a><span aria-hidden="true">›</span><a href="../articles.html">Articles</a><span aria-hidden="true">›</span><span>Technical Report</span></nav>
+    <div class="paper-grid">
+      <article class="paper-main">
+        <p class="paper-meta"><span>Technical Report</span><span>Published: <time datetime="2026-11-14">14 November 2026</time></span><span>Version 2</span></p>
+        <h1 class="paper-title">SPLIT purification and residual redistribution on real spatial counts</h1>
+        <ul class="paper-authors"><li><span class="au-name">Haoliang Zhu</span><sup>1,3</sup></li><li><span class="au-name">Zehua Zeng</span><sup>2,3</sup> <a class="au-mail" href="mailto:starlitnightly@gmail.com" aria-label="Email Zehua Zeng"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 6h18v12H3z M3 6l9 7 9-7"/></svg></a></li></ul>
+        <details class="paper-affil"><summary>Affiliations</summary><ol><li><sup>1</sup> School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou 325000, China</li><li><sup>2</sup> Department of Genetics, Stanford University, Stanford, CA 94305, USA</li><li><sup>3</sup> OmicVerse, Inc., San Francisco, CA 94114, USA</li></ol></details>
+        <p class="paper-journal"><i>OmicVerse Technical Reports</i> (2026)<span class="sep" aria-hidden="true">|</span><a href="#cite">Cite this article</a></p>
+
+        <a class="paper-pdf-inline btn btn-primary" href="../assets/articles/splitst/splitst.pdf" download><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>Download PDF</a>
+
+        <section class="paper-section" id="abstract" aria-labelledby="abstract-h">
+          <h2 id="abstract-h">Abstract</h2>
+          <p class="paper-abstract">We evaluate selected SPLIT operations on real DLPFC counts with explicitly constructed layer references. Original R neighborhood scoring and Seurat balancing are executed at four thresholds, with and without label exchange. The experiments expose and repair missing expression substitution during label swapping, missing-class comparisons and single-type status propagation. After repair, aligned retained-cell expression differs by at most 5.68e-13, with matching scores and decisions. Rejected-row representation and the absence of independent clean-expression truth remain explicit limitations.</p>
+          <ul class="paper-keywords" aria-label="Keywords"><li>Python</li><li>R</li><li>reproducibility</li><li>validation</li></ul>
+        </section>
+
+<section class="paper-section is-body" id="sec-introduction" aria-labelledby="sec-introduction-h">
+<h2 id="sec-introduction-h">Introduction</h2>
+<p>Spatial expression measurements can contain contributions from more than one cell type. A purification workflow must decide both how much expression to retain in a cell and where an excluded contribution might have originated. SPLIT combines reference profiles, deconvolution weights and neighborhood information to address these operations, including selective purification, label exchange and residual reassignment<sup class="cite"><a href="#ref-1">1</a></sup>. Porting only the arithmetic expression for purification is therefore insufficient to reproduce the workflow: metadata decisions affect subsequent matrix operations.</p>
+<p><code>splitst</code> provides an AnnData-oriented implementation of selected SPLIT operations. It accepts generic weights and reference profiles rather than requiring RCTD or Seurat objects. This report examines those interfaces against the original R source, extends earlier conditional kernel comparisons to native R neighborhood and balancing functions, and documents repairs discovered during that comparison. It distinguishes numerical fidelity from biological accuracy. The real counts used here have no independent clean-expression truth, and their fitted reference weights do not establish decontamination quality.</p>
+</section>
+<section class="paper-section is-body" id="sec-implementation" aria-labelledby="sec-implementation-h">
+<h2 id="sec-implementation-h">Implementation</h2>
+<h3 id="purification-model">Purification model</h3>
+<p>Let X be the cells-by-genes count matrix, W the cells-by-types weight matrix and R the types-by-genes reference. Weight rows are normalized. If p(i) denotes a cell's primary type, purification multiplies each observed count by the ratio between its primary-type contribution and total predicted expression. A small epsilon protects the denominator; the numerator receives epsilon divided by the number of nonzero weights. This convention follows the pinned R source rather than an independently chosen pseudocount.</p>
+<div class="paper-eq" id="eq-1">$$Y_{ig}=X_{ig}\frac{W_{i,p(i)}R_{p(i),g}+\epsilon/n_i}{\sum_c W_{ic}R_{cg}+\epsilon},\qquad \epsilon=10^{-10}. \tag{1}$$</div>
+<p>Input identifiers are aligned before calculation. The Python implementation uses chunked calculations and preserves sparse output when supplied sparse counts. Primary labels can be provided or inferred from the maximum weight. The number of contributing types determines the initial purification status; selecting a profile later does not mean that a single-type cell has acquired a nonzero residual.</p>
+<h3 id="neighborhood-scoring-and-selective-balance">Neighborhood scoring and selective balance</h3>
+<p>A spatial neighborhood supplies primary and secondary type support. For each focal cell, the composition calculation excludes the focal observation, accumulates neighboring type weights and normalizes their total. The secondary-type component is the score used here. We compare the Python score with original R neighborhood functions using the same neighbor-index matrix. Sharing the graph isolates score and decision semantics, but does not validate equivalence of independently constructed graphs or tie handling.</p>
+<p>The balanced result retains raw counts below the score threshold and uses the purified profile above it; <code>doublet_uncertain</code> can force selection. Rejected observations require an explicit object-model distinction: the R Seurat workflow removes them, while the Python AnnData workflow preserves rows with zero profiles and a removed status. For numerical comparison we align the retained R cells by identifiers and check rejected Python rows separately. This behavior is intentional and must not be described as identical object shape.</p>
+<h3 id="label-exchange-and-residual-reassignment">Label exchange and residual reassignment</h3>
+<p>Original SPLIT-shift exchanges both labels and their weights. For a swapped cell previously classified as purified, it also replaces the selected expression profile with nonnegative raw-minus-purified counts. Reviewing the R implementation exposed that Python had previously swapped labels without replacing the profile. This repair updates the matrix as well as metadata. Missing class labels are no longer converted to equal strings that falsely trigger a swap; a raw single-type status is also preserved when its profile is selected during balancing.</p>
+<p>Positive residual counts are redistributed by a sparse operator. Eligible receivers have a primary type matching the sender's secondary type; rejected receivers are excluded when the status is available. Weights may be uniform or proportional to receiver total counts, with optional self-retention. The former Python-only all-neighbor rule remains available explicitly as <code>receiver_policy=&#x27;all&#x27;</code>. Changing that policy changes the recipient set and potentially unassigned residual mass, so it cannot be a hidden implementation detail.</p>
+</section>
+<section class="paper-section is-body" id="sec-data-and-comparison-protocol" aria-labelledby="sec-data-and-comparison-protocol-h">
+<h2 id="sec-data-and-comparison-protocol-h">Data and comparison protocol</h2>
+<p>The case uses 240 retained spots and 512 genes from DLPFC section 151673. Counts and coordinates are observed; layer annotations come from the source dataset. Within-slice layer means form reference profiles, and nonnegative least squares fits mixture weights. These inputs make the numerical example reproducible but are not independent cell-type references, RCTD outputs or known contamination fractions. A lower total count after purification is not, by itself, evidence of better biology.</p>
+<p>The original R functions are pinned to <code>bdsc-tds/SPLIT@f226987f0fecf2847646bda50a64886e0ea432a9</code>. Native R purification, neighborhood composition, secondary-type scoring and Seurat balance functions are executed. The neighborhood graph is shared with Python. Four thresholds, 0.05, 0.15, 0.30 and 0.50, are evaluated both with and without label exchange. The eight conditions test threshold and swap semantics; they are not eight independent biological datasets.</p>
+<p>Six observations are marked as rejected and a separate set as uncertain doublets using deterministic positions in the input. Swap-support metadata are also controlled. These assignments deliberately exercise branches and are not inferred cell classifications. R removes six rejected cells, leaving 234 for aligned expression comparison. The controlled swap setting yields 31 swaps in Python, with retained-cell decisions matching R after the repairs.</p>
+<figure class="paper-fig" id="fig-1"><figcaption class="fig-title"><b>Fig. 1:</b> Measured spatial input and the effect of illustrative purification.</figcaption><a class="fig-img" href="../assets/articles/splitst/fig1.jpg" target="_blank" rel="noopener"><img src="../assets/articles/splitst/fig1.jpg" alt="Fig. 1: Measured spatial input and the effect of illustrative purification." loading="lazy" /></a><div class="fig-legend"><strong>(a, b)</strong> Observed and purified per-spot totals with a common color scale. <strong>(c)</strong> Largest fitted layer weight, showing the constructed mixture input. <strong>(d)</strong> Distribution of the count fraction removed. Neither the weights nor the reduction fraction is independent ground truth; these panels describe the numerical transformation of real counts.</div><a class="fig-full" href="../assets/articles/splitst/fig1.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+</section>
+<section class="paper-section is-body" id="sec-results" aria-labelledby="sec-results-h">
+<h2 id="sec-results-h">Results</h2>
+<h3 id="native-r-scoring-and-balancing">Native R scoring and balancing</h3>
+<p>The maximum secondary-type score difference was 5.55e-16. Across all eight threshold/swap conditions, retained-cell expression differed by at most 5.68e-13. Swap flags and purification statuses had zero disagreements on aligned retained cells after repair. Expression errors remain at floating-point scale even when swapped profiles use the residual rather than the original purified matrix.</p>
+<p>The experiment detected errors that a simple purification scatter would miss. Previously, four controlled missing-class cases produced incorrect swap flags, and one single-type case received an incorrect purification status. The missing-class issue did not necessarily create a large expression difference because a raw cell can have no residual, illustrating why both metadata and numerical outputs must be tested. The profile-replacement error was corrected directly from the original R behavior and protected by a dedicated regression test.</p>
+<figure class="paper-table" id="table-1"><figcaption class="fig-title"><b>Table 1:</b> Expanded original-R comparison on the shared spatial graph.</figcaption><div class="table-scroll"><table><thead><tr><th>Quantity</th><th>Result</th><th>Interpretation</th></tr></thead><tbody><tr><td>Threshold/swap conditions</td><td>8</td><td>Four thresholds, two swap settings</td></tr><tr><td>Maximum score difference</td><td>5.55e-16</td><td>Original R neighborhood functions</td></tr><tr><td>Maximum expression difference</td><td>5.68e-13</td><td>Retained cells aligned by identifier</td></tr><tr><td>Swap disagreements</td><td>0</td><td>After missing-class repair</td></tr><tr><td>Status disagreements</td><td>0</td><td>After single-type status repair</td></tr><tr><td>R / Python stored observations</td><td>234 / 240</td><td>Explicit reject-row representation difference</td></tr></tbody></table></div></figure>
+<figure class="paper-fig" id="fig-2"><figcaption class="fig-title"><b>Fig. 2:</b> Expression agreement with native R balance functions.</figcaption><a class="fig-img" href="../assets/articles/splitst/fig2.jpg" target="_blank" rel="noopener"><img src="../assets/articles/splitst/fig2.jpg" alt="Fig. 2: Expression agreement with native R balance functions." loading="lazy" /></a><div class="fig-legend"><strong>(a, b)</strong> Retained-cell expression with and without swapping at threshold 0.15; points are thinned regularly only for display. <strong>(c, d)</strong> Cumulative absolute-error distributions over all matrix entries at four thresholds. Exact zeros are placed at 1e-18 for logarithmic display. Python's six zeroed rejected rows are excluded from these aligned-cell scatters because R removes those rows entirely.</div><a class="fig-full" href="../assets/articles/splitst/fig2.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+<h3 id="decisions-and-recipient-policy">Decisions and recipient policy</h3>
+<p>Increasing the threshold changes how many retained observations use the purified profile. This is a method parameter, not numerical noise. Likewise, swap controls change expression totals because the residual is a different profile. The case demonstrates both behaviors without assuming that one threshold or swapped label is biologically optimal. Threshold selection for a real study requires an external rationale or validation criterion.</p>
+<p>Residual accounting separates assigned from unassigned mass. A sender without a matching receiver cannot be treated as if its residual had been assigned successfully. The all-neighbor alternative can redistribute more mass while violating the intended type restriction; this is why conservation alone is insufficient to establish the correct receiver rule. The earlier direct R redistribution comparison remains valid for its shared decisions and operator inputs, but is not promoted to an independent full spatial-workflow benchmark.</p>
+<figure class="paper-fig" id="fig-3"><figcaption class="fig-title"><b>Fig. 3:</b> Controlled decisions and redistribution diagnostics.</figcaption><a class="fig-img" href="../assets/articles/splitst/fig3.jpg" target="_blank" rel="noopener"><img src="../assets/articles/splitst/fig3.jpg" alt="Fig. 3: Controlled decisions and redistribution diagnostics." loading="lazy" /></a><div class="fig-legend"><strong>(a)</strong> Native R raw/purified status counts across thresholds. <strong>(b)</strong> Retained, rejected and swap-control counts; control categories are not biological calls and need not form a disjoint partition. <strong>(c)</strong> Change in retained-cell expression totals after swapping. <strong>(d)</strong> Assigned and unassigned residual mass under matching-type and all-neighbor policies. The alternative policy is displayed to illustrate semantic consequences, not as an equivalent R mode.</div><a class="fig-full" href="../assets/articles/splitst/fig3.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+</section>
+<section class="paper-section is-body" id="sec-interpretation-and-limitations" aria-labelledby="sec-interpretation-and-limitations-h">
+<h2 id="sec-interpretation-and-limitations-h">Interpretation and limitations</h2>
+<p>The combined evidence supports selected formula, score, balance and shift behavior under a shared graph and explicit object mapping. It is materially stronger than the original synthetic-only tests, but still does not validate arbitrary RCTD objects, independently built neighborhoods, every class hierarchy or biological purification accuracy. The 240-spot case is one subset of one section. No uncertainty interval across tissues is inferred from the eight parameter settings.</p>
+<p>The object-model difference for rejected cells is particularly relevant downstream. A consumer that treats a zeroed removed row as an ordinary cell can distort neighborhood or summary statistics. Consumers should inspect <code>split_balance_status</code>, exclude removed observations where required and avoid assuming that AnnData dimensions match a Seurat return value. The report therefore describes mapping rules rather than presenting a blanket same-object claim.</p>
+<p>These experiments do not establish a speed advantage. The implementation is vectorized and sparse-aware, but matched repeated runtime and memory profiling over realistic sizes remains future work. The scientific conclusion is that exact branching semantics matter: labels, statuses and expression profiles must remain synchronized. A release should ship the new regression cases and maintain the same repairs in the embedded OmicVerse copy.</p>
+</section>
+<section class="paper-section is-back" id="sec-data-and-code-availability" aria-labelledby="sec-data-and-code-availability-h">
+<h2 id="sec-data-and-code-availability-h">Data and code availability</h2>
+<p>The <a href="https://github.com/omicverse/omicverse-org-home/raw/refs/heads/main/articles/_evidence/rewrite-validation/evidence.zip" target="_blank" rel="noopener">reproduction bundle</a> contains the recorded inputs, reference outputs, scripts and environment details.</p>
+<p>The evaluated Python implementation is preserved at <a href="https://github.com/hurry060215-tech/py-SPLIT/commit/6f40edc67431b4d0215024ebfcc82beabeec65dc" target="_blank" rel="noopener">the pinned repair revision</a>. The benchmark source hashes identify the exact tested files; inclusion in an upstream release is a separate status.</p>
+<p>Original SPLIT source is available at <a href="https://github.com/bdsc-tds/SPLIT" target="_blank" rel="noopener">https://github.com/bdsc-tds/SPLIT</a> and the Python package at <a href="https://github.com/omicverse/py-SPLIT" target="_blank" rel="noopener">https://github.com/omicverse/py-SPLIT</a>. This report documents the evaluated source revision. The experiment bundle includes <code>spatial_reference.R</code>, <code>spatial_compare.py</code>, shared CSV inputs, native R metadata and expression outputs, per-condition comparisons and <code>figures.py</code>. The initial fixture records the source count-matrix SHA-256. Input subset selection and fitted-weight construction are preserved in <code>prepare_spatial.py</code>; their constructed nature is essential to interpretation, not optional provenance.</p>
+</section>
+<section class="paper-section is-back" id="sec-conflicts-of-interest" aria-labelledby="sec-conflicts-of-interest-h">
+<h2 id="sec-conflicts-of-interest-h">Conflicts of interest</h2>
+<p>H.Z. and Z.Z. are affiliated with OmicVerse, Inc.</p>
+</section>
+<section class="paper-section is-back" id="sec-use-of-ai-tools" aria-labelledby="sec-use-of-ai-tools-h">
+<h2 id="sec-use-of-ai-tools-h">Use of AI tools</h2>
+<p>AI assistance was used for code inspection, experiment scripting, visualization and drafting. The authors approved submission of this scoped technical report.</p>
+</section>
+<section class="paper-section is-refs" id="references" aria-labelledby="references-h">
+<h2 id="references-h">References</h2>
+<ol class="paper-refs"><li id="ref-1"><span class="ref-n">1.</span><span class="ref-text">Bilous M et al. (2026). Resolving sensitivity, specificity and signal contamination in Xenium spatial transcriptomics. Nature Methods. <a href="https://doi.org/10.1038/s41592-026-03089-8" target="_blank" rel="noopener">10.1038/s41592-026-03089-8</a></span></li><li id="ref-2"><span class="ref-n">2.</span><span class="ref-text">Maynard KR et al. (2021). Transcriptome-scale spatial gene expression in the human dorsolateral prefrontal cortex. Nature Neuroscience 24, 425–436. <a href="https://doi.org/10.1038/s41593-020-00787-0" target="_blank" rel="noopener">10.1038/s41593-020-00787-0</a></span></li><li id="ref-3"><span class="ref-n">3.</span><span class="ref-text">Virtanen P et al. (2020). SciPy 1.0: fundamental algorithms for scientific computing in Python. Nature Methods 17, 261–272. <a href="https://doi.org/10.1038/s41592-019-0686-2" target="_blank" rel="noopener">10.1038/s41592-019-0686-2</a></span></li><li id="ref-4"><span class="ref-n">4.</span><span class="ref-text">Zeng Z et al. (2024). OmicVerse: a framework for bridging and deepening insights across bulk and single-cell sequencing. Nature Communications 15, 5983. <a href="https://doi.org/10.1038/s41467-024-50194-3" target="_blank" rel="noopener">10.1038/s41467-024-50194-3</a></span></li></ol>
+</section>
+<section class="paper-section is-supp" id="supplementary" aria-labelledby="supplementary-h">
+<h2 id="supplementary-h">Supplementary information</h2>
+<h3 id="reproduction-and-acceptance-criteria">Reproduction and acceptance criteria</h3>
+<p>Generate the real-count subset and fitted reference inputs, execute the R source functions with the exported neighbor indices, and run Python on the same matrices. Compare by cell and gene identifiers, not row positions. Check score error, matrix error, swap flags and purification status separately. For rejected observations, verify zeroed Python rows and removal from R before aligning retained cells. Record the precise source commit and R session information.</p>
+<p>The new focused regression fixture contains a swapped purified profile, a raw single-type profile with missing class labels, and a rejected profile. It verifies residual substitution, lack of a missing-value-induced swap, status preservation and zeroed rejection. Existing tests were updated where they encoded the previous behavior of marking every selected profile as purified; this change follows independently executed R semantics rather than weakening a numerical tolerance.</p>
+</section>
+
+        <section class="paper-section" id="author-information" aria-labelledby="author-information-h">
+          <h2 id="author-information-h">Author information</h2>
+          <h3>Affiliations</h3>
+          <ol class="paper-affil-list"><li><sup>1</sup> School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou 325000, China</li><li><sup>2</sup> Department of Genetics, Stanford University, Stanford, CA 94305, USA</li><li><sup>3</sup> OmicVerse, Inc., San Francisco, CA 94114, USA</li></ol>
+          <h3>Corresponding authors</h3>
+          <p>Correspondence to <a href="mailto:starlitnightly@gmail.com">Zehua Zeng</a>.</p>
+        </section>
+
+        <section class="paper-section" id="cite" aria-labelledby="cite-h">
+          <h2 id="cite-h">Cite this article</h2>
+          <p class="cite-text" id="cite-text">Zhu, H. &amp; Zeng, Z. SPLIT purification and residual redistribution on real spatial counts. OmicVerse Technical Reports (2026). https://omicverse.org/articles/splitst</p>
+          <dl class="cite-meta"><div><dt>Published</dt><dd>14 November 2026</dd></div></dl>
+          <div class="cite-actions"><button class="btn btn-ghost" type="button" data-copy-target="#cite-text">Copy citation</button><button class="btn btn-ghost" type="button" data-copy-target="#cite-bib">Copy BibTeX</button></div>
+          <pre class="cite-bib" id="cite-bib">@techreport{zhu2026splitst,
+  title       = {SPLIT purification and residual redistribution on real spatial counts},
+  author      = {Zhu, Haoliang and Zeng, Zehua},
+  institution = {OmicVerse},
+  type        = {Technical Report},
+  year        = {2026},
+  url         = {https://omicverse.org/articles/splitst}
+}</pre>
+        </section>
+      </article>
+
+      <aside class="paper-side" aria-label="Article tools">
+        <div class="side-card side-pdf">
+          <a class="btn-pdf" href="../assets/articles/splitst/splitst.pdf" download>Download PDF <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg></a>
+          <p>Two-column PDF · 6 pages · 1.1 MB · <a href="../assets/articles/splitst/splitst.pdf" target="_blank" rel="noopener">open in browser</a></p>
+        </div>
+        <div class="side-tabs" data-side-tabs>
+          <div class="side-tablist" role="tablist">
+            <button type="button" role="tab" aria-selected="true" data-tab="sections">Sections</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="figures">Figures</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="references">References</button>
+          </div>
+          <ol class="side-panel side-toc" data-panel="sections"><li><a href="#abstract">Abstract</a></li><li><a href="#sec-introduction">Introduction</a></li><li><a href="#sec-implementation">Implementation</a></li><li><a href="#sec-data-and-comparison-protocol">Data and comparison protocol</a></li><li><a href="#sec-results">Results</a></li><li><a href="#sec-interpretation-and-limitations">Interpretation and limitations</a></li><li><a href="#references">References</a></li><li><a href="#supplementary">Supplementary information</a></li><li><a href="#cite">Cite this article</a></li></ol>
+          <ul class="side-panel side-figs" data-panel="figures" hidden><li><a href="#fig-1"><img src="../assets/articles/splitst/fig1-thumb.jpg" alt="" loading="lazy" /><span>Fig. 1</span></a></li><li><a href="#fig-2"><img src="../assets/articles/splitst/fig2-thumb.jpg" alt="" loading="lazy" /><span>Fig. 2</span></a></li><li><a href="#fig-3"><img src="../assets/articles/splitst/fig3-thumb.jpg" alt="" loading="lazy" /><span>Fig. 3</span></a></li></ul>
+          <div class="side-panel" data-panel="references" hidden><p>4 references, numbered in order of citation.</p><a href="#references">Go to references</a></div>
+        </div>
+        <ul class="side-card side-links"><li><span>Code</span><a href="https://github.com/omicverse/py-SPLIT" target="_blank" rel="noopener">github.com/omicverse/py-SPLIT</a></li></ul>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner page-width wide">
+      <div class="footer-brand-col">
+        <span class="footer-brand"><img src="../assets/brand/mark.svg" alt="" width="20" height="20" /> OmicVerse</span>
+        <p>Open-source multi-omics in Python, with Rust and Torch underneath. Trusted R methods, rebuilt and verified.</p>
+        <p class="footer-install"><code>pip install omicverse</code></p>
+      </div>
+      <div class="footer-col"><span class="footer-col-title">Project</span><ul><li><a href="../packages.html">Packages</a></li><li><a href="../ports.html">R-port catalog</a></li><li><a href="../articles.html">Articles</a></li><li><a href="https://omicverse.readthedocs.io/" target="_blank" rel="noopener">Documentation</a></li><li><a href="../blog.html">Blog</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Community</span><ul><li><a href="../people.html">People</a></li><li><a href="../events.html">Events</a></li><li><a href="../join.html">Join</a></li><li><a href="https://github.com/omicverse/omicverse/discussions" target="_blank" rel="noopener">Discussions ↗</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Resources</span><ul><li><a href="../about.html">About & citation</a></li><li><a href="https://github.com/omicverse/omicverse-rebuildr" target="_blank" rel="noopener">Porting protocol ↗</a></li><li><a href="https://github.com/omicverse/omicverse-tutorials" target="_blank" rel="noopener">Tutorials ↗</a></li><li><a href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a></li></ul></div>
+    </div>
+    <div class="footer-bottom page-width wide">
+      <span>© OmicVerse contributors · Apache-2.0</span>
+      <span>Built with <a href="https://github.com/omicverse/omicverse-org-home" target="_blank" rel="noopener">omicverse-org-home</a></span>
+    </div>
+  </footer>
+</body>
+</html>

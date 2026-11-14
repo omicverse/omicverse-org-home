@@ -1,0 +1,41 @@
+slug: splitst
+type: Technical Report
+title: SPLIT purification and residual redistribution on real spatial counts
+short_title: splitst
+published: 2026-11-14
+version: 2
+authors:
+- name: Haoliang Zhu
+  affiliations:
+  - 1
+  - 3
+- name: Zehua Zeng
+  affiliations:
+  - 2
+  - 3
+  email: starlitnightly@gmail.com
+affiliations:
+  1: School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou
+    325000, China
+  2: Department of Genetics, Stanford University, Stanford, CA 94305, USA
+  3: OmicVerse, Inc., San Francisco, CA 94114, USA
+abstract: We evaluate selected SPLIT operations on real DLPFC counts with explicitly
+  constructed layer references. Original R neighborhood scoring and Seurat balancing
+  are executed at four thresholds, with and without label exchange. The experiments
+  expose and repair missing expression substitution during label swapping, missing-class
+  comparisons and single-type status propagation. After repair, aligned retained-cell
+  expression differs by at most 5.68e-13, with matching scores and decisions. Rejected-row
+  representation and the absence of independent clean-expression truth remain explicit
+  limitations.
+keywords:
+- Python
+- R
+- reproducibility
+- validation
+links:
+  code: https://github.com/omicverse/py-SPLIT
+thumbnail: fig1
+status: ready-for-publication
+release_decision: approved-by-authors
+reviewed: 2026-11-14
+author_confirmation: 2026-11-14

@@ -1,0 +1,14 @@
+{
+  "survival": {
+    "plus": 209,
+    "minus": 20,
+    "lambda": 0.03229822184353329,
+    "sharedgenes": 5662
+  },
+  "tp53": {
+    "plus": 415,
+    "minus": 324,
+    "lambda": 0.0014298594846194495,
+    "sharedgenes": 5662
+  }
+}

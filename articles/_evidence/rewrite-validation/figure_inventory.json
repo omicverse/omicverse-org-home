@@ -1,0 +1,62 @@
+[
+  {
+    "report": "pycytotrace",
+    "figure": 1,
+    "panels": 4
+  },
+  {
+    "report": "pycytotrace",
+    "figure": 2,
+    "panels": 4
+  },
+  {
+    "report": "pycytotrace",
+    "figure": 3,
+    "panels": 4
+  },
+  {
+    "report": "splitst",
+    "figure": 1,
+    "panels": 4
+  },
+  {
+    "report": "splitst",
+    "figure": 2,
+    "panels": 4
+  },
+  {
+    "report": "splitst",
+    "figure": 3,
+    "panels": 4
+  },
+  {
+    "report": "spata2py",
+    "figure": 1,
+    "panels": 4
+  },
+  {
+    "report": "spata2py",
+    "figure": 2,
+    "panels": 4
+  },
+  {
+    "report": "spata2py",
+    "figure": 3,
+    "panels": 4
+  },
+  {
+    "report": "scissor-validation",
+    "figure": 1,
+    "panels": 4
+  },
+  {
+    "report": "scissor-validation",
+    "figure": 2,
+    "panels": 4
+  },
+  {
+    "report": "scissor-validation",
+    "figure": 3,
+    "panels": 4
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "reviewed": "2026-11-14",
+  "publication_status": "Authors approved submission on 2026-11-14; website deployment awaits maintainer merge",
+  "reports": {
+    "splitst": "Scoped technical validation accepted: real counts with constructed references/shared graph; no independent clean-expression truth",
+    "spata2py": "Scoped geometry comparison accepted: bounded noise-label agreement; convex-vs-concave outline difference retained",
+    "pycytotrace": "Single-batch core validation accepted: two datasets at three subset sizes; no full-cohort/fast/batch claims",
+    "scissor-validation": "Matched-input and tighter full-data-path evidence accepted; original failure retained, corrected Cox distinct, tighter CV not rerun"
+  },
+  "checks": {
+    "pdf_pages_each": 6,
+    "visual_review": "all 24 pages inspected",
+    "overfull_boxes": 0,
+    "missing_glyphs": false,
+    "source_hashes": "all four recorded implementation file hashes match",
+    "numeric_text": "three-significant-digit rounding aligned to saved CSV/JSON",
+    "bibliography": "eight DOI records verified via Crossref/publisher; online-first year distinguished from print citation"
+  },
+  "remaining": [
+    "maintainer merge/public website deployment"
+  ],
+  "author_confirmation": "User confirmed metadata accuracy and coauthor approval in this task"
+}
