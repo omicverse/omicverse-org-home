@@ -3,13 +3,17 @@
   "name": "omicverse-org-home",
   "main": "./worker.js",
   "compatibility_date": "2026-05-15",
+  "vars": {
+    "ANALYTICS_UPSTREAM": "https://omicos.cn/ov-analytics"
+  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
     "run_worker_first": [
       "/learn",
       "/learn/",
-      "/learn.html"
+      "/learn.html",
+      "/analytics/*"
     ]
   }
 }
