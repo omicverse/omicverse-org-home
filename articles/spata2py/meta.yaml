@@ -1,0 +1,40 @@
+slug: spata2py
+type: Technical Report
+title: Scoped spatial outlier validation for SPATA2-inspired AnnData utilities
+short_title: spata2py
+published: 2026-11-14
+version: 2
+authors:
+- name: Haoliang Zhu
+  affiliations:
+  - 1
+  - 3
+- name: Zehua Zeng
+  affiliations:
+  - 2
+  - 3
+  email: starlitnightly@gmail.com
+affiliations:
+  1: School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou
+    325000, China
+  2: Department of Genetics, Stanford University, Stanford, CA 94305, USA
+  3: OmicVerse, Inc., San Francisco, CA 94114, USA
+abstract: We assess selected SPATA2-inspired AnnData utilities using original SPATA2
+  3.1.4 on 3,639 real retained DLPFC coordinates and five planted controls. Density
+  labels agree under matched parameters, but the Python convex outline has about 14.3
+  percent greater area than the original R outline and grid overlap is approximately
+  0.875. Parameter sensitivity and unit-scale checks distinguish numerical invariants
+  from algorithmic differences. The report does not claim reconstruction of SPATA2
+  spatial gradients, histology analysis or its full object framework.
+keywords:
+- Python
+- R
+- reproducibility
+- validation
+links:
+  code: https://github.com/omicverse/py-SPATA2
+thumbnail: fig1
+status: ready-for-publication
+release_decision: approved-by-authors
+reviewed: 2026-11-14
+author_confirmation: 2026-11-14

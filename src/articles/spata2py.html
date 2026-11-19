@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scoped spatial outlier validation for SPATA2-inspired AnnData utilities — OmicVerse Articles</title>
+  <meta name="description" content="We assess selected SPATA2-inspired AnnData utilities using original SPATA2 3.1.4 on 3,639 real retained DLPFC coordinates and five planted controls. Density labels agree under matched parameters, but the Python convex outline has about 14.3 percent greater area than the original R outline and grid o" />
+  <meta property="og:title" content="Scoped spatial outlier validation for SPATA2-inspired AnnData utilities" />
+  <meta property="og:description" content="We assess selected SPATA2-inspired AnnData utilities using original SPATA2 3.1.4 on 3,639 real retained DLPFC coordinates and five planted controls. Density labels agree under matched parameters, but the Python convex outline has about 14.3 percent greater area than the original R outline and grid o" />
+  <meta name="citation_title" content="Scoped spatial outlier validation for SPATA2-inspired AnnData utilities" />
+  <meta name="citation_author" content="Haoliang Zhu" />
+  <meta name="citation_author" content="Zehua Zeng" />
+  <meta name="citation_publication_date" content="2026/11/14" />
+  <meta name="citation_journal_title" content="OmicVerse Technical Reports" />
+  <meta name="citation_pdf_url" content="https://omicverse.org/assets/articles/spata2py/spata2py.pdf" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/brand/favicon-32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <link rel="stylesheet" href="../styles.css?v=2026-11-12b" />
+  <script src="../script.js?v=2026-11-12b" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" defer></script>
+  <script src="../articles.js?v=2026-11-12b" defer></script>
+</head>
+<body class="paper-page">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="../index.html" aria-label="OmicVerse home">
+      <img class="brand-logo" src="../assets/brand/mark.svg" alt="" width="28" height="28" />
+      <span>OmicVerse</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+    <nav class="nav-links" id="nav-links" aria-label="Primary navigation">
+      <a href="../packages.html">Packages</a>
+      <a href="../ports.html">Ports</a>
+      <a aria-current="page" href="../articles.html">Articles</a>
+      <a href="https://omicverse.readthedocs.io/">Learn</a>
+      <a href="../blog.html">Blog</a>
+      <a href="../people.html">People</a>
+      <a href="../about.html">About</a>
+      <a href="../join.html">Join</a>
+      <a class="nav-cta" href="https://github.com/omicverse" target="_blank" rel="noopener"><svg class="nav-gh" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+    </nav>
+  </header>
+
+  <main class="paper page-width wide">
+    <nav class="paper-crumbs" aria-label="Breadcrumb"><a href="../index.html">OmicVerse</a><span aria-hidden="true">›</span><a href="../articles.html">Articles</a><span aria-hidden="true">›</span><span>Technical Report</span></nav>
+    <div class="paper-grid">
+      <article class="paper-main">
+        <p class="paper-meta"><span>Technical Report</span><span>Published: <time datetime="2026-11-14">14 November 2026</time></span><span>Version 2</span></p>
+        <h1 class="paper-title">Scoped spatial outlier validation for SPATA2-inspired AnnData utilities</h1>
+        <ul class="paper-authors"><li><span class="au-name">Haoliang Zhu</span><sup>1,3</sup></li><li><span class="au-name">Zehua Zeng</span><sup>2,3</sup> <a class="au-mail" href="mailto:starlitnightly@gmail.com" aria-label="Email Zehua Zeng"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M3 6h18v12H3z M3 6l9 7 9-7"/></svg></a></li></ul>
+        <details class="paper-affil"><summary>Affiliations</summary><ol><li><sup>1</sup> School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou 325000, China</li><li><sup>2</sup> Department of Genetics, Stanford University, Stanford, CA 94305, USA</li><li><sup>3</sup> OmicVerse, Inc., San Francisco, CA 94114, USA</li></ol></details>
+        <p class="paper-journal"><i>OmicVerse Technical Reports</i> (2026)<span class="sep" aria-hidden="true">|</span><a href="#cite">Cite this article</a></p>
+
+        <a class="paper-pdf-inline btn btn-primary" href="../assets/articles/spata2py/spata2py.pdf" download><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>Download PDF</a>
+
+        <section class="paper-section" id="abstract" aria-labelledby="abstract-h">
+          <h2 id="abstract-h">Abstract</h2>
+          <p class="paper-abstract">We assess selected SPATA2-inspired AnnData utilities using original SPATA2 3.1.4 on 3,639 real retained DLPFC coordinates and five planted controls. Density labels agree under matched parameters, but the Python convex outline has about 14.3 percent greater area than the original R outline and grid overlap is approximately 0.875. Parameter sensitivity and unit-scale checks distinguish numerical invariants from algorithmic differences. The report does not claim reconstruction of SPATA2 spatial gradients, histology analysis or its full object framework.</p>
+          <ul class="paper-keywords" aria-label="Keywords"><li>Python</li><li>R</li><li>reproducibility</li><li>validation</li></ul>
+        </section>
+
+<section class="paper-section is-body" id="sec-introduction" aria-labelledby="sec-introduction-h">
+<h2 id="sec-introduction-h">Introduction</h2>
+<p>Spatial analysis combines expression values with coordinates, tissue geometry and annotations. SPATA2 is a broad R framework covering many of these operations, including histology-associated expression gradients<sup class="cite"><a href="#ref-1">1</a></sup>. A small collection of Python coordinate helpers is therefore not a complete replacement for SPATA2. This report deliberately evaluates a narrower surface: AnnData coordinate and variable access, a convex tissue outline, spatial candidate-outlier flags and explicit unit conversion.</p>
+<p>The purpose of <code>spata2py</code> is to make these limited operations convenient in Python and to keep their semantics understandable. The distinction between geometry routines matters. Density connectivity can retain a point at the tissue rim through its neighbors, while a distance-threshold rule can flag the same point. Likewise, a single convex hull can enclose gaps that a concave or fragmented tissue boundary excludes. Matching one operation cannot establish equivalence of the others.</p>
+<p>We extend the earlier R dbscan comparison by executing SPATA2 3.1.4 itself on the shared real coordinates. The study compares its tissue-section/noise labels and outline with the Python results, examines neighborhood sensitivity and checks behavior under coordinate rescaling. The results support density-label agreement under a fixed parameterization while explicitly demonstrating a boundary-shape difference. They do not claim spatial-gradient, annotation or image-analysis reconstruction.</p>
+</section>
+<section class="paper-section is-body" id="sec-implementation-and-scope" aria-labelledby="sec-implementation-and-scope-h">
+<h2 id="sec-implementation-and-scope-h">Implementation and scope</h2>
+<h3 id="anndata-access-and-geometry">AnnData access and geometry</h3>
+<p>Coordinates are read from <code>obsm[&#x27;spatial&#x27;]</code> or designated observation columns. Variable extraction joins expression or metadata to the coordinate table by observation identifiers. These accessors are useful infrastructure, but their names do not establish an S4-object mapping or behavioral parity for every R method. The historical count of matching exported names should be interpreted as an interface inventory, not a percentage of scientific equivalence.</p>
+<p>The Python tissue outline deduplicates coordinates and computes one convex hull with SciPy<sup class="cite"><a href="#ref-2">2</a></sup>. Degenerate coordinate sets have an ordered-point fallback. No histological image, concavity parameter or tissue-fragment model is inferred. A convex hull is well defined and inexpensive, but can span cavities and disconnected regions. The R SPATA2 observation-based outline includes density clustering and a concave boundary construction, making it a different algorithm even when both are drawn around the same coordinates.</p>
+<h3 id="candidate-outlier-rules">Candidate-outlier rules</h3>
+<p>DBSCAN is now the default Python rule, synchronized with the OmicVerse implementation. If no radius is supplied, epsilon is 1.25 times the median nearest-neighbor distance. A minimum of three other neighbors corresponds to scikit-learn's self-inclusive <code>min_samples=4</code>. Points assigned to density-connected clusters are retained and noise points are flagged. The labels describe local geometry, not proven biological artifacts. Removing them requires consideration of tissue architecture and sampling design.</p>
+<p>The older <code>method=&#x27;mad&#x27;</code> option uses a robust threshold on kth-neighbor distances. Its median absolute deviation now has a relative numerical guard. On a regular array, theoretically identical distances can differ at floating-point precision; checking for exactly zero spread can then yield a threshold that treats rounding as isolation. The guard fixes that numerical issue, but does not make the distance-based rule equivalent to DBSCAN or guarantee sensitivity to isolated controls. Both algorithms remain exposed with their differences documented.</p>
+<p>Unit conversions require an explicit pixels-per-unit factor. The code does not infer physical calibration from arbitrary coordinate magnitudes. Uniform rescaling should preserve automatically normalized density decisions when the inferred radius scales with the coordinates, but cannot preserve results if a user supplies a fixed numerical radius without updating its unit.</p>
+</section>
+<section class="paper-section is-body" id="sec-real-data-and-control-design" aria-labelledby="sec-real-data-and-control-design-h">
+<h2 id="sec-real-data-and-control-design-h">Real-data and control design</h2>
+<p>The experiment uses 3,639 retained coordinates from DLPFC section 151673, a real cortical spatial-expression dataset<sup class="cite"><a href="#ref-3">3</a></sup>. These are the coordinates available in the local exported analysis, not every raw spot on the original slide. Five isolated points are planted far outside the coordinate range as positive controls. They are artificial and displayed separately from the tissue. There is no independently adjudicated artifact label for the native spots, so their flags are called candidates rather than false or true positives.</p>
+<p>Original SPATA2 3.1.4 is initialized with these coordinates and run through <code>identifyTissueOutline(method=&#x27;obs&#x27;)</code>, with epsilon 7.707226277274469, <code>minPts=4</code> and concavity 2. The SPATA2 container requires an expression assay; a two-row constant placeholder matrix is used only to satisfy that container interface. The geometry method evaluated here does not infer expression biology from that placeholder. This distinction is recorded so that a geometry comparison cannot be mistaken for a real-expression SPATA2 analysis.</p>
+<p>We export original-R tissue labels, coordinate tables and outline vertices. Python receives exactly the same coordinates. The native-coordinate convex hull is compared with the R tissue outline after excluding the five distant planted controls from the Python hull; otherwise a deliberately artificial point would dominate the boundary. A separate grid-based overlap calculation samples 200 by 200 positions over the native coordinate extent. It is an approximation at a declared resolution, not exact polygon intersection arithmetic.</p>
+<figure class="paper-fig" id="fig-1"><figcaption class="fig-title"><b>Fig. 1:</b> Original SPATA2 comparison on real retained tissue coordinates.</figcaption><a class="fig-img" href="../assets/articles/spata2py/fig1.jpg" target="_blank" rel="noopener"><img src="../assets/articles/spata2py/fig1.jpg" alt="Fig. 1: Original SPATA2 comparison on real retained tissue coordinates." loading="lazy" /></a><div class="fig-legend"><strong>(a)</strong> Native points colored by candidate-noise status; flagged native points have no ground-truth artifact label. <strong>(b)</strong> Original R tissue outline and Python convex hull over the same native extent. <strong>(c)</strong> The five artificial isolated controls shown separately from real tissue. <strong>(d)</strong> Noise-label contingency table for all 3,644 points, comparing original SPATA2 and Python under matched density parameters.</div><a class="fig-full" href="../assets/articles/spata2py/fig1.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+</section>
+<section class="paper-section is-body" id="sec-results" aria-labelledby="sec-results-h">
+<h2 id="sec-results-h">Results</h2>
+<h3 id="density-labels-agree-tissue-outlines-do-not">Density labels agree; tissue outlines do not</h3>
+<p>Original SPATA2 and Python returned identical noise labels: nine native candidates and all five planted controls were flagged, with zero label disagreements. The remaining points formed one non-noise tissue section in the R result. This strengthens the earlier kernel-only comparison because the original package method was executed, but the conclusion still concerns the specified geometry method and parameters, not all SPATA2 functionality.</p>
+<p>The native R outline area was approximately 119,076.6 squared coordinate units, whereas the Python convex hull area was 136,128.8, about 14.3% larger. The estimated intersection-over-union on the 200-by-200 grid was 0.8746. These quantities demonstrate a meaningful algorithmic difference, not a small floating-point error. The concave boundary and convex hull should not be treated as interchangeable inputs to area-normalized abundance or distance-to-boundary analyses.</p>
+<figure class="paper-table" id="table-1"><figcaption class="fig-title"><b>Table 1:</b> Matched density labels and divergent boundary geometry.</figcaption><div class="table-scroll"><table><thead><tr><th>Measurement</th><th>Result</th><th>Scope</th></tr></thead><tbody><tr><td>Real / planted coordinates</td><td>3,639 / 5</td><td>Retained DLPFC subset plus artificial controls</td></tr><tr><td>Native / planted noise flags</td><td>9 / 5</td><td>Original SPATA2 and Python agree</td></tr><tr><td>Label disagreements</td><td>0</td><td>Identical radius and minimum-point settings</td></tr><tr><td>Original R outline area</td><td>119,076.6</td><td>Coordinate units squared</td></tr><tr><td>Python convex area</td><td>136,128.8</td><td>Native coordinates, planted controls excluded</td></tr><tr><td>Estimated outline IoU</td><td>0.8746</td><td>200 by 200 sampling grid</td></tr></tbody></table></div></figure>
+<h3 id="neighborhood-sensitivity">Neighborhood sensitivity</h3>
+<p>The radius was varied from 1.05 to 2 times the median nearest-neighbor spacing, and the minimum number of other neighbors from two to five. All five planted controls were recovered in every tested condition. Native candidate counts, however, ranged from three to 35. At radius factors 1.05–1.5, increasing the minimum-neighbor requirement changed native counts from five to nine to 35. At factor 2, the corresponding counts were three, three and six.</p>
+<p>These changes are expected consequences of the density definition, not instability in floating-point arithmetic. A single parameter choice cannot establish a biological truth label for a boundary point. A useful workflow should inspect flagged locations and the sampling pattern, retain parameters in provenance and avoid automatically deleting points merely because the detector returned a flag.</p>
+<figure class="paper-fig" id="fig-2"><figcaption class="fig-title"><b>Fig. 2:</b> Sensitivity to the definition of spatial isolation.</figcaption><a class="fig-img" href="../assets/articles/spata2py/fig2.jpg" target="_blank" rel="noopener"><img src="../assets/articles/spata2py/fig2.jpg" alt="Fig. 2: Sensitivity to the definition of spatial isolation." loading="lazy" /></a><div class="fig-legend"><strong>(a)</strong> Native candidate counts across radius and minimum-neighbor settings. <strong>(b)</strong> Recovery of five planted controls under the same grid. <strong>(c)</strong> DBSCAN and MAD-rule candidate/control counts, illustrating that the two rules are distinct. <strong>(d)</strong> Nearest-neighbor distances among native coordinates. Counts in the first two panels are deterministic results, not estimates with independent biological replicates.</div><a class="fig-full" href="../assets/articles/spata2py/fig2.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+<h3 id="scale-and-unit-checks">Scale and unit checks</h3>
+<p>Multiplying all coordinates by 0.01, 0.1, 1, 10 or 100 produced no flag disagreements with the baseline automatic-radius result. This checks the intended behavior when epsilon is recomputed from the rescaled geometry. It does not validate arbitrary transformations such as anisotropic scaling or rotation with coordinate-dependent downstream features. Pixel-to-unit conversion followed by its inverse had maximum absolute round-trip error 5.68e-14 on the tested coordinates.</p>
+<p>The scale checks and boundary metrics answer different questions. Numerical invariance under uniform rescaling cannot rescue an incorrect outline model; conversely, a real convex-versus-concave difference is not evidence that the unit conversion is broken. Keeping those outcomes separate helps users choose a helper appropriate to the operation they need.</p>
+<figure class="paper-fig" id="fig-3"><figcaption class="fig-title"><b>Fig. 3:</b> Coordinate behavior and quantified outline differences.</figcaption><a class="fig-img" href="../assets/articles/spata2py/fig3.jpg" target="_blank" rel="noopener"><img src="../assets/articles/spata2py/fig3.jpg" alt="Fig. 3: Coordinate behavior and quantified outline differences." loading="lazy" /></a><div class="fig-legend"><strong>(a)</strong> Number of density-label changes after uniform rescaling with automatic radius estimation. <strong>(b)</strong> Cumulative unit-conversion round-trip errors, with exact zeros placed at 1e-18 for display. <strong>(c)</strong> R and Python outline areas. <strong>(d)</strong> Grid-based overlap of the two boundaries; the displayed IoU is approximate at the reported resolution. Boundary results are calculated on native tissue coordinates rather than the distant positive controls.</div><a class="fig-full" href="../assets/articles/spata2py/fig3.jpg" target="_blank" rel="noopener">Full size image</a></figure>
+</section>
+<section class="paper-section is-body" id="sec-limitations-and-appropriate-claims" aria-labelledby="sec-limitations-and-appropriate-claims-h">
+<h2 id="sec-limitations-and-appropriate-claims-h">Limitations and appropriate claims</h2>
+<p>One retained tissue section does not cover all spatial platforms or disconnected tissue geometries. The five far-away controls are easy geometric positives; their recovery does not measure specificity on real artifacts or sensitivity near the tissue edge. Further datasets, fragmented sections and expert-reviewed candidate labels would be needed to assess outlier removal as a biological preprocessing decision.</p>
+<p>The current implementation does not reconstruct SPATA2 spatial gradients, trajectory statistics, image segmentation, annotations or its general S4 framework. Its convex outline remains intentionally different. Consequently the report and package should be described as selected SPATA2-inspired AnnData utilities, with demonstrated label agreement for a bounded case and measured differences elsewhere. This report makes no speed claim and no global package-equivalence claim.</p>
+</section>
+<section class="paper-section is-back" id="sec-data-and-code-availability" aria-labelledby="sec-data-and-code-availability-h">
+<h2 id="sec-data-and-code-availability-h">Data and code availability</h2>
+<p>The <a href="https://github.com/omicverse/omicverse-org-home/raw/refs/heads/main/articles/_evidence/rewrite-validation/evidence.zip" target="_blank" rel="noopener">reproduction bundle</a> contains the recorded inputs, reference outputs, scripts and environment details.</p>
+<p>The evaluated Python implementation is preserved at <a href="https://github.com/hurry060215-tech/py-SPATA2/commit/4ca98f6f0d733b69f4ec7d4618751dd90313160d" target="_blank" rel="noopener">the pinned repair revision</a>. The benchmark source hashes identify the exact tested files; inclusion in an upstream release is a separate status.</p>
+<p>Original package documentation and source are available at <a href="https://themilolab.github.io/SPATA2/" target="_blank" rel="noopener">https://themilolab.github.io/SPATA2/</a> and <a href="https://github.com/theMILOlab/SPATA2" target="_blank" rel="noopener">https://github.com/theMILOlab/SPATA2</a>. Python source is at <a href="https://github.com/omicverse/py-SPATA2" target="_blank" rel="noopener">https://github.com/omicverse/py-SPATA2</a>. The experiment bundle includes the R geometry invocation, exported original labels/vertices, <code>spata_sensitivity.csv</code>, outline metrics, session information and the figure script. The serialized R object is retained for inspection. Dataset provenance and hashes accompany the earlier shared-coordinate fixture. The reproduction materials accompany this scoped technical report.</p>
+</section>
+<section class="paper-section is-back" id="sec-conflicts-of-interest" aria-labelledby="sec-conflicts-of-interest-h">
+<h2 id="sec-conflicts-of-interest-h">Conflicts of interest</h2>
+<p>H.Z. and Z.Z. are affiliated with OmicVerse, Inc.</p>
+</section>
+<section class="paper-section is-back" id="sec-use-of-ai-tools" aria-labelledby="sec-use-of-ai-tools-h">
+<h2 id="sec-use-of-ai-tools-h">Use of AI tools</h2>
+<p>AI assistance was used for code inspection, experiment scripting, visualization and drafting. The authors approved submission of this scoped technical report.</p>
+</section>
+<section class="paper-section is-refs" id="references" aria-labelledby="references-h">
+<h2 id="references-h">References</h2>
+<ol class="paper-refs"><li id="ref-1"><span class="ref-n">1.</span><span class="ref-text">Kueckelhaus J et al. (2024). Inferring histology-associated gene expression gradients in spatial transcriptomic studies. Nature Communications 15, 7280. <a href="https://doi.org/10.1038/s41467-024-50904-x" target="_blank" rel="noopener">10.1038/s41467-024-50904-x</a></span></li><li id="ref-2"><span class="ref-n">2.</span><span class="ref-text">Virtanen P et al. (2020). SciPy 1.0: fundamental algorithms for scientific computing in Python. Nature Methods 17, 261–272. <a href="https://doi.org/10.1038/s41592-019-0686-2" target="_blank" rel="noopener">10.1038/s41592-019-0686-2</a></span></li><li id="ref-3"><span class="ref-n">3.</span><span class="ref-text">Maynard KR et al. (2021). Transcriptome-scale spatial gene expression in the human dorsolateral prefrontal cortex. Nature Neuroscience 24, 425–436. <a href="https://doi.org/10.1038/s41593-020-00787-0" target="_blank" rel="noopener">10.1038/s41593-020-00787-0</a></span></li><li id="ref-4"><span class="ref-n">4.</span><span class="ref-text">Pedregosa F et al. (2011). Scikit-learn: Machine Learning in Python. Journal of Machine Learning Research 12, 2825–2830. <a href="https://jmlr.org/papers/v12/pedregosa11a.html" target="_blank" rel="noopener">https://jmlr.org/papers/v12/pedregosa11a.html</a></span></li></ol>
+</section>
+<section class="paper-section is-supp" id="supplementary" aria-labelledby="supplementary-h">
+<h2 id="supplementary-h">Supplementary information</h2>
+<h3 id="reproduction-details">Reproduction details</h3>
+<p>The R run uses the original package method with an explicitly specified radius and minimum-point count. Export tissue labels from metadata rather than assuming that every coordinate table contains the newly added field. For Python, preserve the distinction between the self-inclusive DBSCAN count and the number of other neighbors. Compare labels in input identifier order and account for the five appended controls.</p>
+<p>Compute area from ordered vertices using the shoelace formula. For grid overlap, form the same coordinate extent for both polygons, evaluate membership for all grid points and calculate intersection divided by union. The 200-by-200 resolution is recorded; a more accurate geometric intersection could alter the final digits. The finding of larger convex area should not be interpreted as a generic fixed percentage across samples.</p>
+</section>
+
+        <section class="paper-section" id="author-information" aria-labelledby="author-information-h">
+          <h2 id="author-information-h">Author information</h2>
+          <h3>Affiliations</h3>
+          <ol class="paper-affil-list"><li><sup>1</sup> School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou 325000, China</li><li><sup>2</sup> Department of Genetics, Stanford University, Stanford, CA 94305, USA</li><li><sup>3</sup> OmicVerse, Inc., San Francisco, CA 94114, USA</li></ol>
+          <h3>Corresponding authors</h3>
+          <p>Correspondence to <a href="mailto:starlitnightly@gmail.com">Zehua Zeng</a>.</p>
+        </section>
+
+        <section class="paper-section" id="cite" aria-labelledby="cite-h">
+          <h2 id="cite-h">Cite this article</h2>
+          <p class="cite-text" id="cite-text">Zhu, H. &amp; Zeng, Z. Scoped spatial outlier validation for SPATA2-inspired AnnData utilities. OmicVerse Technical Reports (2026). https://omicverse.org/articles/spata2py</p>
+          <dl class="cite-meta"><div><dt>Published</dt><dd>14 November 2026</dd></div></dl>
+          <div class="cite-actions"><button class="btn btn-ghost" type="button" data-copy-target="#cite-text">Copy citation</button><button class="btn btn-ghost" type="button" data-copy-target="#cite-bib">Copy BibTeX</button></div>
+          <pre class="cite-bib" id="cite-bib">@techreport{zhu2026spata2py,
+  title       = {Scoped spatial outlier validation for SPATA2-inspired AnnData utilities},
+  author      = {Zhu, Haoliang and Zeng, Zehua},
+  institution = {OmicVerse},
+  type        = {Technical Report},
+  year        = {2026},
+  url         = {https://omicverse.org/articles/spata2py}
+}</pre>
+        </section>
+      </article>
+
+      <aside class="paper-side" aria-label="Article tools">
+        <div class="side-card side-pdf">
+          <a class="btn-pdf" href="../assets/articles/spata2py/spata2py.pdf" download>Download PDF <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg></a>
+          <p>Two-column PDF · 6 pages · 1.0 MB · <a href="../assets/articles/spata2py/spata2py.pdf" target="_blank" rel="noopener">open in browser</a></p>
+        </div>
+        <div class="side-tabs" data-side-tabs>
+          <div class="side-tablist" role="tablist">
+            <button type="button" role="tab" aria-selected="true" data-tab="sections">Sections</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="figures">Figures</button>
+            <button type="button" role="tab" aria-selected="false" data-tab="references">References</button>
+          </div>
+          <ol class="side-panel side-toc" data-panel="sections"><li><a href="#abstract">Abstract</a></li><li><a href="#sec-introduction">Introduction</a></li><li><a href="#sec-implementation-and-scope">Implementation and scope</a></li><li><a href="#sec-real-data-and-control-design">Real-data and control design</a></li><li><a href="#sec-results">Results</a></li><li><a href="#sec-limitations-and-appropriate-claims">Limitations and appropriate claims</a></li><li><a href="#references">References</a></li><li><a href="#supplementary">Supplementary information</a></li><li><a href="#cite">Cite this article</a></li></ol>
+          <ul class="side-panel side-figs" data-panel="figures" hidden><li><a href="#fig-1"><img src="../assets/articles/spata2py/fig1-thumb.jpg" alt="" loading="lazy" /><span>Fig. 1</span></a></li><li><a href="#fig-2"><img src="../assets/articles/spata2py/fig2-thumb.jpg" alt="" loading="lazy" /><span>Fig. 2</span></a></li><li><a href="#fig-3"><img src="../assets/articles/spata2py/fig3-thumb.jpg" alt="" loading="lazy" /><span>Fig. 3</span></a></li></ul>
+          <div class="side-panel" data-panel="references" hidden><p>4 references, numbered in order of citation.</p><a href="#references">Go to references</a></div>
+        </div>
+        <ul class="side-card side-links"><li><span>Code</span><a href="https://github.com/omicverse/py-SPATA2" target="_blank" rel="noopener">github.com/omicverse/py-SPATA2</a></li></ul>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner page-width wide">
+      <div class="footer-brand-col">
+        <span class="footer-brand"><img src="../assets/brand/mark.svg" alt="" width="20" height="20" /> OmicVerse</span>
+        <p>Open-source multi-omics in Python, with Rust and Torch underneath. Trusted R methods, rebuilt and verified.</p>
+        <p class="footer-install"><code>pip install omicverse</code></p>
+      </div>
+      <div class="footer-col"><span class="footer-col-title">Project</span><ul><li><a href="../packages.html">Packages</a></li><li><a href="../ports.html">R-port catalog</a></li><li><a href="../articles.html">Articles</a></li><li><a href="https://omicverse.readthedocs.io/" target="_blank" rel="noopener">Documentation</a></li><li><a href="../blog.html">Blog</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Community</span><ul><li><a href="../people.html">People</a></li><li><a href="../events.html">Events</a></li><li><a href="../join.html">Join</a></li><li><a href="https://github.com/omicverse/omicverse/discussions" target="_blank" rel="noopener">Discussions ↗</a></li></ul></div>
+      <div class="footer-col"><span class="footer-col-title">Resources</span><ul><li><a href="../about.html">About & citation</a></li><li><a href="https://github.com/omicverse/omicverse-rebuildr" target="_blank" rel="noopener">Porting protocol ↗</a></li><li><a href="https://github.com/omicverse/omicverse-tutorials" target="_blank" rel="noopener">Tutorials ↗</a></li><li><a href="https://github.com/omicverse" target="_blank" rel="noopener">GitHub ↗</a></li></ul></div>
+    </div>
+    <div class="footer-bottom page-width wide">
+      <span>© OmicVerse contributors · Apache-2.0</span>
+      <span>Built with <a href="https://github.com/omicverse/omicverse-org-home" target="_blank" rel="noopener">omicverse-org-home</a></span>
+    </div>
+  </footer>
+</body>
+</html>

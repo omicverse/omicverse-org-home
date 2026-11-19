@@ -1,0 +1,7 @@
+"dataset","n","genes","seconds","max_input"
+"marrow_10x",100,13526,0.91,7952
+"marrow_10x",200,13526,1.61,7952
+"marrow_10x",400,13526,3.5,7952
+"marrow_plate",100,17479,1.11,420749
+"marrow_plate",200,17479,2.25,420749
+"marrow_plate",400,17479,4.51,543598

@@ -1,0 +1,14 @@
+{
+  "R_area": 119076.59803062998,
+  "Python_area": 136128.84559500974,
+  "grid_iou": 0.8746267021014275,
+  "grid_resolution": 200,
+  "scale_flag_disagreements": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "unit_roundtrip_max_error": 5.684341886080802e-14
+}

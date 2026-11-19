@@ -1,0 +1,18 @@
+args <- commandArgs(trailingOnly=TRUE)
+if (length(args) < 1) stop('Supply the workspace root as the first argument')
+workspace <- normalizePath(args[[1]], winslash='/')
+root <- file.path(workspace, 'outputs/scissor-discrepancy-audit')
+out <- file.path(workspace, 'outputs/rewrite-validation/report-v2/cox')
+dir.create(out,recursive=TRUE,showWarnings=FALSE)
+library(Matrix);library(jsonlite)
+source(file.path(root,'reference/luad/oracle.R'))
+Rcpp::sourceCpp(file.path(root,'reference/luad/corrected_oracle.cpp'),cacheDir=file.path(root,'rcpp-corrected-cache'))
+X<-read_f64(file.path(root,'survival_X.bin'),c(471,4102))
+y<-as.matrix(read.csv(file.path(root,'survival_y.csv')))
+A<-as(as(as(readMM(file.path(root,'r_graph.mtx')),'generalMatrix'),'dMatrix'),'CsparseMatrix')
+lambdas<-read.csv(file.path(root,'python_cox_cv.csv'))$lambda
+start<-proc.time()[['elapsed']]
+fit<-fit_corrected(X,y,normalize_adjacency(A),lambdas,.05,'cox',tol=1e-9)
+write_f64(fit$coefficients,file.path(out,'r_path_1e9.f64'))
+write.csv(data.frame(lambda=lambdas,kkt=fit$kkt_residual,converged=fit$converged),file.path(out,'r_certificates.csv'),row.names=FALSE)
+json(list(seconds=proc.time()[['elapsed']]-start,max_kkt=max(fit$kkt_residual),converged=all(fit$converged)),file.path(out,'r_summary.json'))

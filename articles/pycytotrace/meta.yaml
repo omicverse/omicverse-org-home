@@ -1,0 +1,41 @@
+slug: pycytotrace
+type: Technical Report
+title: Same-input R validation of the CytoTRACE Python core
+short_title: pycytotrace
+published: 2026-11-14
+version: 2
+authors:
+- name: Haoliang Zhu
+  affiliations:
+  - 1
+  - 3
+- name: Zehua Zeng
+  affiliations:
+  - 2
+  - 3
+  email: starlitnightly@gmail.com
+affiliations:
+  1: School of the First Clinical Medical Sciences, Wenzhou Medical University, Wenzhou
+    325000, China
+  2: Department of Genetics, Stanford University, Stanford, CA 94305, USA
+  3: OmicVerse, Inc., San Francisco, CA 94114, USA
+abstract: We evaluate the supported single-batch CytoTRACE Python core against original
+  R on two real marrow datasets at 100, 200 and 400 cells. All six comparisons have
+  identical ranks and detected-gene counts, with maximum score difference 5.55e-16.
+  Restricting inputs to 3,000 high-variance genes changes rankings substantially more
+  than cross-language numerical error. Three multi-panel figures separate real-data
+  displays, stage-level numerical agreement, input sensitivity and descriptive execution
+  times. Fast mode, batch correction and broader biological validation remain outside
+  the measured scope.
+keywords:
+- Python
+- R
+- reproducibility
+- validation
+links:
+  code: https://github.com/omicverse/py-CytoTRACE
+thumbnail: fig1
+status: ready-for-publication
+release_decision: approved-by-authors
+reviewed: 2026-11-14
+author_confirmation: 2026-11-14

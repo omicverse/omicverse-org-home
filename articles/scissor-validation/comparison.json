@@ -1,0 +1,40 @@
+{
+  "binomial": {
+    "R_plus": 414,
+    "R_minus": 320,
+    "Python_plus": 414,
+    "Python_minus": 320,
+    "label_disagreements": 0,
+    "coefficient_max_abs_error": 1.0658141036401503e-14,
+    "coefficients_allclose_atol1e-5_rtol1e-4": true,
+    "CV_mean_max_abs_error": 4.884981308350689e-15,
+    "R_lambda": 0.0014298594846270164,
+    "Python_lambda": 0.0014298594846270164,
+    "lambda_close": true,
+    "positive_jaccard": 1.0,
+    "negative_jaccard": 1.0,
+    "CV_mean_allclose_atol1e-6_rtol1e-4": true
+  },
+  "cox": {
+    "R_plus": 205,
+    "R_minus": 5,
+    "Python_plus": 205,
+    "Python_minus": 5,
+    "label_disagreements": 0,
+    "coefficient_max_abs_error": 1.2133440218005387e-06,
+    "coefficients_allclose_atol1e-5_rtol1e-4": true,
+    "CV_mean_max_abs_error": 6.138625572305045e-06,
+    "R_lambda": 0.04075573354426725,
+    "Python_lambda": 0.04075573354426727,
+    "lambda_close": true,
+    "positive_jaccard": 1.0,
+    "negative_jaccard": 1.0,
+    "CV_mean_allclose_atol1e-6_rtol1e-4": true,
+    "full_path_coefficients": {
+      "max_abs_error": 3.961297370332897e-05,
+      "outside_atol1e-5_rtol1e-4": 3092,
+      "passed": false,
+      "scope": "Includes unselected lambdas; both solvers used default KKT threshold 1e-7. Final selected refit passes; do not claim whole-path coefficient parity."
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "python": "3.12.13",
+  "platform": "Windows-11-10.0.22631-SP0",
+  "packages": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "pandas": "2.3.3",
+    "anndata": "0.13.4",
+    "matplotlib": "3.11.2",
+    "scikit-learn": "1.9.1"
+  },
+  "scripts": {
+    "cox_tolerance.py": "fdd54ab80eafffb9384860583a7f732cfac08a924d21b4d6b0300679aa392e56",
+    "cox_tolerance.R": "6548f0b6b1666b68b26db525fb3886e56d2a4bd99536f4f248ef7070d809b885",
+    "cyto_compare.py": "e1e16bf40702e04ae04d05297bec536b8e96e4023e589a63812d61c2f9a0a4eb",
+    "cyto_reference.R": "f8a43ede988d7d5fd800a78ff05b36a90205b2a08566ab8d3a66d246b0c8c2e7",
+    "figures.py": "c99fa86b8111fc84b0b7ca47ca8a893e64c6b618bf6834d5d2614461b5cd9573",
+    "spatial_compare.py": "2985858aec39e857f8034a8affc13ecc0505d7ea7d5b51efd011977bb7393a2e",
+    "spatial_reference.R": "58aaa614930400db290379a4879a6f79039f3b2f306444e5efc1baf5711d5121"
+  }
+}

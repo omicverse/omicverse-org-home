@@ -1,0 +1,30 @@
+[
+  {
+    "slug": "pycytotrace",
+    "pages": 6,
+    "overfull": false,
+    "missing_glyphs": false,
+    "draft_label": true
+  },
+  {
+    "slug": "scissor-validation",
+    "pages": 6,
+    "overfull": false,
+    "missing_glyphs": false,
+    "draft_label": true
+  },
+  {
+    "slug": "spata2py",
+    "pages": 6,
+    "overfull": false,
+    "missing_glyphs": false,
+    "draft_label": true
+  },
+  {
+    "slug": "splitst",
+    "pages": 6,
+    "overfull": false,
+    "missing_glyphs": false,
+    "draft_label": true
+  }
+]
